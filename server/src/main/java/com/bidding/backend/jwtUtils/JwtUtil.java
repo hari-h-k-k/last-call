@@ -1,4 +1,4 @@
-package com.bidding.backend.utils;
+package com.bidding.backend.jwtUtils;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;

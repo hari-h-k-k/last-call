@@ -1,4 +1,4 @@
-package com.bidding.backend.utils;
+package com.bidding.backend.jwtUtils;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -35,7 +35,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
 
-            // Extract username from token
             String username = jwtUtil.extractUsername(token);
 
             // Create Authentication object with a simple USER role (adjust as needed)
