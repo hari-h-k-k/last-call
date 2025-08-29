@@ -1,25 +1,20 @@
 "use client";
 import { createContext, useContext, useState } from "react";
-import { useRouter } from "next/navigation";
+import { setAuthToken } from "../lib/auth";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [info, setInfo] = useState({
-    username: "",
-    token: "",
-  });
-
-  const router = useRouter();
+  const [info, setInfo] = useState({ username: "", token: "" });
 
   const login = (username, token) => {
     setInfo({ username, token });
-    router.push("/home");
+    setAuthToken(token); // sync token with Axios
   };
 
   const logout = () => {
     setInfo({ username: "", token: "" });
-    router.push("/login");
+    setAuthToken(null); // clear token
   };
 
   return (

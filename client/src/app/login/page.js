@@ -1,15 +1,30 @@
 "use client";
+import { useState } from "react";
 import AuthForm from "../../components/AuthForm";
 import { useAuth } from "../../context/AuthContext";
+import api from "../../lib/axios"; // Axios instance
 
 export default function LoginPage() {
   const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = ({ username, password }) => {
-    if (username === "test" && password === "123456") {
-      login(username, "fake-jwt-token"); // Store in context
-    } else {
-      alert("Invalid credentials");
+  const handleLogin = async ({ username, password }) => {
+    setLoading(true);
+    try {
+      // Call backend login API
+      const response = await api.post("/login", { username, password });
+
+      if (response.data === "Login successful!") {
+        // For demo, we generate a fake token
+        login(username, "fake-jwt-token");
+      } else {
+        alert(response.data);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -24,6 +39,8 @@ export default function LoginPage() {
         </p>
 
         <AuthForm type="login" onSubmit={handleLogin} />
+
+        {loading && <p className="text-[#22C55E] text-center mt-4">Logging in...</p>}
 
         {/* Extra Links */}
         <div className="mt-4 text-center">
