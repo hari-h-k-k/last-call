@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { useAuth } from "../../context/AuthContext";
 import { FaUserCircle } from "react-icons/fa";
 import EditProfileModal from "../../components/EditProfileModal";
+import {router} from "next/client";
 
 export default function ProfilePage() {
   const { info } = useAuth();
@@ -11,10 +12,10 @@ export default function ProfilePage() {
   const [showEditModal, setShowEditModal] = useState(false);
 
 
-const handleSaveProfile = (updatedInfo) => {
-  console.log("Saved Profile Info:", updatedInfo);
-  // Update context or API call
-};
+  const handleSaveProfile = (updatedInfo) => {
+    console.log("Saved Profile Info:", updatedInfo);
+    // Update context or API call
+  };
 
   const tabs = [
     { id: "active", label: "Active Biddings" },
@@ -23,6 +24,12 @@ const handleSaveProfile = (updatedInfo) => {
     { id: "bank", label: "Bank Accounts" },
     { id: "settings", label: "Settings" },
   ];
+
+  useEffect(() => {
+    if (JSON.parse(sessionStorage.getItem("userInfo")).token) {
+      router.push("/profile");
+    }
+  });
 
   return (
     <div className="min-h-screen bg-[#0F172A] text-white pt-28 px-6 md:px-16">

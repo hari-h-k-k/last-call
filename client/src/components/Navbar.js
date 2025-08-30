@@ -70,7 +70,7 @@ export default function Navbar() {
 
         {/* Auth Buttons */}
         <div className="relative" ref={dropdownRef}>
-          {!info.token ? (
+          {!JSON.parse(sessionStorage.getItem("userInfo")).token ? (
             <button
               onClick={handleLogin}
               className="px-5 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] transition text-white font-semibold shadow-md"
@@ -84,7 +84,7 @@ export default function Navbar() {
                 onClick={() => setIsOpen(!isOpen)}
                 className="px-5 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] transition text-white font-semibold shadow-md"
               >
-                {info.username || "Profile"}
+                {JSON.parse(sessionStorage.getItem("userInfo")).username || "Profile"}
               </button>
 
               {/* Dropdown Menu */}

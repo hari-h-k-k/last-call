@@ -5,20 +5,24 @@ import { setAuthToken } from "../lib/auth";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [info, setInfo] = useState({ username: "", token: "" });
-
   const login = (username, token) => {
-    setInfo({ username, token });
+    sessionStorage.setItem(
+        "userInfo",
+        JSON.stringify({ username: username, token: token })
+    );
     setAuthToken(token); // sync token with Axios
   };
 
   const logout = () => {
-    setInfo({ username: "", token: "" });
+    sessionStorage.setItem(
+        "userInfo",
+        JSON.stringify({ username: "", token: "" })
+    );
     setAuthToken(null); // clear token
   };
 
   return (
-    <AuthContext.Provider value={{ info, setInfo, login, logout }}>
+    <AuthContext.Provider value={{ login, logout }}>
       {children}
     </AuthContext.Provider>
   );

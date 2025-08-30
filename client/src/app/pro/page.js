@@ -8,13 +8,10 @@ export default function ProPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (!info.token) {
+    if (!JSON.parse(sessionStorage.getItem("userInfo")).token) {
       router.push("/login");
     }
-  }, [info, router]);
-
-  if (!info.token) return null;
-
+  });
 
   return (
     <div className="min-h-screen bg-[#111827] text-white flex items-center justify-center">
