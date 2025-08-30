@@ -1,8 +1,9 @@
 "use client";
 import { useState } from "react";
-import AuthForm from "../../components/AuthForm";
-import { useAuth } from "../../context/AuthContext";
-import api from "../../lib/axios"; // Axios instance
+import AuthForm from "@/components/AuthForm";
+import { useAuth } from "@/context/AuthContext";
+import api from "../../lib/axios";
+import {router} from "next/client";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -11,14 +12,11 @@ export default function LoginPage() {
   const handleLogin = async ({ username, password }) => {
     setLoading(true);
     try {
-      // Call backend login API
-      const response = await api.post("/login", { username, password });
-
-      if (response.data === "Login successful!") {
-        // For demo, we generate a fake token
-        login(username, "fake-jwt-token");
-      } else {
-        alert(response.data);
+      const response = await api.post("/auth/login", { username, password });
+      alert(response.data.message);
+      if (response.status === 200) {
+        login(response.data.info.username, response.data.info.token);
+        // router.push("/home");
       }
     } catch (error) {
       console.error(error);

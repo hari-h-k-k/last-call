@@ -43,9 +43,8 @@ public class AuthController {
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
                 .setMessage("User registered successfully!")
-                .setData(Map.of(
-                        "username", user.getUsername(),
-                        "email", user.getEmail()
+                .setInfo(Map.of(
+                        "username", user.getUsername()
                 ))
                 .build();
 
@@ -61,10 +60,9 @@ public class AuthController {
             Map<String, Object> response = new ResponseBuilder()
                     .setStatus("success")
                     .setMessage("Login successful!")
-                    .setData(Map.of(
+                    .setInfo(Map.of(
                             "token", token,
-                            "username", foundUser.getUsername(),
-                            "email", foundUser.getEmail()
+                            "username", foundUser.getUsername()
                     ))
                     .build();
 

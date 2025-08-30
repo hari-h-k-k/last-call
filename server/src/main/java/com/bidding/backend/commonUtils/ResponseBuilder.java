@@ -17,8 +17,8 @@ public class ResponseBuilder {
         return this;
     }
 
-    public ResponseBuilder setData(Object data) {
-        response.put("data", data);
+    public ResponseBuilder setInfo(Object info) {
+        response.put("info", info);
         return this;
     }
 

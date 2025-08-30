@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import AuthForm from "../../components/AuthForm";
+import api from "@/lib/axios";
+import {router} from "next/client";
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({ username: "", password: "", confirmPassword: "" });
@@ -9,14 +11,26 @@ export default function SignupPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
     const { username, password, confirmPassword } = formData;
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
-    alert(`Account created for ${username}`);
+
+    try {
+      const response = await api.post("/auth/register", { username, password });
+      if (response.status === 201) {
+        alert(`Account created for ${username}`);
+        // router.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An error occurred. Please try again.");
+    }
   };
 
   return (
