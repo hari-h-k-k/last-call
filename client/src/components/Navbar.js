@@ -4,15 +4,32 @@ import { useAuth } from "../context/AuthContext";
 import { useState, useRef, useEffect } from "react";
 
 export default function Navbar() {
-  const { info, logout } = useAuth();
+  const { logout } = useAuth();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [userInfo, setUserInfo] = useState(null);
 
+  // Load user info initially
   useEffect(() => {
     const data = sessionStorage.getItem("userInfo");
-    if (data) setUserInfo(JSON.parse(data));
+    if (data) {
+      setUserInfo(JSON.parse(data));
+    } else {
+      setUserInfo(null);
+    }
+
+    // Listen for sessionStorage changes across the app
+    const handleStorageChange = () => {
+      const updatedData = sessionStorage.getItem("userInfo");
+      setUserInfo(updatedData ? JSON.parse(updatedData) : null);
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, []);
 
   const handleLogin = () => {
@@ -22,6 +39,14 @@ export default function Navbar() {
   const handleProfile = () => {
     router.push("/profile");
     setIsOpen(false);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("userInfo"); // Clear sessionStorage
+    setUserInfo(null);                     // Update local state
+    setIsOpen(false);                      // Close dropdown
+    logout();                              // Clear context
+    router.push("/");                      // Redirect to homepage
   };
 
   // Close dropdown when clicking outside
@@ -48,35 +73,16 @@ export default function Navbar() {
 
         {/* Menu Items */}
         <div className="hidden md:flex space-x-8 text-[#9CA3AF] font-medium">
-          <button
-            onClick={() => router.push("/")}
-            className="hover:text-white transition"
-          >
-            Home
-          </button>
-          <button
-            onClick={() => router.push("/auctions")}
-            className="hover:text-white transition"
-          >
-            Auctions
-          </button>
-          <button
-            onClick={() => router.push("/bids")}
-            className="hover:text-white transition"
-          >
-            My Bids
-          </button>
-          <button
-            onClick={() => router.push("/contact")}
-            className="hover:text-white transition"
-          >
-            Contact
-          </button>
+          <button onClick={() => router.push("/")} className="hover:text-white transition">Home</button>
+          <button onClick={() => router.push("/auctions")} className="hover:text-white transition">Auctions</button>
+          <button onClick={() => router.push("/bids")} className="hover:text-white transition">My Bids</button>
+          <button onClick={() => router.push("/contact")} className="hover:text-white transition">Contact</button>
         </div>
 
         {/* Auth Buttons */}
         <div className="relative" ref={dropdownRef}>
-          {!userInfo ? (
+          {!(userInfo?.token) ? (
+            // Show Login Button when user is not logged in
             <button
               onClick={handleLogin}
               className="px-5 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] transition text-white font-semibold shadow-md"
@@ -84,13 +90,13 @@ export default function Navbar() {
               Login
             </button>
           ) : (
+            // Show Profile Button when logged in
             <div>
-              {/* Profile Button */}
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="px-5 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] transition text-white font-semibold shadow-md"
               >
-                {JSON.parse(sessionStorage.getItem("userInfo")).username || "Profile"}
+                {userInfo?.username || "Profile"}
               </button>
 
               {/* Dropdown Menu */}
@@ -103,7 +109,7 @@ export default function Navbar() {
                     My Profile
                   </button>
                   <button
-                    onClick={logout}
+                    onClick={handleLogout}
                     className="block w-full text-left px-4 py-2 text-[#9CA3AF] hover:text-white hover:bg-[#F43F5E] transition"
                   >
                     Logout

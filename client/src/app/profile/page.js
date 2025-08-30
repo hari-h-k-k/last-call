@@ -1,16 +1,15 @@
 "use client";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { FaUserCircle } from "react-icons/fa";
 import EditProfileModal from "../../components/EditProfileModal";
-import {router} from "next/client";
+import { useRouter } from "next/navigation"; // ✅ Correct import
 
 export default function ProfilePage() {
   const { info } = useAuth();
   const [activeTab, setActiveTab] = useState("active");
-
   const [showEditModal, setShowEditModal] = useState(false);
-
+  const router = useRouter(); // ✅ Initialize router
 
   const handleSaveProfile = (updatedInfo) => {
     console.log("Saved Profile Info:", updatedInfo);
@@ -26,23 +25,24 @@ export default function ProfilePage() {
   ];
 
   useEffect(() => {
-    if (JSON.parse(sessionStorage.getItem("userInfo")).token) {
-      router.push("/profile");
+    const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
+    if (!userInfo?.token) {
+      router.push("/login"); // ✅ Redirect to login if not authenticated
     }
-  });
+  }, [router]);
 
   return (
     <div className="min-h-screen bg-[#0F172A] text-white pt-28 px-6 md:px-16">
-    {showEditModal && (
-      <EditProfileModal
-        info={info}
-        onClose={() => setShowEditModal(false)}
-        onSave={handleSaveProfile}
-      />
-    )}
+      {showEditModal && (
+        <EditProfileModal
+          info={info}
+          onClose={() => setShowEditModal(false)}
+          onSave={handleSaveProfile}
+        />
+      )}
+
       {/* Profile Header */}
       <div className="bg-[#1E293B] rounded-2xl shadow-xl p-8 flex flex-col md:flex-row items-center gap-8 border border-[#334155]">
-        {/* Profile Image */}
         {info?.profilePic ? (
           <img
             src={info.profilePic}
@@ -53,7 +53,6 @@ export default function ProfilePage() {
           <FaUserCircle className="text-[#2563EB] w-28 h-28" />
         )}
 
-        {/* User Info */}
         <div className="flex-1 text-center md:text-left">
           <h1 className="text-3xl font-bold">{info?.username || "John Doe"}</h1>
           <p className="text-[#9CA3AF]">{info?.email || "johndoe@example.com"}</p>
@@ -71,7 +70,6 @@ export default function ProfilePage() {
 
       {/* Tabs Section */}
       <div className="mt-8">
-        {/* Tabs Header */}
         <div className="flex flex-wrap gap-3 border-b border-[#334155] pb-3">
           {tabs.map((tab) => (
             <button
@@ -94,28 +92,22 @@ export default function ProfilePage() {
             <div>
               <h2 className="text-xl font-bold mb-4">Your Active Biddings</h2>
               <p className="text-[#9CA3AF]">You currently have 3 active bids.</p>
-              {/* Here, map over active bids */}
             </div>
           )}
-
           {activeTab === "past" && (
             <div>
               <h2 className="text-xl font-bold mb-4">Past Biddings</h2>
               <p className="text-[#9CA3AF]">Your bidding history will appear here.</p>
-              {/* Map completed bids */}
             </div>
           )}
-
           {activeTab === "transactions" && (
             <div>
               <h2 className="text-xl font-bold mb-4">Transactions</h2>
               <p className="text-[#9CA3AF]">
                 View your payment history and receipts here.
               </p>
-              {/* Map transaction history */}
             </div>
           )}
-
           {activeTab === "bank" && (
             <div>
               <h2 className="text-xl font-bold mb-4">Linked Bank Accounts</h2>
@@ -127,7 +119,6 @@ export default function ProfilePage() {
               </button>
             </div>
           )}
-
           {activeTab === "settings" && (
             <div>
               <h2 className="text-xl font-bold mb-4">Account Settings</h2>

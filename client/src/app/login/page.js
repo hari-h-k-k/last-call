@@ -1,22 +1,31 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AuthForm from "@/components/AuthForm";
-import { useAuth } from "@/context/AuthContext";
 import api from "../../lib/axios";
-import {router} from "next/client";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function LoginPage() {
-  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/"; // Default to home if not provided
 
   const handleLogin = async ({ username, password }) => {
     setLoading(true);
     try {
       const response = await api.post("/auth/login", { username, password });
       alert(response.data.message);
+
       if (response.status === 200) {
-        login(response.data.info.username, response.data.info.token);
-        // router.push("/home");
+        // Save session info
+        const { username: user, token } = response.data.info;
+        sessionStorage.setItem(
+          "userInfo",
+          JSON.stringify({ username: user, token })
+        );
+
+        // Redirect back to original page
+        router.replace(redirectTo);
       }
     } catch (error) {
       console.error(error);
@@ -40,13 +49,12 @@ export default function LoginPage() {
 
         {loading && <p className="text-[#22C55E] text-center mt-4">Logging in...</p>}
 
-        {/* Extra Links */}
         <div className="mt-4 text-center">
           <p className="text-[#9CA3AF]">
             Don’t have an account?{" "}
             <span
               className="text-[#FACC15] font-semibold cursor-pointer hover:underline"
-              onClick={() => window.location.href = "/signup"}
+              onClick={() => router.push("/signup")}
             >
               Sign Up
             </span>

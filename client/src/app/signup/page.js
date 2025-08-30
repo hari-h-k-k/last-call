@@ -2,10 +2,16 @@
 import { useState } from "react";
 import AuthForm from "../../components/AuthForm";
 import api from "@/lib/axios";
-import {router} from "next/client";
+import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
-  const [formData, setFormData] = useState({ username: "", password: "", confirmPassword: "" });
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+    confirmPassword: ""
+  });
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -14,22 +20,27 @@ export default function SignupPage() {
   const handleSignup = async (e) => {
     e.preventDefault();
     const { username, password, confirmPassword } = formData;
+
     if (password !== confirmPassword) {
       alert("Passwords do not match!");
       return;
     }
 
+    setLoading(true);
     try {
       const response = await api.post("/auth/register", { username, password });
+
       if (response.status === 201) {
         alert(`Account created for ${username}`);
-        // router.push("/login");
+        router.replace("/login"); // ✅ Pops signup from history and goes to login
       } else {
-        alert(response.data.message);
+        alert(response.data.message || "Signup failed!");
       }
     } catch (error) {
       console.error(error);
       alert("An error occurred. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -73,9 +84,12 @@ export default function SignupPage() {
           />
           <button
             type="submit"
-            className="w-full py-3 rounded-lg bg-[#2563EB] hover:bg-[#1d4ed8] text-[#FFFFFF] font-semibold transition duration-300"
+            disabled={loading}
+            className={`w-full py-3 rounded-lg ${
+              loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#2563EB] hover:bg-[#1d4ed8]"
+            } text-[#FFFFFF] font-semibold transition duration-300`}
           >
-            Sign Up
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
 
@@ -85,7 +99,7 @@ export default function SignupPage() {
             Already have an account?{" "}
             <span
               className="text-[#FACC15] font-semibold cursor-pointer hover:underline"
-              onClick={() => window.location.href = "/login"}
+              onClick={() => router.push("/login")}
             >
               Login
             </span>
