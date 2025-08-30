@@ -9,18 +9,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
     private JwtUtil jwtUtil;
 
-    @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    public AuthController(UserRepository userRepository, JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+        this.userRepository = userRepository;
+    }
 
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 

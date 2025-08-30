@@ -12,26 +12,26 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final SecretKey SECRET_KEY; // secure 256-bit key
+    private final SecretKey secretKey; // secure 256-bit key
 
     public JwtUtil(@Value("${jwt.secret}") String secret) {
 //        this.SECRET_KEY = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
-        this.SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+        this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     }
-    private final long EXPIRATION = 1000 * 60 * 60; // 1 hour
+    private final long expiration = 1000 * 60 * 60; // 1 hour
 
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
-                .signWith(SECRET_KEY)
+                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .signWith(secretKey)
                 .compact();
     }
 
     public String extractUsername(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
+                .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody()
@@ -41,7 +41,7 @@ public class JwtUtil {
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(SECRET_KEY)
+                    .setSigningKey(secretKey)
                     .build()
                     .parseClaimsJws(token);
             return true;
