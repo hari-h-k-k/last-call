@@ -8,6 +8,12 @@ export default function Navbar() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [userInfo, setUserInfo] = useState(null);
+
+  useEffect(() => {
+    const data = sessionStorage.getItem("userInfo");
+    if (data) setUserInfo(JSON.parse(data));
+  }, []);
 
   const handleLogin = () => {
     router.push("/login");
@@ -70,7 +76,7 @@ export default function Navbar() {
 
         {/* Auth Buttons */}
         <div className="relative" ref={dropdownRef}>
-          {!JSON.parse(sessionStorage.getItem("userInfo")).token ? (
+          {!userInfo ? (
             <button
               onClick={handleLogin}
               className="px-5 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] transition text-white font-semibold shadow-md"

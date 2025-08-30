@@ -1,9 +1,7 @@
 package com.bidding.backend.jwtUtils;
 
 import io.jsonwebtoken.*;
-import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -14,17 +12,16 @@ public class JwtUtil {
 
     private final SecretKey secretKey; // secure 256-bit key
 
-    public JwtUtil(@Value("${jwt.secret}") String secret) {
-//        this.SECRET_KEY = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
+    public JwtUtil() {
         this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     }
-    private final long expiration = 1000 * 60 * 60; // 1 hour
+    private static final long EXPIRATION = 1000 * 60 * 60; // 1 hour
 
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(secretKey)
                 .compact();
     }
