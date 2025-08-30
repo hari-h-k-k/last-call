@@ -1,4 +1,4 @@
-package com.bidding.backend.utils;
+package com.bidding.backend.jwtUtils;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -15,15 +15,16 @@ public class JwtUtil {
     private final SecretKey SECRET_KEY; // secure 256-bit key
 
     public JwtUtil(@Value("${jwt.secret}") String secret) {
-        this.SECRET_KEY = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
+//        this.SECRET_KEY = Keys.hmacShaKeyFor(Decoders.BASE64.decode(secret));
+        this.SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     }
     private final long EXPIRATION = 1000 * 60 * 60; // 1 hour
 
     public String generateToken(String username) {
         return Jwts.builder()
                 .setSubject(username)
-                .setIssuedAt(new java.util.Date())
-                .setExpiration(new java.util.Date(System.currentTimeMillis() + EXPIRATION))
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(SECRET_KEY)
                 .compact();
     }

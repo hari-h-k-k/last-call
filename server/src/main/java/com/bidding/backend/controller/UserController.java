@@ -1,10 +1,9 @@
 package com.bidding.backend.controller;
 
 import com.bidding.backend.entity.User;
-import com.bidding.backend.repository.UserRepository;
-import com.bidding.backend.utils.JwtUtil;
+import com.bidding.backend.service.UserService;
+import com.bidding.backend.jwtUtils.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -13,32 +12,40 @@ import java.util.List;
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserService userService;
+    private final JwtUtil jwtUtil;
 
-    @Autowired
-    private JwtUtil jwtUtil;
+    public UserController(UserService userService, JwtUtil jwtUtil) {
+        this.userService = userService;
+        this.jwtUtil = jwtUtil;
+    }
 
     @PostMapping
     public User createUser(@RequestBody User user) {
-        return userRepository.save(user);
+        return userService.createUser(user);
     }
 
     @GetMapping("/getAll")
     public List<User> getUsers() {
-        return userRepository.findAll();
+        return userService.getAllUsers();
     }
 
     @GetMapping("/me")
     public String getProfile(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return "No token provided!";
+        }
         String token = authHeader.substring(7);
+        if (!jwtUtil.validateToken(token)) {
+            return "Invalid token!";
+        }
         String username = jwtUtil.extractUsername(token);
         return "Hello, " + username;
     }
 
     @GetMapping("/{email}")
     public User getUserByEmail(@PathVariable String email) {
-        return userRepository.findByEmail(email);
+        return userService.getUserByEmail(email);
     }
 }
