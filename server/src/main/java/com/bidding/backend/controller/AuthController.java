@@ -61,6 +61,7 @@ public class AuthController {
                     .setStatus("success")
                     .setMessage("Login successful!")
                     .setInfo(Map.of(
+                            "id", foundUser.getId(),
                             "token", token,
                             "username", foundUser.getUsername()
                     ))
