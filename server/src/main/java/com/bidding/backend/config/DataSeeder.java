@@ -36,8 +36,10 @@ public class DataSeeder {
                     passwordEncoder.encode("qwerty"));
             User carol = new User("Carol Lee", "carol", "carol@example.com",
                     passwordEncoder.encode("password678"));
+            User tony = new User("Tony Stark", "tony", "tony@stark.com",
+                    passwordEncoder.encode("stark"));
 
-            userRepo.saveAll(List.of(alice, bob, carol));
+            userRepo.saveAll(List.of(alice, bob, carol, tony));
 
             // ---- BID ITEMS ----
             BidItem laptop = new BidItem("Gaming Laptop", "RTX 4060, 16GB RAM, 1TB SSD",
