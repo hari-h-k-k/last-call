@@ -14,16 +14,8 @@ export default function LoginPage() {
     try {
       const response = await api.post("/auth/login", { username, password });
       alert(response.data.message);
-
       if (response.status === 200) {
-        // Save info to sessionStorage
-        const { username: user, token } = response.data.info;
-        sessionStorage.setItem(
-          "userInfo",
-          JSON.stringify({ username: user, token })
-        );
-
-        // Optionally redirect
+        login(response.data.info.username, response.data.info.token);
         // router.push("/home");
       }
     } catch (error) {

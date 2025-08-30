@@ -6,14 +6,13 @@ import { motion } from "framer-motion";
 
 export default function LandingPage() {
   const router = useRouter();
-  const { info } = useAuth();
 
   // If already logged in → redirect to /home
   useEffect(() => {
-    if (info?.token) {
-      router.push("/home");
+    if (JSON.parse(sessionStorage.getItem("userInfo")).token) {
+      router.push("/");
     }
-  }, [info, router]);
+  });
 
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-[#111827] text-[#FFFFFF] relative overflow-hidden">
