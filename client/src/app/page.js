@@ -1,75 +1,54 @@
 "use client";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
-import { useEffect } from "react";
-import { motion } from "framer-motion";
+import Navbar from "../components/Navbar";
+import BiddingCard from "../components/BiddingCard";
+import Footer from "../components/Footer";
 
-export default function LandingPage() {
-  const router = useRouter();
+export default function HomePage() {
   const { info } = useAuth();
+  const router = useRouter();
 
-  // If already logged in → redirect to /home
-  useEffect(() => {
-    if (info?.token) {
-      router.push("/home");
-    }
-  }, [info, router]);
+  // Dummy products for now
+  const products = Array.from({ length: 8 }).map((_, idx) => ({
+    id: idx,
+    title: `Product ${idx + 1}`,
+    price: 1000 + idx * 200,
+    description: "High-quality item for auction. Bid now!",
+    image: `https://source.unsplash.com/random/400x300?product&sig=${idx}`,
+  }));
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-[#111827] text-[#FFFFFF] relative overflow-hidden">
-      {/* Background Gradient Blur Effects */}
-      <div className="absolute top-0 left-0 w-[400px] h-[400px] bg-[#2563EB] rounded-full mix-blend-normal filter blur-3xl opacity-20 animate-pulse"></div>
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-[#FACC15] rounded-full mix-blend-normal filter blur-3xl opacity-20 animate-pulse"></div>
+    <div className="min-h-screen bg-[#111827] text-white">
+      {/* Navbar Component */}
+      <Navbar />
 
-      {/* Heading */}
-      <motion.h1
-        initial={{ opacity: 0, y: -40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="text-5xl md:text-6xl font-extrabold text-center text-[#FFFFFF] drop-shadow-lg"
-      >
-        Welcome to <span className="text-[#FACC15]">My Auction</span>
-      </motion.h1>
+      {/* MAIN CONTENT */}
+      <div className="pt-28 flex flex-col items-center px-6">
+        {/* Search Bar */}
+        <div className="w-full max-w-2xl mb-10">
+          <input
+            type="text"
+            placeholder="Search for auctions..."
+            className="w-full px-5 py-3 rounded-xl bg-[#1F2937] border border-[#374151] focus:outline-none focus:ring-2 focus:ring-[#2563EB] text-[#FFFFFF] placeholder-[#9CA3AF] shadow-md"
+          />
+        </div>
 
-      {/* Subtitle */}
-      <motion.p
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-        className="text-lg md:text-xl text-[#9CA3AF] mt-4 text-center max-w-xl leading-relaxed"
-      >
-        Experience a seamless, secure, and modern platform to{" "}
-        <span className="text-[#22C55E] font-semibold">buy</span>,{" "}
-        <span className="text-[#2563EB] font-semibold">bid</span>, and{" "}
-        <span className="text-[#F43F5E] font-semibold">win</span> amazing auctions.
-      </motion.p>
-
-      {/* Buttons */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.8 }}
-        className="flex gap-5 mt-10"
-      >
-        <button
-          onClick={() => router.push("/login")}
-          className="px-8 py-3 rounded-xl bg-[#2563EB] text-white font-semibold shadow-lg hover:bg-[#1d4ed8] transition duration-300 transform hover:scale-105"
-        >
-          Login
-        </button>
-
-        <button
-          onClick={() => router.push("/signup")}
-          className="px-8 py-3 rounded-xl bg-[#FACC15] text-black font-semibold shadow-lg hover:bg-[#eab308] transition duration-300 transform hover:scale-105"
-        >
-          Sign Up
-        </button>
-      </motion.div>
-
-      {/* Footer */}
-      <footer className="absolute bottom-4 text-[#9CA3AF] text-sm">
-        © {new Date().getFullYear()} My Auction. All rights reserved.
-      </footer>
+        {/* Bidding Items */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full max-w-7xl">
+          {products.map((product) => (
+            <BiddingCard
+              key={product.id}
+              title={product.title}
+              price={product.price}
+              image={product.image}
+              description={product.description}
+            />
+          ))}
+        </div>
+      </div>
+      <Footer />
     </div>
   );
 }
