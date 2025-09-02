@@ -1,9 +1,9 @@
 package com.bidding.backend.config;
 
-import com.bidding.backend.entity.BidItem;
+import com.bidding.backend.entity.Item;
 import com.bidding.backend.entity.BiddingRoom;
 import com.bidding.backend.entity.User;
-import com.bidding.backend.repository.BidItemRepository;
+import com.bidding.backend.repository.ItemRepository;
 import com.bidding.backend.repository.BiddingRoomRepository;
 import com.bidding.backend.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -20,7 +20,7 @@ public class DataSeeder {
 
     @Bean
     CommandLineRunner initDatabase(UserRepository userRepo,
-                                   BidItemRepository bidItemRepo,
+                                   ItemRepository bidItemRepo,
                                    BiddingRoomRepository biddingRoomRepo) {
         return args -> {
             userRepo.deleteAll();
@@ -42,13 +42,13 @@ public class DataSeeder {
             userRepo.saveAll(List.of(alice, bob, carol, tony));
 
             // ---- BID ITEMS ----
-            BidItem laptop = new BidItem("Gaming Laptop", "RTX 4060, 16GB RAM, 1TB SSD",
+            Item laptop = new Item("Gaming Laptop", "RTX 4060, 16GB RAM, 1TB SSD",
                     alice.getId(), 1000.0, "Electronics", List.of("laptop", "gaming"));
 
-            BidItem phone  = new BidItem("iPhone 14", "128GB, Midnight Black",
+            Item phone  = new Item("iPhone 14", "128GB, Midnight Black",
                     bob.getId(), 800.0, "Electronics", List.of("smartphone", "apple"));
 
-            BidItem bike   = new BidItem("Mountain Bike", "21 speed, lightweight frame",
+            Item bike   = new Item("Mountain Bike", "21 speed, lightweight frame",
                     carol.getId(), 300.0, "Sports", List.of("bike", "outdoor"));
             bidItemRepo.saveAll(List.of(laptop, phone, bike));
 

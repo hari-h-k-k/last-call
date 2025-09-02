@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.List;
 
 @Document(collection = "bid_items")
-public class BidItem {
+public class Item {
 
     @Id
     private String id;
@@ -23,7 +23,7 @@ public class BidItem {
 
     private List<String> tags;
 
-    public BidItem(String title, String description, String sellerId, double startingPrice, String category, List<String> tags) {
+    public Item(String title, String description, String sellerId, double startingPrice, String category, List<String> tags) {
         this.title = title;
         this.description = description;
         this.sellerId = sellerId;
@@ -32,7 +32,7 @@ public class BidItem {
         this.tags = tags;
     }
 
-    public BidItem() {
+    public Item() {
     }
 
     public String getId() {

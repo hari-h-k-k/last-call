@@ -4,6 +4,7 @@ import com.bidding.backend.commonUtils.ResponseBuilder;
 import com.bidding.backend.entity.User;
 import com.bidding.backend.repository.UserRepository;
 import com.bidding.backend.jwtUtils.JwtUtil;
+import com.bidding.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,20 +17,19 @@ import java.util.Map;
 public class AuthController {
 
     private JwtUtil jwtUtil;
-
-    private UserRepository userRepository;
+    private UserService userService;
 
     @Autowired
-    public AuthController(UserRepository userRepository, JwtUtil jwtUtil) {
+    public AuthController(UserService userService, JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
-        this.userRepository = userRepository;
+        this.userService = userService;
     }
 
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody User user) {
-        if (userRepository.existsByUsername(user.getUsername())) {
+        if (userService.userExists(user)) {
             Map<String, Object> response = new ResponseBuilder()
                     .setStatus("error")
                     .setMessage("Username already taken!")
@@ -38,7 +38,7 @@ public class AuthController {
         }
 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        userService.saveUser(user);
 
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
@@ -53,7 +53,7 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody User user) {
-        User foundUser = userRepository.findByUsername(user.getUsername());
+        User foundUser = userService.findUser(user);
         if (foundUser != null && passwordEncoder.matches(user.getPassword(), foundUser.getPassword())) {
             String token = jwtUtil.generateToken(foundUser.getUsername());
 

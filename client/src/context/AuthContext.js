@@ -8,7 +8,7 @@ export const AuthProvider = ({ children }) => {
   const login = (username, token) => {
     sessionStorage.setItem(
         "userInfo",
-        JSON.stringify({ username: username, token: token })
+        JSON.stringify({ id: id, username: username, token: token })
     );
     setAuthToken(token); // sync token with Axios
   };
@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     sessionStorage.setItem(
         "userInfo",
-        JSON.stringify({ username: "", token: "" })
+        JSON.stringify({ id: "", username: "", token: "" })
     );
     setAuthToken(null); // clear token
   };
