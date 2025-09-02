@@ -20,7 +20,7 @@ public class BiddingRoom {
 
     private String status;
 
-    private List<Integer> listOfUserIds;
+    private List<String> listOfUserIds;
 
     private double currentPrice;
 
@@ -30,7 +30,7 @@ public class BiddingRoom {
 
     private String winnerId;
 
-    public BiddingRoom(String itemId, Date startDate, Date endDate, String status, List<Integer> listOfUserIds, double currentPrice, Date createdAt, Date updatedAt, String winnerId) {
+    public BiddingRoom(String itemId, Date startDate, Date endDate, String status, List<String> listOfUserIds, double currentPrice, Date createdAt, Date updatedAt, String winnerId) {
         this.itemId = itemId;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -85,11 +85,11 @@ public class BiddingRoom {
         this.status = status;
     }
 
-    public List<Integer> getListOfUserIds() {
+    public List<String> getListOfUserIds() {
         return listOfUserIds;
     }
 
-    public void setListOfUserIds(List<Integer> listOfUserIds) {
+    public void setListOfUserIds(List<String> listOfUserIds) {
         this.listOfUserIds = listOfUserIds;
     }
 

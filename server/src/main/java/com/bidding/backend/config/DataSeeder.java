@@ -6,6 +6,9 @@ import com.bidding.backend.entity.User;
 import com.bidding.backend.repository.ItemRepository;
 import com.bidding.backend.repository.BiddingRoomRepository;
 import com.bidding.backend.repository.UserRepository;
+import com.bidding.backend.service.BiddingRoomService;
+import com.bidding.backend.service.ItemService;
+import com.bidding.backend.service.UserService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,37 +23,76 @@ public class DataSeeder {
 
     @Bean
     CommandLineRunner initDatabase(UserRepository userRepo,
-                                   ItemRepository bidItemRepo,
-                                   BiddingRoomRepository biddingRoomRepo) {
+                                   UserService userService,
+                                   ItemRepository itemRepo,
+                                   ItemService itemService,
+                                   BiddingRoomRepository biddingRoomRepo,
+                                   BiddingRoomService biddingRoomService) {
         return args -> {
             userRepo.deleteAll();
-            bidItemRepo.deleteAll();
+            itemRepo.deleteAll();
             biddingRoomRepo.deleteAll();
 
             PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
             // ---- USERS ---- (passwords are hashed)
-            User alice = new User("Alice Smith", "alice", "alice@example.com",
-                    passwordEncoder.encode("password123"));
-            User bob   = new User("Bob Johnson", "bob", "bob@example.com",
-                    passwordEncoder.encode("qwerty"));
-            User carol = new User("Carol Lee", "carol", "carol@example.com",
-                    passwordEncoder.encode("password678"));
+            User steve = new User("Steve Rogers", "steve", "steve@rogers.com",
+                    passwordEncoder.encode("rogers"));
+            User uncle   = new User("Uncle Ben", "uncle", "uncle@ben.com",
+                    passwordEncoder.encode("ben"));
+            User peter = new User("Peter Parker", "peter", "peter@parker.com",
+                    passwordEncoder.encode("parker"));
             User tony = new User("Tony Stark", "tony", "tony@stark.com",
                     passwordEncoder.encode("stark"));
 
-            userRepo.saveAll(List.of(alice, bob, carol, tony));
+            userService.saveUser(steve);
+            userService.saveUser(uncle);
+            userService.saveUser(peter);
+            userService.saveUser(tony);
+
+            Date now = new Date();
 
             // ---- BID ITEMS ----
             Item laptop = new Item("Gaming Laptop", "RTX 4060, 16GB RAM, 1TB SSD",
-                    alice.getId(), 1000.0, "Electronics", List.of("laptop", "gaming"));
+                    steve.getId(),
+                    new Date(now.getTime() + 1000 * 60 * 60),     // registration closes in 1h
+                    new Date(now.getTime() + 1000 * 60 * 60 * 2), // bidding starts in 2h
+                    1000.0, "Electronics", List.of("laptop", "gaming"));
+            laptop.setRegisteredUsersIds(List.of(uncle.getId(), peter.getId()));
 
-            Item phone  = new Item("iPhone 14", "128GB, Midnight Black",
-                    bob.getId(), 800.0, "Electronics", List.of("smartphone", "apple"));
+            Item phone = new Item("iPhone 14", "128GB, Midnight Black",
+                    uncle.getId(),
+                    new Date(now.getTime() + 1000 * 60 * 60 * 3), // closes in 3h
+                    new Date(now.getTime() + 1000 * 60 * 60 * 4), // starts in 4h
+                    800.0, "Electronics", List.of("smartphone", "apple"));
+            phone.setRegisteredUsersIds(List.of(steve.getId(), tony.getId()));
 
-            Item bike   = new Item("Mountain Bike", "21 speed, lightweight frame",
-                    carol.getId(), 300.0, "Sports", List.of("bike", "outdoor"));
-            bidItemRepo.saveAll(List.of(laptop, phone, bike));
+            Item bike = new Item("Mountain Bike", "21 speed, lightweight frame",
+                    peter.getId(),
+                    new Date(now.getTime() + 1000 * 60 * 20), // closes in 20 min
+                    new Date(now.getTime() + 1000 * 60 * 30), // starts in 30 min
+                    300.0, "Sports", List.of("bike", "outdoor"));
+            bike.setRegisteredUsersIds(List.of(steve.getId(), uncle.getId()));
+
+//            Item car = new Item("SUV", "4x4, 4-cylinder engine",
+//                    tony.getId(),
+//                    new Date(now.getTime() + 1000 * 60 * 20), // closes in 20 min
+//                    new Date(now.getTime() + 1000 * 60 * 10), // starts in 30 min
+//                    300.0, "Sports", List.of("car", "outdoor"));
+//            car.setRegisteredUsersIds(List.of(alice.getId(), bob.getId()));
+
+            Item house = new Item("House", "3BHK",
+                    tony.getId(),
+                    new Date(now.getTime() - 1000 * 60 * 60 * 100),
+                    new Date(now.getTime() - 1000 * 60 * 60 * 80),
+                    300.0, "Property", List.of("property", "house"));
+            house.setRegisteredUsersIds(List.of(steve.getId(), uncle.getId()));
+
+            itemService.saveItem(laptop);
+            itemService.saveItem(phone);
+            itemService.saveItem(bike);
+//            itemService.saveItem(car);
+            itemService.saveItem(house);
 
             // ---- BIDDING ROOMS ----
             BiddingRoom room1 = new BiddingRoom();
@@ -58,7 +100,7 @@ public class DataSeeder {
             room1.setStartDate(new Date());
             room1.setEndDate(new Date(System.currentTimeMillis() + 1000 * 60 * 60));
             room1.setStatus("ACTIVE");
-            room1.setListOfUserIds(List.of(bob.getId().hashCode(), carol.getId().hashCode()));
+            room1.setListOfUserIds(List.of(uncle.getId(), peter.getId()));
             room1.setCurrentPrice(1100.0);
             room1.setCreatedAt(new Date());
             room1.setUpdatedAt(new Date());
@@ -69,14 +111,14 @@ public class DataSeeder {
             room2.setStartDate(new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 2));
             room2.setEndDate(new Date(System.currentTimeMillis() - 1000 * 60 * 30));
             room2.setStatus("ENDED");
-            room2.setListOfUserIds(List.of(alice.getId().hashCode(), carol.getId().hashCode()));
+            room2.setListOfUserIds(List.of(steve.getId(), peter.getId()));
             room2.setCurrentPrice(950.0);
             room2.setCreatedAt(new Date());
             room2.setUpdatedAt(new Date());
-            room2.setWinnerId(alice.getId()); // Alice won
+            room2.setWinnerId(steve.getId()); // Alice won
 
-            biddingRoomRepo.saveAll(List.of(room1, room2));
+            biddingRoomService.saveBiddingRoom(room1);
+            biddingRoomService.saveBiddingRoom(room2);
         };
     }
 }
-

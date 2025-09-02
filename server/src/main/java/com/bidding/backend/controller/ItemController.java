@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.util.Date;
 import java.util.Map;
 
 @RestController
@@ -45,20 +46,40 @@ public class ItemController {
         return ResponseEntity.status(200).body(response);
     }
 
-    @GetMapping("/get-items/{id}")
-    public ResponseEntity<?> getItem(@PathVariable String id) {
+    @GetMapping("/get-items/{itemId}")
+    public ResponseEntity<?> getItem(@PathVariable String itemId) {
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
                 .setMessage("Item fetched successfully!")
                 .setInfo(Map.of(
-                        "item", itemService.getItem(id)
+                        "item", itemService.getItem(itemId)
                 ))
                 .build();
         return ResponseEntity.status(200).body(response);
     }
 
+    @GetMapping("/get-upcoming-items")
+    public ResponseEntity<?> getUpcomingItems(@RequestHeader String userId) {
+        Map<Item, Date> upcomingItemsMap = itemService.getUpcomingItems(userId);
 
+        Map<String, Object> response = new ResponseBuilder()
+                .setStatus("success")
+                .setMessage("Item fetched successfully!")
+                .setInfo(Map.of(
+                        "upcomingItemsMap", upcomingItemsMap
+                ))
+                .build();
+        return ResponseEntity.status(200).body(response);
+    }
 
-
+    @PutMapping("/item-register")
+    public ResponseEntity<?> itemRegisterUser(@RequestHeader String itemId, @RequestHeader String userId) {
+        itemService.itemRegisterUser(itemId, userId);
+        Map<String, Object> response = new ResponseBuilder()
+                .setStatus("success")
+                .setMessage("User registered interest successfully!")
+                .build();
+        return ResponseEntity.status(200).body(response);
+    }
 
 }

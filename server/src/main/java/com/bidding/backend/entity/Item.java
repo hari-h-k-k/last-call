@@ -3,6 +3,7 @@ package com.bidding.backend.entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Date;
 import java.util.List;
 
 @Document(collection = "bid_items")
@@ -17,16 +18,24 @@ public class Item {
 
     private String sellerId;
 
+    private Date registrationClosingDate;
+
+    private Date bidStartDate;
+
     private double startingPrice;
 
     private String category;
 
     private List<String> tags;
 
-    public Item(String title, String description, String sellerId, double startingPrice, String category, List<String> tags) {
+    private List<String> registeredUsersIds;
+
+    public Item(String title, String description, String sellerId, Date registrationClosingDate, Date bidStartDate, double startingPrice, String category, List<String> tags) {
         this.title = title;
         this.description = description;
         this.sellerId = sellerId;
+        this.bidStartDate = bidStartDate;
+        this.registrationClosingDate = registrationClosingDate;
         this.startingPrice = startingPrice;
         this.category = category;
         this.tags = tags;
@@ -67,6 +76,23 @@ public class Item {
         this.sellerId = sellerId;
     }
 
+    public Date getRegistrationClosingDate() {
+        return registrationClosingDate;
+    }
+
+    public void setRegistrationClosingDate(Date registrationClosingDate) {
+        this.registrationClosingDate = registrationClosingDate;
+    }
+
+    public Date getBidStartDate() {
+        return bidStartDate;
+    }
+
+    public void setBidStartDate(Date bidStartDate) {
+        this.bidStartDate = bidStartDate;
+    }
+
+
     public double getStartingPrice() {
         return startingPrice;
     }
@@ -91,16 +117,31 @@ public class Item {
         this.tags = tags;
     }
 
+    public List<String> getRegisteredUsersIds() {
+        return registeredUsersIds;
+    }
+
+    public void setRegisteredUsersIds(List<String> registeredUsersIds) {
+        this.registeredUsersIds = registeredUsersIds;
+    }
+
+    public void addUserToRegisteredUsersList(String userId) {
+        registeredUsersIds.add(userId);
+    }
+
     @Override
     public String toString() {
-        return "BidItem{" +
-                "id=" + id +
+        return "Item{" +
+                "id='" + id + '\'' +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", sellerId=" + sellerId +
+                ", sellerId='" + sellerId + '\'' +
+                ", registrationClosingDate=" + registrationClosingDate +
+                ", bidStartDate=" + bidStartDate +
                 ", startingPrice=" + startingPrice +
                 ", category='" + category + '\'' +
                 ", tags=" + tags +
+                ", registeredUsersIds=" + registeredUsersIds +
                 '}';
     }
 }
