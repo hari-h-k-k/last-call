@@ -1,6 +1,6 @@
 package com.bidding.backend.controller;
 
-import com.bidding.backend.commonUtils.ResponseBuilder;
+import com.bidding.backend.utils.common.ResponseBuilder;
 import com.bidding.backend.entity.Item;
 import com.bidding.backend.service.ItemService;
 
@@ -25,7 +25,7 @@ public class ItemController {
     }
 
     @PostMapping("/place-item")
-    public ResponseEntity<?> placeItem(@RequestBody Item item) {
+    public ResponseEntity<Object> placeItem(@RequestBody Item item) {
         itemService.saveItem(item);
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
@@ -35,7 +35,7 @@ public class ItemController {
     }
 
     @GetMapping("/get-items")
-    public ResponseEntity<?> getItems() {
+    public ResponseEntity<Object> getItems() {
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
                 .setMessage("Items fetched successfully!")
@@ -47,7 +47,7 @@ public class ItemController {
     }
 
     @GetMapping("/get-items/{itemId}")
-    public ResponseEntity<?> getItem(@PathVariable String itemId) {
+    public ResponseEntity<Object> getItem(@PathVariable String itemId) {
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
                 .setMessage("Item fetched successfully!")
@@ -59,7 +59,7 @@ public class ItemController {
     }
 
     @GetMapping("/get-upcoming-items")
-    public ResponseEntity<?> getUpcomingItems(@RequestHeader String userId) {
+    public ResponseEntity<Object> getUpcomingItems(@RequestHeader String userId) {
         Map<Item, Date> upcomingItemsMap = itemService.getUpcomingItems(userId);
 
         Map<String, Object> response = new ResponseBuilder()
@@ -73,7 +73,7 @@ public class ItemController {
     }
 
     @PutMapping("/item-register")
-    public ResponseEntity<?> itemRegisterUser(@RequestHeader String itemId, @RequestHeader String userId) {
+    public ResponseEntity<Object> itemRegisterUser(@RequestHeader String itemId, @RequestHeader String userId) {
         itemService.itemRegisterUser(itemId, userId);
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")

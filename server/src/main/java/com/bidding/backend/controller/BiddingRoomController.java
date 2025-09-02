@@ -10,11 +10,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class BiddingRoomController {
 
-    @Autowired
     private BiddingRoomService biddingRoomService;
 
-    @Autowired
     private UserService userService;
 
-
+    @Autowired
+    public BiddingRoomController(BiddingRoomService biddingRoomService, UserService userService) {
+        this.biddingRoomService = biddingRoomService;
+        this.userService = userService;
+    }
 }

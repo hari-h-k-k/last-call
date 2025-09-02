@@ -2,7 +2,7 @@ package com.bidding.backend.controller;
 
 import com.bidding.backend.entity.User;
 import com.bidding.backend.service.UserService;
-import com.bidding.backend.jwtUtils.JwtUtil;
+import com.bidding.backend.utils.jwt.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.*;
 

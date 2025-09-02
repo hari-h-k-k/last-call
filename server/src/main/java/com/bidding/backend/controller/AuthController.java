@@ -1,9 +1,8 @@
 package com.bidding.backend.controller;
 
-import com.bidding.backend.commonUtils.ResponseBuilder;
+import com.bidding.backend.utils.common.ResponseBuilder;
 import com.bidding.backend.entity.User;
-import com.bidding.backend.repository.UserRepository;
-import com.bidding.backend.jwtUtils.JwtUtil;
+import com.bidding.backend.utils.jwt.JwtUtil;
 import com.bidding.backend.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +27,7 @@ public class AuthController {
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody User user) {
+    public ResponseEntity<Object> register(@RequestBody User user) {
         if (userService.userExists(user)) {
             Map<String, Object> response = new ResponseBuilder()
                     .setStatus("error")
@@ -52,7 +51,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody User user) {
+    public ResponseEntity<Object> login(@RequestBody User user) {
         User foundUser = userService.findUser(user);
         if (foundUser != null && passwordEncoder.matches(user.getPassword(), foundUser.getPassword())) {
             String token = jwtUtil.generateToken(foundUser.getUsername());

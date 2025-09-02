@@ -1,4 +1,4 @@
-package com.bidding.backend.commonUtils;
+package com.bidding.backend.utils.common;
 
 import java.util.HashMap;
 import java.util.Map;

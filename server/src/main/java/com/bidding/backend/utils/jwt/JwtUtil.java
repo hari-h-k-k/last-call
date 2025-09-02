@@ -1,4 +1,4 @@
-package com.bidding.backend.jwtUtils;
+package com.bidding.backend.utils.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

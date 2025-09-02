@@ -1,6 +1,6 @@
 package com.bidding.backend.config;
 
-import com.bidding.backend.jwtUtils.JwtFilter;
+import com.bidding.backend.utils.jwt.JwtFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

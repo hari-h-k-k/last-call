@@ -1,4 +1,4 @@
-package com.bidding.backend.jwtUtils;
+package com.bidding.backend.utils.jwt;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
