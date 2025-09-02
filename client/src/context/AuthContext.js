@@ -5,7 +5,7 @@ import { setAuthToken } from "../lib/auth";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const login = (username, token) => {
+  const login = (id, username, token) => {
     sessionStorage.setItem(
         "userInfo",
         JSON.stringify({ id: id, username: username, token: token })

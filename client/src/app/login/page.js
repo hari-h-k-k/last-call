@@ -3,12 +3,15 @@ import { useState, useEffect } from "react";
 import AuthForm from "@/components/AuthForm";
 import api from "../../lib/axios";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/"; // Default to home if not provided
+
+  const { login } = useAuth();
 
   const handleLogin = async ({ username, password }) => {
     setLoading(true);
@@ -18,12 +21,7 @@ export default function LoginPage() {
 
       if (response.status === 200) {
         // Save session info
-        const { username: user, token } = response.data.info;
-        sessionStorage.setItem(
-          "userInfo",
-          JSON.stringify({ username: user, token })
-        );
-
+        login(response.data.info.id, response.data.info.username, response.data.info.token);
         // Redirect back to original page
         router.replace(redirectTo);
       }
