@@ -58,35 +58,35 @@ public class DataSeeder {
                     new Date(now.getTime() + 1000 * 60 * 60),     // registration closes in 1h
                     new Date(now.getTime() + 1000 * 60 * 60 * 2), // bidding starts in 2h
                     1000.0, "Electronics", List.of("laptop", "gaming"));
-            laptop.setRegisteredUsersIds(List.of(uncle.getId(), peter.getId()));
+            laptop.setSubscribersId(List.of(uncle.getId(), peter.getId()));
 
             Item phone = new Item("iPhone 14", "128GB, Midnight Black",
                     uncle.getId(),
                     new Date(now.getTime() + 1000 * 60 * 60 * 3), // closes in 3h
                     new Date(now.getTime() + 1000 * 60 * 60 * 4), // starts in 4h
                     800.0, "Electronics", List.of("smartphone", "apple"));
-            phone.setRegisteredUsersIds(List.of(steve.getId(), tony.getId()));
+            phone.setSubscribersId(List.of(steve.getId(), tony.getId()));
 
             Item bike = new Item("Mountain Bike", "21 speed, lightweight frame",
                     peter.getId(),
                     new Date(now.getTime() + 1000 * 60 * 20), // closes in 20 min
                     new Date(now.getTime() + 1000 * 60 * 30), // starts in 30 min
                     300.0, "Sports", List.of("bike", "outdoor"));
-            bike.setRegisteredUsersIds(List.of(steve.getId(), uncle.getId()));
+            bike.setSubscribersId(List.of(steve.getId(), uncle.getId()));
 
 //            Item car = new Item("SUV", "4x4, 4-cylinder engine",
 //                    tony.getId(),
 //                    new Date(now.getTime() + 1000 * 60 * 20), // closes in 20 min
 //                    new Date(now.getTime() + 1000 * 60 * 10), // starts in 30 min
 //                    300.0, "Sports", List.of("car", "outdoor"));
-//            car.setRegisteredUsersIds(List.of(alice.getId(), bob.getId()));
+//            car.setSubscribersId(List.of(steve.getId(), uncle.getId()));
 
             Item house = new Item("House", "3BHK",
                     tony.getId(),
                     new Date(now.getTime() - 1000 * 60 * 60 * 100),
                     new Date(now.getTime() - 1000 * 60 * 60 * 80),
                     300.0, "Property", List.of("property", "house"));
-            house.setRegisteredUsersIds(List.of(steve.getId(), uncle.getId()));
+            house.setSubscribersId(List.of(steve.getId(), uncle.getId()));
 
             itemService.saveItem(laptop);
             itemService.saveItem(phone);

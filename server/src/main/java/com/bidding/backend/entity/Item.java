@@ -28,7 +28,7 @@ public class Item {
 
     private List<String> tags;
 
-    private List<String> registeredUsersIds;
+    private List<String> subscribersId;
 
     public Item(String title, String description, String sellerId, Date registrationClosingDate, Date bidStartDate, double startingPrice, String category, List<String> tags) {
         this.title = title;
@@ -117,16 +117,16 @@ public class Item {
         this.tags = tags;
     }
 
-    public List<String> getRegisteredUsersIds() {
-        return registeredUsersIds;
+    public List<String> getSubscribersId() {
+        return subscribersId;
     }
 
-    public void setRegisteredUsersIds(List<String> registeredUsersIds) {
-        this.registeredUsersIds = registeredUsersIds;
+    public void setSubscribersId(List<String> subscribersId) {
+        this.subscribersId = subscribersId;
     }
 
-    public void addUserToRegisteredUsersList(String userId) {
-        registeredUsersIds.add(userId);
+    public void addUserToSubscribersList(String userId) {
+        subscribersId.add(userId);
     }
 
     @Override
@@ -141,7 +141,7 @@ public class Item {
                 ", startingPrice=" + startingPrice +
                 ", category='" + category + '\'' +
                 ", tags=" + tags +
-                ", registeredUsersIds=" + registeredUsersIds +
+                ", subscribersId=" + subscribersId +
                 '}';
     }
 }

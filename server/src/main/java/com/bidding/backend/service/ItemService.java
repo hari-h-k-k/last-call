@@ -66,7 +66,7 @@ public class ItemService {
             throw new IllegalArgumentException("User cannot express interest on the item they listed");
         }
 
-        item.addUserToRegisteredUsersList(userId);
+        item.addUserToSubscribersList(userId);
         itemRepository.save(item);
     }
 }
