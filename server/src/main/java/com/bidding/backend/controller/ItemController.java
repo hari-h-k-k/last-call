@@ -72,12 +72,32 @@ public class ItemController {
         return ResponseEntity.status(200).body(response);
     }
 
-    @PutMapping("/item-register")
-    public ResponseEntity<Object> itemRegisterUser(@RequestHeader String itemId, @RequestHeader String userId) {
-        itemService.itemRegisterUser(itemId, userId);
+    @PutMapping("/item-subscribe")
+    public ResponseEntity<Object> itemSubscribe(@RequestHeader String itemId, @RequestHeader String userId) {
+        itemService.itemSubscribe(itemId, userId, true);
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
-                .setMessage("User registered interest successfully!")
+                .setMessage("User subscribed to item successfully!")
+                .build();
+        return ResponseEntity.status(200).body(response);
+    }
+
+    @PutMapping("/item-unsubscribe")
+    public ResponseEntity<Object> itemUnsubscribe(@RequestHeader String itemId, @RequestHeader String userId) {
+        itemService.itemSubscribe(itemId, userId, false);
+        Map<String, Object> response = new ResponseBuilder()
+                .setStatus("success")
+                .setMessage("User unsubscribed from item successfully!")
+                .build();
+        return ResponseEntity.status(200).body(response);
+    }
+
+    @PutMapping("/update-item")
+    public ResponseEntity<Object> itemRegisterUser(@RequestBody Item item) {
+        itemService.updateItem(item);
+        Map<String, Object> response = new ResponseBuilder()
+                .setStatus("success")
+                .setMessage("User subscribed to item successfully!")
                 .build();
         return ResponseEntity.status(200).body(response);
     }

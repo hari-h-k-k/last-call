@@ -1,6 +1,8 @@
 package com.bidding.backend.service;
 
 import com.bidding.backend.entity.Item;
+import com.bidding.backend.observer.ItemObserver;
+import com.bidding.backend.observer.NotificationService;
 import com.bidding.backend.repository.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,9 +15,12 @@ public class ItemService {
     @Autowired
     private ItemRepository itemRepository;
 
+    private final List<ItemObserver> observers = new ArrayList<>();
+
     @Autowired
-    public ItemService(ItemRepository itemRepository) {
+    public ItemService(ItemRepository itemRepository, NotificationService notificationService) {
         this.itemRepository = itemRepository;
+        this.observers.add(notificationService);
     }
 
     public ItemService() {
@@ -51,22 +56,59 @@ public class ItemService {
         return itemDateMap;
     }
 
-    public void itemRegisterUser(String itemId, String userId) {
+    public void itemSubscribe(String itemId, String userId, boolean subscribeAction) {
         Item item = this.getItem(itemId);
         List<Item> itemsList = itemRepository.getItemsByRegistrationClosingDate(new Date());
 
-        boolean itemFound = itemsList.stream()
-                .anyMatch(i -> i.getId().equals(item.getId()));
+        if(subscribeAction) {
+            boolean itemFound = itemsList.stream()
+                    .anyMatch(i -> i.getId().equals(item.getId()));
 
-        if (!itemFound) {
-            throw new IllegalArgumentException("Deadline exceeded to express interest on this item");
+            if (!itemFound) {
+                throw new IllegalArgumentException("Deadline exceeded to express interest on this item");
+            }
+
+            if (item.getSellerId().equals(userId)) {
+                throw new IllegalArgumentException("User cannot express interest on the item they listed");
+            }
+
+            item.addUserToSubscribersList(userId);
+        } else {
+            item.removeUserFromSubscribersList(userId);
         }
 
-        if (item.getSellerId().equals(userId)) {
-            throw new IllegalArgumentException("User cannot express interest on the item they listed");
-        }
-
-        item.addUserToSubscribersList(userId);
         itemRepository.save(item);
+    }
+
+    private void notifyObservers(Item item, List<String> alerts) {
+        for (ItemObserver observer : observers) {
+            observer.onItemUpdated(item, alerts);
+        }
+    }
+
+    public void updateItem(Item item) {
+        Item oldItem = this.getItem(item.getId());
+
+        List<String> alerts = new ArrayList<>();
+
+        if(!oldItem.getRegistrationClosingDate().toString().equals(item.getRegistrationClosingDate().toString())) {
+            alerts.add(String.format("Registration Closing Date of %s was updated.", item.getTitle()));
+        }
+
+        if(!oldItem.getBidStartDate().toString().equals(item.getBidStartDate().toString())) {
+            alerts.add(String.format("Bid Start Date of %s was updated.", item.getTitle()));
+        }
+
+        if(oldItem.getStartingPrice() != item.getStartingPrice()) {
+            alerts.add(String.format("Starting Price of %s was updated.", item.getTitle()));
+        }
+
+        if(alerts.isEmpty()) {
+            alerts.add(String.format("%s in your watchlist was updated.", item.getTitle()));
+        }
+
+        itemRepository.save(item);
+
+        notifyObservers(item, alerts);
     }
 }

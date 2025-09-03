@@ -129,6 +129,10 @@ public class Item {
         subscribersId.add(userId);
     }
 
+    public void removeUserFromSubscribersList(String userId) {
+        subscribersId.remove(userId);
+    }
+
     @Override
     public String toString() {
         return "Item{" +
