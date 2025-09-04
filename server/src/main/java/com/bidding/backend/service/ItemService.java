@@ -5,6 +5,9 @@ import com.bidding.backend.observer.ItemObserver;
 import com.bidding.backend.observer.NotificationService;
 import com.bidding.backend.repository.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -15,16 +18,17 @@ public class ItemService {
     @Autowired
     private ItemRepository itemRepository;
 
+    private final MongoTemplate mongoTemplate;
+
     private final List<ItemObserver> observers = new ArrayList<>();
 
     @Autowired
-    public ItemService(ItemRepository itemRepository, NotificationService notificationService) {
+    public ItemService(ItemRepository itemRepository, NotificationService notificationService, MongoTemplate mongoTemplate) {
         this.itemRepository = itemRepository;
+        this.mongoTemplate = mongoTemplate;
         this.observers.add(notificationService);
     }
 
-    public ItemService() {
-    }
 
     public void saveItem(Item item) {
         if (item.getRegistrationClosingDate().after(item.getBidStartDate())) {
@@ -118,5 +122,23 @@ public class ItemService {
         itemRepository.save(item);
 
         notifyObservers(item, alerts);
+    }
+
+    public List<Item> searchItems(String input) {
+        String[] words = input.trim().split("\\s+");
+
+        // Build OR criteria
+        Criteria[] orCriteria = new Criteria[words.length * 4]; // 4 fields per word
+        int index = 0;
+
+        for (String word : words) {
+            orCriteria[index++] = Criteria.where("title").regex(word, "i");
+            orCriteria[index++] = Criteria.where("description").regex(word, "i");
+            orCriteria[index++] = Criteria.where("category").regex(word, "i");
+            orCriteria[index++] = Criteria.where("tags").in(word);
+        }
+
+        Query query = new Query(new Criteria().orOperator(orCriteria));
+        return mongoTemplate.find(query, Item.class);
     }
 }

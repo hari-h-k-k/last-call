@@ -124,4 +124,13 @@ public class ItemController {
         return ResponseEntity.status(200).body(response);
     }
 
+    @GetMapping("/search-items")
+    public ResponseEntity<Object> searchItems(@RequestParam String input) {
+        Map<String, Object> response = new ResponseBuilder()
+                .setStatus("success")
+                .setMessage("Categories fetched successfully!")
+                .setInfo(List.of(itemService.searchItems(input)))
+                .build();
+        return ResponseEntity.status(200).body(response);
+    }
 }
