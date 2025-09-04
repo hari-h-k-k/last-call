@@ -12,6 +12,8 @@ public interface ItemRepository extends MongoRepository<Item, String> {
 
     Optional<Item> findById(String id);
 
+    List<Item> findBySellerId(String id);
+
     @Query("{ 'registrationClosingDate': { $gt: ?0 }, 'sellerId': { $ne: ?1 } }")
     List<Item> getItemsByRegistrationClosingDateAndNotOwnedByUser(Date date, String userId);
 

@@ -41,6 +41,10 @@ public class ItemService {
         return itemRepository.findAll();
     }
 
+    public List<Item> getAllItemsBySellerId(String userId) {
+        return itemRepository.findBySellerId(userId);
+    }
+
     public Map<Item, Date> getUpcomingItems(String userId) {
         Date now = new Date();
 

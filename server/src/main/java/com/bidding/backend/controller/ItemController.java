@@ -34,6 +34,18 @@ public class ItemController {
         return ResponseEntity.status(200).body(response);
     }
 
+    @GetMapping("/get-item/{itemId}")
+    public ResponseEntity<Object> getItem(@PathVariable String itemId) {
+        Map<String, Object> response = new ResponseBuilder()
+                .setStatus("success")
+                .setMessage("Item fetched successfully!")
+                .setInfo(Map.of(
+                        "item", itemService.getItem(itemId)
+                ))
+                .build();
+        return ResponseEntity.status(200).body(response);
+    }
+
     @GetMapping("/get-items")
     public ResponseEntity<Object> getItems() {
         Map<String, Object> response = new ResponseBuilder()
@@ -46,13 +58,13 @@ public class ItemController {
         return ResponseEntity.status(200).body(response);
     }
 
-    @GetMapping("/get-items/{itemId}")
-    public ResponseEntity<Object> getItem(@PathVariable String itemId) {
+    @GetMapping("/get-items/{userId}")
+    public ResponseEntity<Object> getItems(@PathVariable String userId) {
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
-                .setMessage("Item fetched successfully!")
+                .setMessage("Items fetched successfully!")
                 .setInfo(Map.of(
-                        "item", itemService.getItem(itemId)
+                        "items", itemService.getAllItemsBySellerId(userId)
                 ))
                 .build();
         return ResponseEntity.status(200).body(response);
