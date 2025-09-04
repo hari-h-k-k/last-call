@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -34,40 +35,28 @@ public class ItemController {
         return ResponseEntity.status(200).body(response);
     }
 
-    @GetMapping("/get-item/{itemId}")
-    public ResponseEntity<Object> getItem(@PathVariable String itemId) {
-        Map<String, Object> response = new ResponseBuilder()
-                .setStatus("success")
-                .setMessage("Item fetched successfully!")
-                .setInfo(Map.of(
-                        "item", itemService.getItem(itemId)
-                ))
-                .build();
-        return ResponseEntity.status(200).body(response);
-    }
+    @GetMapping({"/items", "/items/{itemId}", "/items/user/{userId}"})
+    public ResponseEntity<Object> getItems(
+            @PathVariable(required = false) String itemId,
+            @PathVariable(required = false) String userId) {
 
-    @GetMapping("/get-items")
-    public ResponseEntity<Object> getItems() {
+        Map<String, Object> info = new HashMap<>();
+
+        if (itemId != null) {
+            info.put("item", itemService.getItem(itemId));
+        } else if (userId != null) {
+            info.put("items", itemService.getAllItemsBySellerId(userId));
+        } else {
+            info.put("items", itemService.getAllItems());
+        }
+
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
                 .setMessage("Items fetched successfully!")
-                .setInfo(Map.of(
-                        "items", itemService.getAllItems()
-                ))
+                .setInfo(info)
                 .build();
-        return ResponseEntity.status(200).body(response);
-    }
 
-    @GetMapping("/get-items/{userId}")
-    public ResponseEntity<Object> getItems(@PathVariable String userId) {
-        Map<String, Object> response = new ResponseBuilder()
-                .setStatus("success")
-                .setMessage("Items fetched successfully!")
-                .setInfo(Map.of(
-                        "items", itemService.getAllItemsBySellerId(userId)
-                ))
-                .build();
-        return ResponseEntity.status(200).body(response);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/get-upcoming-items")
