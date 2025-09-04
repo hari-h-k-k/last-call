@@ -33,6 +33,10 @@ public class ItemService {
         itemRepository.save(item);
     }
 
+    public void removeItem(String itemId) {
+        itemRepository.deleteById(itemId);
+    }
+
     public Item getItem(String id) {
         return itemRepository.findById(id).orElse(null);
     }

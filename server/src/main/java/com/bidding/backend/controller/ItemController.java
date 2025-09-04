@@ -102,6 +102,16 @@ public class ItemController {
         return ResponseEntity.status(200).body(response);
     }
 
+    @DeleteMapping("/remove-item/{itemId}")
+    public ResponseEntity<Object> removeItem(@PathVariable String itemId) {
+        itemService.removeItem(itemId);
+        Map<String, Object> response = new ResponseBuilder()
+                .setStatus("success")
+                .setMessage("Item removed successfully!")
+                .build();
+        return ResponseEntity.status(200).body(response);
+    }
+
     @GetMapping("/categories")
     public ResponseEntity<Object> getCategories() {
         Map<String, Object> response = new ResponseBuilder()
