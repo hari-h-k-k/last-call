@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 export default function ProPage() {
 
-  const { info } = useAuth();
   const router = useRouter();
+
+  const { info } = useAuth();
 
   useEffect(() => {
     if (!JSON.parse(sessionStorage.getItem("userInfo")).token) {

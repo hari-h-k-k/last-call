@@ -4,16 +4,16 @@ import { useRouter } from "next/navigation";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import AuctionCard from "../components/AuctionCard";
-import SearchResultCard from "../components/SearchResultCard";
+import { useAuth } from "../context/AuthContext";
 
 export default function HomePage() {
   const router = useRouter();
-
+  const { info } = useAuth();
   const initialUpcoming = Array.from({ length: 4 }).map((_, idx) => ({
     id: idx,
     title: `Upcoming Auction ${idx + 1}`,
     description: "Register now before it's too late!",
-    registrationClose: Date.now() + (idx + 1) * 70000,
+    registrationClose: Date.now() + (idx + 1) * 70000, // 70s * idx
   }));
 
   const initialLive = Array.from({ length: 4 }).map((_, idx) => ({
@@ -29,19 +29,27 @@ export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
 
-  // Countdown for upcoming auctions
+  // Remove expired auctions when the page is refreshed
+  useEffect(() => {
+    const now = Date.now();
+    const filteredUpcoming = initialUpcoming.filter(
+      (item) => item.registrationClose > now
+    );
+    setUpcoming(filteredUpcoming);
+  }, []);
+
+  // Countdown logic for upcoming auctions
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
       const newTimers = {};
-      const filteredUpcoming = upcoming.filter((item) => item.registrationClose > now);
 
-      filteredUpcoming.forEach((item) => {
-        newTimers[item.id] = item.registrationClose - now;
+      upcoming.forEach((item) => {
+        const timeLeft = item.registrationClose - now;
+        newTimers[item.id] = timeLeft > 0 ? timeLeft : 0;
       });
 
       setTimers(newTimers);
-      setUpcoming(filteredUpcoming);
     }, 1000);
 
     return () => clearInterval(interval);
@@ -81,7 +89,7 @@ export default function HomePage() {
             className="w-full sm:w-[60%] px-5 py-3 rounded-xl bg-[#1F2937] border border-[#374151] focus:outline-none focus:ring-2 focus:ring-[#2563EB] text-[#FFFFFF] placeholder-[#9CA3AF] shadow-lg"
           />
           <button
-            onClick={() => router.push("/create-listing")}
+            onClick={() => !JSON.parse(sessionStorage.getItem("userInfo")).token? router.push("/login"): router.push("/create-listing")}
             className="px-6 py-3 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] transition text-white font-semibold shadow-md"
           >
             + Create New Listing
@@ -97,7 +105,15 @@ export default function HomePage() {
                 const timeLeft = timers[item.id] || 0;
                 const minutes = Math.floor(timeLeft / 60000);
                 const seconds = Math.floor((timeLeft % 60000) / 1000);
-                return <AuctionCard key={item.id} item={item} type="upcoming" timer={{ minutes, seconds }} />;
+                return (
+                  <AuctionCard
+                    key={item.id}
+                    item={item}
+                    type="upcoming"
+                    timer={{ minutes, seconds }}
+                    isClosed={timeLeft <= 0}
+                  />
+                );
               })}
             </div>
           </section>
@@ -120,9 +136,20 @@ export default function HomePage() {
           <section className="bg-[#1F2937] rounded-2xl p-6 shadow-xl border border-[#2D3748]">
             <h2 className="text-2xl font-bold mb-5 text-[#FFFFFF]">🔍 Search Results</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {searchResults.map((item) => (
-                <SearchResultCard key={item.id} item={item} />
-              ))}
+              {searchResults.map((item) => {
+               const timeLeft = timers[item.id] || 0;
+               const minutes = Math.floor(timeLeft / 60000);
+               const seconds = Math.floor((timeLeft % 60000) / 1000);
+               return (
+                 <AuctionCard
+                   key={item.id}
+                   item={item}
+                   type="upcoming"
+                   timer={{ minutes, seconds }}
+                   isClosed={timeLeft <= 0}
+                 />
+               );
+             })}
             </div>
           </section>
         )}
