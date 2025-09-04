@@ -4,14 +4,13 @@ import com.bidding.backend.utils.common.ResponseBuilder;
 import com.bidding.backend.entity.Item;
 import com.bidding.backend.service.ItemService;
 
+import com.bidding.backend.utils.enums.ItemCategory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/auctions")
@@ -98,7 +97,19 @@ public class ItemController {
         itemService.updateItem(item);
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
-                .setMessage("User subscribed to item successfully!")
+                .setMessage("Item updated successfully!")
+                .build();
+        return ResponseEntity.status(200).body(response);
+    }
+
+    @GetMapping("/categories")
+    public ResponseEntity<Object> getCategories() {
+        Map<String, Object> response = new ResponseBuilder()
+                .setStatus("success")
+                .setMessage("Categories fetched successfully!")
+                .setInfo(List.of(Arrays.stream(ItemCategory.values())
+                        .map(Enum::name)
+                        .toList()))
                 .build();
         return ResponseEntity.status(200).body(response);
     }

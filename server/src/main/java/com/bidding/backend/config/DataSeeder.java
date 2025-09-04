@@ -9,6 +9,7 @@ import com.bidding.backend.repository.UserRepository;
 import com.bidding.backend.service.BiddingRoomService;
 import com.bidding.backend.service.ItemService;
 import com.bidding.backend.service.UserService;
+import com.bidding.backend.utils.enums.ItemCategory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,21 +58,21 @@ public class DataSeeder {
                     steve.getId(),
                     new Date(now.getTime() + 1000 * 60 * 60),     // registration closes in 1h
                     new Date(now.getTime() + 1000 * 60 * 60 * 2), // bidding starts in 2h
-                    1000.0, "Electronics", List.of("laptop", "gaming"));
+                    1000.0, ItemCategory.ELECTRONICS, List.of("laptop", "gaming"));
             laptop.setSubscribersId(List.of(uncle.getId(), peter.getId()));
 
             Item phone = new Item("iPhone 14", "128GB, Midnight Black",
                     uncle.getId(),
                     new Date(now.getTime() + 1000 * 60 * 60 * 3), // closes in 3h
                     new Date(now.getTime() + 1000 * 60 * 60 * 4), // starts in 4h
-                    800.0, "Electronics", List.of("smartphone", "apple"));
+                    800.0, ItemCategory.ELECTRONICS, List.of("smartphone", "apple"));
             phone.setSubscribersId(List.of(steve.getId(), tony.getId()));
 
             Item bike = new Item("Mountain Bike", "21 speed, lightweight frame",
                     peter.getId(),
                     new Date(now.getTime() + 1000 * 60 * 20), // closes in 20 min
                     new Date(now.getTime() + 1000 * 60 * 30), // starts in 30 min
-                    300.0, "Sports", List.of("bike", "outdoor"));
+                    300.0, ItemCategory.SPORTS, List.of("bike", "outdoor"));
             bike.setSubscribersId(List.of(steve.getId(), uncle.getId()));
 
 //            Item car = new Item("SUV", "4x4, 4-cylinder engine",
@@ -85,7 +86,7 @@ public class DataSeeder {
                     tony.getId(),
                     new Date(now.getTime() - 1000 * 60 * 60 * 100),
                     new Date(now.getTime() - 1000 * 60 * 60 * 80),
-                    300.0, "Property", List.of("property", "house"));
+                    300.0, ItemCategory.PROPERTY, List.of("property", "house"));
             house.setSubscribersId(List.of(steve.getId(), uncle.getId()));
 
             itemService.saveItem(laptop);

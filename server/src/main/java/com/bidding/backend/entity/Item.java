@@ -1,5 +1,6 @@
 package com.bidding.backend.entity;
 
+import com.bidding.backend.utils.enums.ItemCategory;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -24,13 +25,13 @@ public class Item {
 
     private double startingPrice;
 
-    private String category;
+    private ItemCategory category;
 
     private List<String> tags;
 
     private List<String> subscribersId;
 
-    public Item(String title, String description, String sellerId, Date registrationClosingDate, Date bidStartDate, double startingPrice, String category, List<String> tags) {
+    public Item(String title, String description, String sellerId, Date registrationClosingDate, Date bidStartDate, double startingPrice, ItemCategory category, List<String> tags) {
         this.title = title;
         this.description = description;
         this.sellerId = sellerId;
@@ -101,11 +102,11 @@ public class Item {
         this.startingPrice = startingPrice;
     }
 
-    public String getCategory() {
+    public ItemCategory getCategory() {
         return category;
     }
 
-    public void setCategory(String category) {
+    public void setCategory(ItemCategory category) {
         this.category = category;
     }
 
