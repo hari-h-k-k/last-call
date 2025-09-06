@@ -132,8 +132,8 @@ public class ItemController {
         return ResponseEntity.status(200).body(response);
     }
 
-    @GetMapping("/search-items")
-    public ResponseEntity<Object> searchItems(@RequestParam String input) {
+    @GetMapping("/search-items/{input}")
+    public ResponseEntity<Object> searchItems(@PathVariable String input) {
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
                 .setMessage("Categories fetched successfully!")
