@@ -135,19 +135,19 @@ public class ItemController {
     @GetMapping("/search-items/{input}")
     public ResponseEntity<Object> searchItems(@PathVariable String input) {
         List<Item> results = itemService.searchItems(input);
+        Map<String, Object> response;
         if(results.isEmpty()) {
-            Map<String, Object> response = new ResponseBuilder()
+            response = new ResponseBuilder()
                     .setStatus("success")
                     .setMessage("No items found!")
                     .build();
-            return ResponseEntity.status(200).body(response);
         } else {
-            Map<String, Object> response = new ResponseBuilder()
+            response = new ResponseBuilder()
                     .setStatus("success")
                     .setMessage("Items fetched successfully!")
                     .setInfo(results)
                     .build();
-            return ResponseEntity.status(200).body(response);
         }
+        return ResponseEntity.status(200).body(response);
     }
 }
