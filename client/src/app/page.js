@@ -11,6 +11,7 @@ export default function HomePage() {
   const router = useRouter();
   const { info } = useAuth();
 
+  // Dummy auction data
   const initialUpcoming = Array.from({ length: 4 }).map((_, idx) => ({
     id: idx,
     title: `Upcoming Auction ${idx + 1}`,
@@ -33,7 +34,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(false);
   const [noResults, setNoResults] = useState(false);
 
-  // Helper: Get Authorization header
+  // Get Authorization Header
   const getAuthHeaders = () => {
     const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
     return userInfo?.token ? { Authorization: `Bearer ${userInfo.token}` } : {};
@@ -59,10 +60,10 @@ export default function HomePage() {
     return () => clearInterval(interval);
   }, [upcoming]);
 
-  // Fetch search results only when input length > 3
+  // Fetch search results (no 3-char restriction anymore)
   useEffect(() => {
     const fetchSearchResults = async () => {
-      if (searchQuery.length <= 3) {
+      if (searchQuery.trim() === "") {
         setSearchResults([]);
         setUpcoming(initialUpcoming);
         setLive(initialLive);
@@ -94,7 +95,7 @@ export default function HomePage() {
       }
     };
 
-    const debounceTimer = setTimeout(fetchSearchResults, 500);
+    const debounceTimer = setTimeout(fetchSearchResults, 400);
     return () => clearTimeout(debounceTimer);
   }, [searchQuery]);
 
@@ -130,7 +131,7 @@ export default function HomePage() {
         )}
 
         {/* Upcoming Auctions */}
-        {upcoming.length > 0 && !searchQuery && (
+        {upcoming.length > 0 && searchQuery.trim() === "" && (
           <section className="bg-[#1F2937] rounded-2xl p-6 shadow-xl border border-[#2D3748]">
             <h2 className="text-2xl font-bold mb-5">⏳ Upcoming Auctions</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
@@ -154,7 +155,7 @@ export default function HomePage() {
         )}
 
         {/* Live Auctions */}
-        {live.length > 0 && !searchQuery && (
+        {live.length > 0 && searchQuery.trim() === "" && (
           <section className="bg-[#1F2937] rounded-2xl p-6 shadow-xl border border-[#2D3748]">
             <h2 className="text-2xl font-bold mb-5">🎥 Live Auctions</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
@@ -166,7 +167,7 @@ export default function HomePage() {
         )}
 
         {/* Search Results */}
-        {!loading && searchQuery.length > 3 && (
+        {!loading && searchQuery.trim() !== "" && (
           <section className="bg-[#1F2937] rounded-2xl p-6 shadow-xl border border-[#2D3748]">
             <h2 className="text-2xl font-bold mb-5">🔍 Search Results</h2>
             {noResults ? (
