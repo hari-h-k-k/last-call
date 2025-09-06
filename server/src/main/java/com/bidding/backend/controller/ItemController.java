@@ -26,6 +26,14 @@ public class ItemController {
 
     @PostMapping("/place-item")
     public ResponseEntity<Object> placeItem(@RequestBody Item item) {
+        if(item.getId() != null) {
+            itemService.updateItem(item);
+            Map<String, Object> response = new ResponseBuilder()
+                    .setStatus("success")
+                    .setMessage("Item updated successfully!")
+                    .build();
+            return ResponseEntity.status(200).body(response);
+        }
         itemService.saveItem(item);
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
