@@ -16,10 +16,12 @@ public class NotificationService implements ItemObserver {
 
     @Override
     public void onItemUpdated(Item item, List<String> alerts) {
-        for(String userId : item.getSubscribersId()) {
-            userRepository.findById(userId).ifPresent(user -> {
-                notifyUser(user, alerts);
-            });
+        if(!item.getSubscribersId().isEmpty()) {
+            for(String userId : item.getSubscribersId()) {
+                userRepository.findById(userId).ifPresent(user -> {
+                    notifyUser(user, alerts);
+                });
+            }
         }
     }
 

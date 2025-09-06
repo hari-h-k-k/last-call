@@ -4,6 +4,9 @@ import com.bidding.backend.entity.Item;
 import com.bidding.backend.observer.ItemObserver;
 import com.bidding.backend.observer.NotificationService;
 import com.bidding.backend.repository.ItemRepository;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.BeanWrapper;
+import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -99,19 +102,19 @@ public class ItemService {
     }
 
     public void updateItem(Item item) {
-        Item oldItem = this.getItem(item.getId());
+        Item existingItem = this.getItem(item.getId());
 
         List<String> alerts = new ArrayList<>();
 
-        if(!oldItem.getRegistrationClosingDate().toString().equals(item.getRegistrationClosingDate().toString())) {
+        if(!existingItem.getRegistrationClosingDate().toString().equals(item.getRegistrationClosingDate().toString())) {
             alerts.add(String.format("Registration Closing Date of %s was updated.", item.getTitle()));
         }
 
-        if(!oldItem.getBidStartDate().toString().equals(item.getBidStartDate().toString())) {
+        if(!existingItem.getBidStartDate().toString().equals(item.getBidStartDate().toString())) {
             alerts.add(String.format("Bid Start Date of %s was updated.", item.getTitle()));
         }
 
-        if(oldItem.getStartingPrice() != item.getStartingPrice()) {
+        if(existingItem.getStartingPrice() != item.getStartingPrice()) {
             alerts.add(String.format("Starting Price of %s was updated.", item.getTitle()));
         }
 
@@ -119,9 +122,19 @@ public class ItemService {
             alerts.add(String.format("%s in your watchlist was updated.", item.getTitle()));
         }
 
-        itemRepository.save(item);
+        BeanUtils.copyProperties(item, existingItem, getNullPropertyNames(item));
 
-        notifyObservers(item, alerts);
+        itemRepository.save(existingItem);
+
+        notifyObservers(existingItem, alerts);
+    }
+
+    private String[] getNullPropertyNames(Object source) {
+        BeanWrapper src = new BeanWrapperImpl(source);
+        return Arrays.stream(src.getPropertyDescriptors())
+                .map(pd -> pd.getName())
+                .filter(name -> src.getPropertyValue(name) == null)
+                .toArray(String[]::new);
     }
 
     public List<Item> searchItems(String input) {
