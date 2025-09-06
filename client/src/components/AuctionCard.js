@@ -1,64 +1,84 @@
 "use client";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { FaEdit, FaTrash, FaEye } from "react-icons/fa";
+import { FaEdit, FaEye } from "react-icons/fa";
+import { useMemo } from "react";
 
 export default function AuctionCard({
   item,
   type = "upcoming",
   timer,
   isClosed,
-  onEdit,
-  onDelete,
 }) {
   const router = useRouter();
 
+  // Handle navigation based on card type
   const handleNavigation = () => {
     if (type === "live") {
       router.push(`/spectate/${item.id}`);
     } else if (type === "upcoming") {
       router.push(`/register/${item.id}`);
-    } else if (type === "top-picks") {
-      router.push(`/auction/${item.id}`);
-    } else if (type === "bidding-history") {
+    } else if (type === "top-picks" || type === "bidding-history") {
       router.push(`/auction/${item.id}`);
     }
   };
 
+  const handleEdit = () => {
+    router.push(`/create-listing?id=${item.id}`);
+  };
+
+  // ✅ Prevent hydration mismatch by memoizing timer values
+  const displayTimer = useMemo(() => {
+    if (!timer) return null;
+    const minutes = String(timer.minutes || 0).padStart(2, "0");
+    const seconds = String(timer.seconds || 0).padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  }, [timer]);
+
   return (
     <motion.div
       key={item.id}
-      initial={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, y: -15 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 20 }}
+      exit={{ opacity: 0, y: 15 }}
       layout
-      className="bg-[#111827] border border-[#374151] rounded-xl shadow-md p-4 flex flex-col items-center hover:scale-105 transition-transform relative"
+      className="bg-[#1E293B] border border-[#334155] rounded-2xl shadow-lg p-5 flex flex-col items-center hover:shadow-xl hover:border-[#2563EB] transition-all duration-300 relative"
     >
-      {/* Image / Video Placeholder */}
-      <div className="w-full h-40 bg-[#1F2937] rounded-lg mb-3 flex items-center justify-center text-[#6B7280]">
-        {type === "live" ? "🎥 Live Stream" : "🖼️ Image Placeholder"}
+      {/* Image Section */}
+      <div className="w-full h-44 rounded-xl mb-4 flex items-center justify-center overflow-hidden bg-[#0F172A]">
+        <img
+          src={
+            item?.imageUrl?.trim()
+              ? item.imageUrl
+              : "https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?w=600&h=400&fit=crop"
+          }
+          alt={item?.title || "Auction Item"}
+          className="w-full h-full object-cover rounded-xl"
+          onError={(e) => {
+            e.target.src =
+              "https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?w=600&h=400&fit=crop";
+          }}
+        />
       </div>
 
-      {/* Auction Title & Description */}
-      <h3 className="font-semibold text-lg text-center text-white">
+      {/* Title */}
+      <h3 className="font-semibold text-lg text-center text-white leading-snug">
         {item.title}
       </h3>
-      <p className="text-[#9CA3AF] text-sm text-center mb-3">
+
+      {/* Description */}
+      <p className="text-[#94A3B8] text-sm text-center mt-1 mb-3 line-clamp-2">
         {item.description}
       </p>
 
-      {/* Upcoming Auction Timer */}
-      {type === "upcoming" && (
+      {/* Auction Timer */}
+      {type === "upcoming" && displayTimer && (
         <div
-          className={`px-4 py-1 rounded-full text-sm font-bold shadow-lg mb-3 ${
-            isClosed ? "bg-[#B91C1C] text-white" : "bg-[#2563EB]"
+          className={`px-4 py-1 rounded-full text-xs font-bold shadow-md mb-3 transition ${
+            isClosed ? "bg-[#EF4444] text-white" : "bg-[#2563EB] text-white"
           }`}
         >
-          {isClosed
-            ? "Registration Closed"
-            : `Closes in: ${timer.minutes}:${timer.seconds
-                .toString()
-                .padStart(2, "0")}`}
+          {isClosed ? "Registration Closed" : `Closes in: ${displayTimer}`}
         </div>
       )}
 
@@ -69,54 +89,16 @@ export default function AuctionCard({
         </div>
       )}
 
-      {/* Top Picks Special Badge */}
-      {type === "top-picks" && (
-        <span className="absolute top-3 left-3 bg-[#F59E0B] text-black text-xs font-bold px-3 py-1 rounded-full shadow-md">
-          ⭐ Top Pick
-        </span>
-      )}
-
-      {/* Bidding History */}
-      {type === "bidding-history" && (
-        <div className="text-sm text-[#9CA3AF] mb-3 text-center">
-          <p>
-            <span className="text-[#34D399] font-bold">Your Bid:</span> ₹
-            {item.myBid}
-          </p>
-          <p>
-            <span className="text-[#FBBF24] font-bold">Final Price:</span> ₹
-            {item.finalPrice}
-          </p>
-          <p>
-            <span className="text-[#3B82F6] font-bold">Status:</span>{" "}
-            {item.status}
-          </p>
-        </div>
-      )}
-
-      {/* My Listings (Edit & Delete Buttons) */}
-      {type === "my-listings" && (
-        <div className="flex gap-3 w-full justify-center mt-3">
-          <button
-            onClick={() => onEdit(item)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] transition text-white font-medium shadow-md"
-          >
-            <FaEdit /> Edit
-          </button>
-          <button
-            onClick={() => onDelete(item.id)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#DC2626] hover:bg-[#B91C1C] transition text-white font-medium shadow-md"
-          >
-            <FaTrash /> Delete
-          </button>
-        </div>
-      )}
-
-      {/* Button for Other Contexts */}
-      {(type === "upcoming" ||
-        type === "live" ||
-        type === "top-picks" ||
-        type === "bidding-history") && (
+      {/* Buttons */}
+      {type === "my-listings" ? (
+        <button
+          onClick={handleEdit}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2563EB] text-[#2563EB] font-medium hover:bg-[#2563EB]/10 hover:scale-105 transition-all duration-300"
+        >
+          <FaEdit className="text-lg" />
+          Edit Listing
+        </button>
+      ) : (
         <button
           disabled={isClosed && type === "upcoming"}
           onClick={handleNavigation}
@@ -128,16 +110,17 @@ export default function AuctionCard({
               : "bg-[#2563EB] hover:bg-[#1D4ED8]"
           }`}
         >
-          <FaEye />{" "}
-          {type === "live"
-            ? "Spectate"
-            : type === "top-picks"
-            ? "View Details"
-            : type === "bidding-history"
-            ? "View Auction"
-            : isClosed
-            ? "Closed"
-            : "Register Now"}
+          {type === "live" ? (
+            <>
+              <FaEye /> Spectate
+            </>
+          ) : type === "top-picks" ? (
+            "View Details"
+          ) : type === "bidding-history" ? (
+            "View Auction"
+          ) : (
+            "Register Now"
+          )}
         </button>
       )}
     </motion.div>

@@ -1,12 +1,15 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import api from "../../lib/axios";
 
 export default function CreateListingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const auctionId = searchParams.get("id"); // Edit mode
 
   const [formData, setFormData] = useState({
     title: "",
@@ -18,69 +21,137 @@ export default function CreateListingPage() {
     auctionDate: "",
   });
 
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Handle input changes
+  const getAuthHeaders = () => {
+    const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
+    return userInfo?.token
+      ? { Authorization: `Bearer ${userInfo.token}` }
+      : {};
+  };
+
+  // Fetch categories (hydration safe)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const fetchCategories = async () => {
+      try {
+        const response = await api.get("auctions/categories", {
+          headers: getAuthHeaders(),
+        });
+
+        // Extract categories correctly from nested structure
+        const cats =
+          Array.isArray(response.data?.info?.[0]) ? response.data.info[0] : [];
+
+        setCategories(cats);
+      } catch (err) {
+        console.error("Failed to fetch categories:", err);
+        setCategories([]);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // Fetch auction details for edit mode
+  useEffect(() => {
+    if (!auctionId) return;
+
+    const fetchAuctionDetails = async () => {
+      try {
+        const response = await api.get(`/auctions/items/${auctionId}`, {
+          headers: getAuthHeaders(),
+        });
+
+        const data = response.data;
+        setFormData({
+          title: data.info.item.title || "",
+          description: data.info.item.description || "",
+          startingPrice: data.info.item.startingPrice || "",
+          category: data.info.item.category || "",
+          tags: data.info.item.tags ? data.info.item.tags.join(", ") : "",
+          registrationClosingDate: data.info.item.registrationClosingDate
+            ? new Date(data.info.item.registrationClosingDate)
+                .toISOString()
+                .slice(0, 16)
+            : "",
+          auctionDate: data.info.item.bidStartDate
+            ? new Date(data.info.item.bidStartDate).toISOString().slice(0, 16)
+            : "",
+        });
+      } catch (err) {
+        console.error("Failed to fetch auction:", err);
+        alert("Failed to fetch auction details.");
+      }
+    };
+
+    fetchAuctionDetails();
+  }, [auctionId]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // Convert datetime-local to Spring Boot compatible ISO string
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    // Ensure milliseconds and timezone included
-    return date.toISOString();
-  };
+  const formatDate = (dateString) => new Date(dateString).toISOString();
 
-  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
       const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
-
-      if (!userInfo || !userInfo.id || !userInfo.token) {
-        alert("User info not found. Please log in again.");
+      if (!userInfo?.id || !userInfo?.token) {
+        alert("User info missing. Please login.");
         setLoading(false);
         return;
       }
 
-      // Build payload according to API contract
       const payload = {
         sellerId: userInfo.id,
         title: formData.title,
         description: formData.description,
         startingPrice: parseFloat(formData.startingPrice),
         category: formData.category,
-        tags: formData.tags.split(",").map((tag) => tag.trim()),
+        tags: formData.tags.split(",").map((t) => t.trim()),
         registrationClosingDate: formatDate(formData.registrationClosingDate),
         bidStartDate: formatDate(formData.auctionDate),
-        id: "", // leave empty for backend to handle
+        id: auctionId || null,
       };
 
-      console.log("Payload sent:", payload);
+      let response;
+        response = await api.post("/auctions/place-item", payload, {
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
+        });
 
-      // API request
-      const response = await api.post("auctions/place-item", payload, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${userInfo.token}`,
-        },
-      });
 
       if (response.status === 200 || response.status === 201) {
-        alert("Auction created successfully!");
+        alert(auctionId ? "Auction updated!" : "Auction created!");
         router.replace("/profile");
-      } else {
-        alert("Something went wrong. Please try again.");
       }
-    } catch (error) {
-      console.error("Error creating auction:", error);
-      alert("Failed to create auction. Please try again.");
+    } catch (err) {
+      console.error("Failed to save auction:", err);
+      alert("Error saving auction. Try again.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this listing?")) return;
+
+    try {
+      await api.delete(`auctions/remove-item/${auctionId}`, {
+        headers: getAuthHeaders(),
+      });
+
+      alert("Auction deleted!");
+      router.replace("/profile");
+    } catch (err) {
+      console.error("Delete failed:", err);
+      alert("Failed to delete auction.");
     }
   };
 
@@ -89,8 +160,8 @@ export default function CreateListingPage() {
       <Navbar />
 
       <div className="pt-28 pb-12 px-6 max-w-3xl mx-auto flex-1 w-full">
-        <h1 className="text-3xl font-bold text-center mb-8 text-[#FFFFFF]">
-          📝 Create New Listing
+        <h1 className="text-3xl font-bold text-center mb-8 text-white">
+          {auctionId ? "✏️ Edit Listing" : "📝 Create New Listing"}
         </h1>
 
         <form
@@ -126,7 +197,7 @@ export default function CreateListingPage() {
               rows="4"
               className="w-full px-4 py-3 rounded-lg bg-[#111827] border border-[#374151] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               required
-            ></textarea>
+            />
           </div>
 
           {/* Starting Price */}
@@ -145,20 +216,25 @@ export default function CreateListingPage() {
             />
           </div>
 
-          {/* Category */}
+          {/* Category Dropdown */}
           <div>
             <label className="block mb-2 text-sm font-medium text-[#D1D5DB]">
               Category
             </label>
-            <input
-              type="text"
+            <select
               name="category"
               value={formData.category}
               onChange={handleChange}
-              placeholder="Enter category"
               className="w-full px-4 py-3 rounded-lg bg-[#111827] border border-[#374151] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               required
-            />
+            >
+              <option value="">Select a category</option>
+              {categories.map((cat, idx) => (
+                <option key={idx} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Tags */}
@@ -171,7 +247,7 @@ export default function CreateListingPage() {
               name="tags"
               value={formData.tags}
               onChange={handleChange}
-              placeholder="e.g. electronics, gadgets, phones"
+              placeholder="e.g. electronics, gadgets"
               className="w-full px-4 py-3 rounded-lg bg-[#111827] border border-[#374151] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             />
           </div>
@@ -206,14 +282,30 @@ export default function CreateListingPage() {
             />
           </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3 mt-4 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] transition text-white font-semibold shadow-md"
-          >
-            {loading ? "Creating..." : "Create Auction"}
-          </button>
+          {/* Submit & Delete Buttons */}
+          <div className="flex gap-4 items-center justify-between">
+            <button
+              type="submit"
+              disabled={loading}
+              className="flex-1 py-3 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] transition text-white font-semibold shadow-md"
+            >
+              {loading
+                ? "Saving..."
+                : auctionId
+                ? "Update Auction"
+                : "Create Auction"}
+            </button>
+
+            {auctionId && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="px-6 py-3 rounded-lg bg-[#DC2626] hover:bg-[#B91C1C] transition text-white font-semibold shadow-md"
+              >
+                Delete Item
+              </button>
+            )}
+          </div>
         </form>
       </div>
 

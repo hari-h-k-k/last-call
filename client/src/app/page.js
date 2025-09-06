@@ -7,6 +7,7 @@ import AuctionCard from "../components/AuctionCard";
 import { useAuth } from "../context/AuthContext";
 
 export default function HomePage() {
+
   const router = useRouter();
   const { info } = useAuth();
   const initialUpcoming = Array.from({ length: 4 }).map((_, idx) => ({

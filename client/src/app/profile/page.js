@@ -5,12 +5,14 @@ import { FaUserCircle } from "react-icons/fa";
 import EditProfileModal from "../../components/EditProfileModal";
 import { useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
-import AuctionCard from "../../components/AuctionCard"; // import your card
+import AuctionCard from "../../components/AuctionCard";
+import api from "../../lib/axios"; // or import your axios instance
 
 export default function ProfilePage() {
   const { info } = useAuth();
   const [activeTab, setActiveTab] = useState("active");
   const [showEditModal, setShowEditModal] = useState(false);
+  const [myListings, setMyListings] = useState([]);
   const router = useRouter();
 
   const handleSaveProfile = (updatedInfo) => {
@@ -30,15 +32,36 @@ export default function ProfilePage() {
     const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
     if (!userInfo?.token) {
       router.push("/login");
+      return;
     }
-  }, [router]);
 
-  // Dummy data for cards
+    // Fetch My Listings when tab is active
+    if (activeTab === "my-listings") {
+      fetchMyListings(userInfo.id, userInfo.token);
+    }
+  }, [router, activeTab]);
+
+  const fetchMyListings = async (userId, token) => {
+    try {
+      const response = await api.get(`auctions/items/user/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+
+        setMyListings(response.data.info.items || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch My Listings:", error);
+    }
+  };
+
+  // Dummy data for other tabs (active, past, transactions)
   const dummyCards = [
     { id: 1, title: "Vintage Watch", description: "Classic collector's item", currentBid: 2500 },
     { id: 2, title: "Antique Vase", description: "Rare Ming dynasty vase", currentBid: 15000 },
     { id: 3, title: "Luxury Handbag", description: "Limited edition designer bag", currentBid: 8000 },
-    { id: 4, title: "Sports Car", description: "2020 model, mint condition", currentBid: 3500000 },
   ];
 
   return (
@@ -105,6 +128,7 @@ export default function ProfilePage() {
               ))}
             </div>
           )}
+
           {activeTab === "past" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {dummyCards.map((item) => (
@@ -112,6 +136,7 @@ export default function ProfilePage() {
               ))}
             </div>
           )}
+
           {activeTab === "transactions" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {dummyCards.map((item) => (
@@ -119,15 +144,19 @@ export default function ProfilePage() {
               ))}
             </div>
           )}
+
           {activeTab === "bank" && (
             <div>
               <h2 className="text-xl font-bold mb-4">Linked Bank Accounts</h2>
-              <p className="text-[#9CA3AF]">Add or manage your payment accounts for faster bidding.</p>
+              <p className="text-[#9CA3AF]">
+                Add or manage your payment accounts for faster bidding.
+              </p>
               <button className="mt-3 px-5 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] transition text-white font-semibold shadow-md">
                 Link New Account
               </button>
             </div>
           )}
+
           {activeTab === "settings" && (
             <div>
               <h2 className="text-xl font-bold mb-4">Account Settings</h2>
@@ -137,11 +166,18 @@ export default function ProfilePage() {
               </button>
             </div>
           )}
+
           {activeTab === "my-listings" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {dummyCards.map((item) => (
-                <AuctionCard key={item.id} type="my-listings" item={item} />
-              ))}
+              {myListings.length > 0 ? (
+                myListings.map((item) => (
+                  <AuctionCard key={item.id} type="my-listings" item={item} />
+                ))
+              ) : (
+                <p className="text-[#9CA3AF] col-span-full text-center mt-4">
+                  You have no listings yet.
+                </p>
+              )}
             </div>
           )}
         </div>
