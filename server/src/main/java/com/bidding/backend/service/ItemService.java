@@ -126,6 +126,7 @@ public class ItemService {
 
     public List<Item> searchItems(String input) {
         String[] words = input.trim().split("\\s+");
+        Date now = new Date();
 
         // Build OR criteria
         Criteria[] orCriteria = new Criteria[words.length * 4]; // 4 fields per word
@@ -138,7 +139,44 @@ public class ItemService {
             orCriteria[index++] = Criteria.where("tags").in(word);
         }
 
-        Query query = new Query(new Criteria().orOperator(orCriteria));
-        return mongoTemplate.find(query, Item.class);
+        Criteria mainCriteria = new Criteria()
+                .andOperator(
+                        Criteria.where("registrationClosingDate").gt(now),
+                        new Criteria().orOperator(orCriteria)
+                );
+
+        Query query = new Query(mainCriteria);
+        List<Item> results = mongoTemplate.find(query, Item.class);
+
+        results.sort((a, b) -> {
+            int scoreA = getMatchScore(a, words);
+            int scoreB = getMatchScore(b, words);
+            return Integer.compare(scoreB, scoreA); // higher score first
+        });
+
+        return results;
+    }
+
+    private int getMatchScore(Item item, String[] words) {
+        int score = 0;
+
+        for (String word : words) {
+            String w = word.toLowerCase();
+
+            if (item.getTitle() != null && item.getTitle().toLowerCase().contains(w)) {
+                score += 10; // highest priority
+            }
+            if (item.getTags() != null && item.getTags().stream().anyMatch(tag -> tag.equalsIgnoreCase(w))) {
+                score += 5;
+            }
+            if (item.getCategory() != null && item.getCategory().name().equalsIgnoreCase(w)) {
+                score += 3;
+            }
+            if (item.getDescription() != null && item.getDescription().toLowerCase().contains(w)) {
+                score += 1; // lowest priority
+            }
+        }
+
+        return score;
     }
 }
