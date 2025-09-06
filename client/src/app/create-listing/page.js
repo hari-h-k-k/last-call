@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
+import ListingForm from "../../components/ListingForm";
 import api from "../../lib/axios";
 
 export default function CreateListingPage() {
@@ -11,17 +12,9 @@ export default function CreateListingPage() {
   const searchParams = useSearchParams();
   const auctionId = searchParams.get("id");
 
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    startingPrice: "",
-    category: "",
-    tags: "",
-    registrationClosingDate: "",
-    auctionDate: "",
-  });
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [initialData, setInitialData] = useState(null);
 
   const getAuthHeaders = () => {
     const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
@@ -30,7 +23,6 @@ export default function CreateListingPage() {
 
   // Fetch categories
   useEffect(() => {
-    if (typeof window === "undefined") return;
     api
       .get("auctions/categories", { headers: getAuthHeaders() })
       .then((res) => {
@@ -39,39 +31,34 @@ export default function CreateListingPage() {
       .catch(() => setCategories([]));
   }, []);
 
-  // Fetch existing auction details if editing
+  // Fetch existing auction if editing
   useEffect(() => {
     if (!auctionId) return;
     api
       .get(`/auctions/items/${auctionId}`, { headers: getAuthHeaders() })
       .then((res) => {
         const item = res.data?.info?.item || {};
-        setFormData({
-          title: item.title || "",
-          description: item.description || "",
-          startingPrice: item.startingPrice || "",
-          category: item.category || "",
-          tags: item.tags ? item.tags.join(", ") : "",
+        setInitialData({
+          title: item.title,
+          description: item.description,
+          startingPrice: item.startingPrice,
+          category: item.category,
+          tags: item.tags,
           registrationClosingDate: item.registrationClosingDate
-            ? new Date(item.registrationClosingDate).toISOString().slice(0, 16)
-            : "",
+              ? new Date(item.registrationClosingDate).toISOString().slice(0, 16)
+              : "",
           auctionDate: item.bidStartDate
-            ? new Date(item.bidStartDate).toISOString().slice(0, 16)
-            : "",
+              ? new Date(item.bidStartDate).toISOString().slice(0, 16)
+              : "",
         });
       })
       .catch(() => alert("Failed to fetch auction details."));
   }, [auctionId]);
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-
   const formatDate = (date) => new Date(date).toISOString();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (formData) => {
     setLoading(true);
-
     try {
       const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
       if (!userInfo?.id || !userInfo?.token)
@@ -117,9 +104,6 @@ export default function CreateListingPage() {
     }
   };
 
-  const inputClass =
-    "w-full px-4 py-3 rounded-lg bg-[#111827] border border-[#374151] focus:outline-none focus:ring-2 focus:ring-[#2563EB]";
-
   return (
     <div className="min-h-screen bg-[#111827] text-white flex flex-col">
       <Navbar />
@@ -128,113 +112,13 @@ export default function CreateListingPage() {
           {auctionId ? "✏️ Edit Listing" : "📝 Create New Listing"}
         </h1>
 
-        <form
-          onSubmit={handleSubmit}
-          className="bg-[#1F2937] p-8 rounded-2xl shadow-lg border border-[#2D3748] flex flex-col gap-5"
-        >
-          {/* Title */}
-          <input
-            type="text"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            placeholder="Enter auction title"
-            className={inputClass}
-            required
-          />
-
-          {/* Description */}
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            placeholder="Enter auction description"
-            rows="4"
-            className={inputClass}
-            required
-          />
-
-          {/* Starting Price */}
-          <input
-            type="number"
-            name="startingPrice"
-            value={formData.startingPrice}
-            onChange={handleChange}
-            placeholder="Enter starting bid price"
-            className={inputClass}
-            required
-          />
-
-          {/* Category */}
-          <select
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            className={inputClass}
-            required
-          >
-            <option value="">Select a category</option>
-            {categories.map((cat, idx) => (
-              <option key={idx} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
-
-          {/* Tags */}
-          <input
-            type="text"
-            name="tags"
-            value={formData.tags}
-            onChange={handleChange}
-            placeholder="e.g. electronics, gadgets"
-            className={inputClass}
-          />
-
-          {/* Registration Closing Date */}
-          <input
-            type="datetime-local"
-            name="registrationClosingDate"
-            value={formData.registrationClosingDate}
-            onChange={handleChange}
-            className={inputClass}
-            required
-          />
-
-          {/* Auction Date */}
-          <input
-            type="datetime-local"
-            name="auctionDate"
-            value={formData.auctionDate}
-            onChange={handleChange}
-            className={inputClass}
-            required
-          />
-
-          {/* Buttons */}
-          <div className="flex gap-4 items-center justify-between">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 py-3 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] transition text-white font-semibold shadow-md"
-            >
-              {loading
-                ? "Saving..."
-                : auctionId
-                ? "Update Auction"
-                : "Create Auction"}
-            </button>
-            {auctionId && (
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="px-6 py-3 rounded-lg bg-[#DC2626] hover:bg-[#B91C1C] transition text-white font-semibold shadow-md"
-              >
-                Delete
-              </button>
-            )}
-          </div>
-        </form>
+        <ListingForm
+            initialData={initialData}
+            categories={categories}
+            onSubmit={handleSubmit}
+            onDelete={auctionId ? handleDelete : undefined}
+            loading={loading}
+        />
       </div>
       <Footer />
     </div>
