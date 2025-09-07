@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CoolRequestCookiePersistent">
-    <option name="cookies" value="[{&quot;domain&quot;:&quot;localhost:8080&quot;,&quot;infos&quot;:[{&quot;createTimeMillis&quot;:1757011517671,&quot;raw&quot;:&quot;JSESSIONID=82C7D13EB06515ADA53B1E2D086051E1; Path=/; HttpOnly&quot;,&quot;requestURL&quot;:&quot;http://localhost:8080/auctions/place-item&quot;}]}]" />
+    <option name="cookies" value="[{&quot;domain&quot;:&quot;localhost:8080&quot;,&quot;infos&quot;:[{&quot;createTimeMillis&quot;:1757243275581,&quot;raw&quot;:&quot;JSESSIONID=6806132D9282D6E8764BD9A5BEF5A3BB; Path=/; HttpOnly&quot;,&quot;requestURL&quot;:&quot;http://localhost:8080/auctions/get-upcoming-items&quot;}]}]" />
   </component>
 </project>

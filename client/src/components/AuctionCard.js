@@ -17,7 +17,8 @@ export default function AuctionCard({
     if (type === "live") {
       router.push(`/spectate/${item.id}`);
     } else if (type === "upcoming") {
-      router.push(`/register/${item.id}`);
+      // ✅ Updated: Navigate to item/{id} instead of register/{id}
+      router.push(`/item/${item.id}`);
     } else if (type === "top-picks" || type === "bidding-history") {
       router.push(`/auction/${item.id}`);
     }
@@ -27,7 +28,7 @@ export default function AuctionCard({
     router.push(`/create-listing?id=${item.id}`);
   };
 
-  // ✅ Prevent hydration mismatch by memoizing timer values
+  // ✅ Memoize timer to avoid hydration mismatches
   const displayTimer = useMemo(() => {
     if (!timer) return null;
     const minutes = String(timer.minutes || 0).padStart(2, "0");
