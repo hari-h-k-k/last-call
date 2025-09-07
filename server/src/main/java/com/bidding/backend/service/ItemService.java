@@ -179,13 +179,13 @@ public class ItemService {
             if (item.getTitle() != null && item.getTitle().toLowerCase().contains(w)) {
                 score += 10; // highest priority
             }
-            if (item.getTags() != null && item.getTags().stream().anyMatch(tag -> tag.equalsIgnoreCase(w))) {
+            if (item.getDescription() != null && item.getDescription().toLowerCase().contains(w)) {
                 score += 5;
             }
             if (item.getCategory() != null && item.getCategory().name().equalsIgnoreCase(w)) {
                 score += 3;
             }
-            if (item.getDescription() != null && item.getDescription().toLowerCase().contains(w)) {
+            if (item.getTags() != null && item.getTags().stream().anyMatch(tag -> tag.equalsIgnoreCase(w))) {
                 score += 1; // lowest priority
             }
         }

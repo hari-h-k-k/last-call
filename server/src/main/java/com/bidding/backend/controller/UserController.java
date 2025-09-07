@@ -37,11 +37,8 @@ public class UserController {
             return "No token provided!";
         }
         String token = authHeader.substring(7);
-        if (!jwtUtil.validateToken(token)) {
-            return "Invalid token!";
-        }
-        String username = jwtUtil.extractUsername(token);
-        return "Hello, " + username;
+        String userId = jwtUtil.extractUserId(token);
+        return "Hello, " + userService.getUserById(userId).get().getName();
     }
 
     @GetMapping("/{email}")
