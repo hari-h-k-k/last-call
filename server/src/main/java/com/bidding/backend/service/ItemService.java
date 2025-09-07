@@ -56,20 +56,6 @@ public class ItemService {
         return itemRepository.findBySellerId(userId);
     }
 
-//    public Map<Item, Date> getUpcomingItems(String userId) {
-//        Date now = new Date();
-//
-//        List<Item> items = itemRepository.getItemsByRegistrationClosingDateAndNotOwnedByUser(now, userId);
-//        items.sort((i1, i2) -> Long.compare(i1.getRegistrationClosingDate().getTime() - now.getTime() ,i2.getRegistrationClosingDate().getTime() - now.getTime()));
-//
-//        Map<Item, Date> itemDateMap = new LinkedHashMap<>();
-//
-//        for(Item item : items) {
-//            itemDateMap.put(item, new Date(System.currentTimeMillis() + item.getRegistrationClosingDate().getTime() - now.getTime()));
-//        }
-//
-//        return itemDateMap;
-//    }
 
     public List<Map<String, Object>> getUpcomingItems(String userId) {
         Date now = new Date();
@@ -99,8 +85,6 @@ public class ItemService {
 
         return list;
     }
-
-
 
     public void itemSubscribe(String itemId, String userId, boolean subscribeAction) {
         Item item = this.getItem(itemId);

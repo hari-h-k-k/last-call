@@ -3,31 +3,61 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "../../../components/Navbar";
 import BiddingModal from "../../../components/BiddingModal";
+import api from "@/lib/axios";
 
 export default function ItemDetails() {
   const router = useRouter();
   const { id } = useParams();
+  const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [showModal, setShowModal] = useState(false);
 
-  // Dummy data for now, later fetch from DB
-  const item = {
-    id,
-    title: `Premium Product ${id}`,
-    description:
-      "This premium-quality product is currently up for auction. It's crafted with high-end materials and offers superior performance. Place your bid now before time runs out!",
-    images: [
-      "https://source.unsplash.com/random/600x400?tech",
-      "https://source.unsplash.com/random/600x400?product",
-      "https://source.unsplash.com/random/600x400?gadgets",
-      "https://source.unsplash.com/random/600x400?device",
-    ],
-    price: 3500,
-    highestBid: 4200,
-    timeLeft: "2 days 5 hrs",
-    seller: "John Doe",
-    totalBids: 12,
+
+  const getAuthHeaders = () => {
+    const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
+    return userInfo?.token ? { Authorization: `Bearer ${userInfo.token}` } : {};
   };
+
+  // Fetch item from API
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchItem = async () => {
+      try {
+        // POST request using your custom axios instance
+        // const res = await api.get(`/auctions/items/${id}`);
+
+        const response = await api.get(`/auctions/items/${id}`, {
+          headers: { ...getAuthHeaders() },
+        });
+        console.log("Fetched item:", response.data);
+        setItem(response.data.info.item);
+      } catch (err) {
+        console.error("Error fetching item:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchItem();
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#111827] text-white flex items-center justify-center">
+        <p className="text-lg">Loading item details...</p>
+      </div>
+    );
+  }
+
+  if (!item) {
+    return (
+      <div className="min-h-screen bg-[#111827] text-white flex items-center justify-center">
+        <p className="text-lg">Item not found</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#111827] text-white">
@@ -38,34 +68,35 @@ export default function ItemDetails() {
         {/* Left - Image Gallery */}
         <div>
           <img
-            src={item.images[selectedImage]}
+            src={item.images?.[selectedImage] || "https://via.placeholder.com/600x400"}
             alt={item.title}
             className="w-full h-[400px] object-cover rounded-xl shadow-lg"
           />
 
           {/* Thumbnail Images */}
-          <div className="flex gap-3 mt-4">
-            {item.images.map((img, idx) => (
-              <img
-                key={idx}
-                src={img}
-                alt={`Thumbnail ${idx}`}
-                onClick={() => setSelectedImage(idx)}
-                className={`w-20 h-20 object-cover rounded-lg cursor-pointer transition ${
-                  selectedImage === idx
-                    ? "border-2 border-[#2563EB]"
-                    : "opacity-70 hover:opacity-100"
-                }`}
-              />
-            ))}
-          </div>
+          {item.images && item.images.length > 1 && (
+            <div className="flex gap-3 mt-4">
+              {item.images.map((img, idx) => (
+                <img
+                  key={idx}
+                  src={img}
+                  alt={`Thumbnail ${idx}`}
+                  onClick={() => setSelectedImage(idx)}
+                  className={`w-20 h-20 object-cover rounded-lg cursor-pointer transition ${
+                    selectedImage === idx
+                      ? "border-2 border-[#2563EB]"
+                      : "opacity-70 hover:opacity-100"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
+
 
         {/* Right - Product Details */}
         <div className="flex flex-col">
-          <h1 className="text-3xl font-bold text-[#2563EB] mb-3">
-            {item.title}
-          </h1>
+          <h1 className="text-3xl font-bold text-[#2563EB] mb-3">{item.title}</h1>
           <p className="text-[#9CA3AF] text-lg mb-5">{item.description}</p>
 
           {/* Price & Bidding Info */}
@@ -73,16 +104,25 @@ export default function ItemDetails() {
             <p className="text-lg">
               Current Highest Bid:{" "}
               <span className="text-[#22C55E] font-semibold">
-                ₹{item.highestBid}
+                ₹{item.highestBid ?? "N/A"}
               </span>
             </p>
-            <p className="text-[#9CA3AF] mt-1">Starting Price: ₹{item.price}</p>
-            <p className="text-[#FACC15] mt-1">Time Left: {item.timeLeft}</p>
-            <p className="text-[#9CA3AF] mt-1">
-              Total Bids: <span className="text-white">{item.totalBids}</span>
+            <p className="text-[#9CA3AF] mt-1">Starting Price: ₹{item.startingPrice}</p>
+            <p className="text-[#FACC15] mt-1">
+              Registration Closes:{" "}
+              {new Date(item.registrationClosingDate).toLocaleString()}
             </p>
             <p className="text-[#9CA3AF] mt-1">
-              Seller: <span className="text-white">{item.seller}</span>
+              Bid Start: {new Date(item.bidStartDate).toLocaleString()}
+            </p>
+            <p className="text-[#9CA3AF] mt-1">
+              Category: <span className="text-white">{item.category}</span>
+            </p>
+            <p className="text-[#9CA3AF] mt-1">
+              Location:{" "}
+              <span className="text-white">
+                {item.location?.lat}, {item.location?.lng}
+              </span>
             </p>
           </div>
 
@@ -98,10 +138,7 @@ export default function ItemDetails() {
 
       {/* Bidding Modal */}
       {showModal && (
-        <BiddingModal
-          item={item}
-          onClose={() => setShowModal(false)}
-        />
+        <BiddingModal item={item} onClose={() => setShowModal(false)} />
       )}
     </div>
   );
