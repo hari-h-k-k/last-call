@@ -13,29 +13,30 @@ export default function UpcomingAuctions() {
     try {
       setLoading(true);
 
-      // Get user info from session storage
-      const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
-      const userId = userInfo?.id;
+      // Get user info safely from session storage
+      const userInfo = JSON.parse(sessionStorage.getItem("userInfo")) || {};
+      const userId = userInfo?.id || "";
+      const token = userInfo?.token || "";
 
-      if (!userId) {
-        console.warn("User ID not found in session storage.");
-        setUpcoming([]);
-        return;
-      }
-
-      // API call with Authorization & userId header
+      // Make API call with headers
       const response = await api.get("auctions/get-upcoming-items", {
         headers: {
-          Authorization: `Bearer ${userInfo.token}`,
-          userId: userId,
+          Authorization: token ? `Bearer ${token}` : "",
+          userId: userId || "",
         },
       });
-       console.log("Upcoming Auctions Response:", response);
-      // Extract items safely from response
-      const items =
-        response?.data?.info && Array.isArray(response.data.info)
-          ? response.data.info
-          : [];
+
+      console.log("Upcoming Auctions Response:", response);
+
+      // Extract upcomingItemsMap safely
+      const upcomingItemsMap = response?.data?.info?.upcomingItemsMap || {};
+
+      // Convert the map into an array
+      const items = Object.entries(upcomingItemsMap).map(([key, registrationClose]) => {
+        // Since Spring converts the `Item` object to JSON, parse it
+        const item = JSON.parse(key);
+        return { ...item, registrationClose };
+      });
 
       setUpcoming(items);
     } catch (error) {
@@ -52,6 +53,8 @@ export default function UpcomingAuctions() {
 
   // Timer Logic
   useEffect(() => {
+    if (upcoming.length === 0) return;
+
     const interval = setInterval(() => {
       const now = Date.now();
       const updatedTimers = {};
@@ -66,14 +69,14 @@ export default function UpcomingAuctions() {
   }, [upcoming]);
 
   // Loading State
-  if (loading)
+  if (loading) {
     return <p className="text-gray-400 text-center">Loading upcoming auctions...</p>;
+  }
 
   // Empty State
-  if (upcoming.length === 0)
-    return (
-      <p className="text-gray-400 text-center">No upcoming auctions available.</p>
-    );
+  if (upcoming.length === 0) {
+    return <p className="text-gray-400 text-center">No upcoming auctions available.</p>;
+  }
 
   return (
     <section className="bg-[#1F2937] rounded-2xl p-6 shadow-xl border border-[#2D3748]">
