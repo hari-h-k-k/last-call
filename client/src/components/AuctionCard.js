@@ -12,19 +12,37 @@ export default function AuctionCard({
 }) {
   const router = useRouter();
 
-  // Handle navigation based on card type
+  // ✅ Utility: Get token safely from sessionStorage or localStorage
+  const getToken = () => {
+    const userInfo = JSON.parse(sessionStorage.getItem("userInfo")) || {};
+    return userInfo?.token || localStorage.getItem("token") || "";
+  };
+
+  // Handle navigation with token check
   const handleNavigation = () => {
+    const token = getToken();
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
+    // ✅ If token exists → normal navigation
     if (type === "live") {
       router.push(`/spectate/${item.id}`);
     } else if (type === "upcoming") {
-      // ✅ Updated: Navigate to item/{id} instead of register/{id}
       router.push(`/item/${item.id}`);
     } else if (type === "top-picks" || type === "bidding-history") {
       router.push(`/auction/${item.id}`);
     }
   };
 
+  // Edit listing button with token check
   const handleEdit = () => {
+    const token = getToken();
+    if (!token) {
+      router.push("/login");
+      return;
+    }
     router.push(`/create-listing?id=${item.id}`);
   };
 
