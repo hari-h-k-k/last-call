@@ -39,12 +39,12 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
 
-            String username = jwtUtil.extractUsername(token);
+            String userId = jwtUtil.extractUserId(token);
 
             // Create Authentication object with a simple USER role (adjust as needed)
             UsernamePasswordAuthenticationToken authToken =
                     new UsernamePasswordAuthenticationToken(
-                            username,
+                            userId,
                             null,
                             List.of(new SimpleGrantedAuthority("USER"))
                     );

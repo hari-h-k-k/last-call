@@ -54,7 +54,7 @@ public class AuthController {
     public ResponseEntity<Object> login(@RequestBody User user) {
         User foundUser = userService.findUser(user);
         if (foundUser != null && passwordEncoder.matches(user.getPassword(), foundUser.getPassword())) {
-            String token = jwtUtil.generateToken(foundUser.getUsername());
+            String token = jwtUtil.generateToken(foundUser.getId());
 
             Map<String, Object> response = new ResponseBuilder()
                     .setStatus("success")

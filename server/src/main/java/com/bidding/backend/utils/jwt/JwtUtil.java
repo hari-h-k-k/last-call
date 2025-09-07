@@ -17,16 +17,16 @@ public class JwtUtil {
     }
     private static final long EXPIRATION = 1000 * 60 * 60; // 1 hour
 
-    public String generateToken(String username) {
+    public String generateToken(String userId) {
         return Jwts.builder()
-                .setSubject(username)
+                .setSubject(userId)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(secretKey)
                 .compact();
     }
 
-    public String extractUsername(String token) {
+    public String extractUserId(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
                 .build()

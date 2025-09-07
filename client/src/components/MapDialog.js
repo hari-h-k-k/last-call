@@ -8,7 +8,7 @@ export default function MapDialog({ isOpen, onClose, onSelect }) {
 
   // Load Google Maps script
   const { isLoaded } = useJsApiLoader({
-    // googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, // ✅ use env var
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY, // ✅ use env var
     // googleMapsApiKey: "AIzaSyD9_viwyG6i2XAsOLDIsou40uPVuivzWWs", // ✅ working
   });
 
