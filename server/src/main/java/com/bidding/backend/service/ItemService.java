@@ -56,20 +56,51 @@ public class ItemService {
         return itemRepository.findBySellerId(userId);
     }
 
-    public Map<Item, Date> getUpcomingItems(String userId) {
+//    public Map<Item, Date> getUpcomingItems(String userId) {
+//        Date now = new Date();
+//
+//        List<Item> items = itemRepository.getItemsByRegistrationClosingDateAndNotOwnedByUser(now, userId);
+//        items.sort((i1, i2) -> Long.compare(i1.getRegistrationClosingDate().getTime() - now.getTime() ,i2.getRegistrationClosingDate().getTime() - now.getTime()));
+//
+//        Map<Item, Date> itemDateMap = new LinkedHashMap<>();
+//
+//        for(Item item : items) {
+//            itemDateMap.put(item, new Date(System.currentTimeMillis() + item.getRegistrationClosingDate().getTime() - now.getTime()));
+//        }
+//
+//        return itemDateMap;
+//    }
+
+    public List<Map<String, Object>> getUpcomingItems(String userId) {
         Date now = new Date();
+        List<Item> items;
 
-        List<Item> items = itemRepository.getItemsByRegistrationClosingDateAndNotOwnedByUser(now, userId);
-        items.sort((i1, i2) -> Long.compare(i1.getRegistrationClosingDate().getTime() - now.getTime() ,i2.getRegistrationClosingDate().getTime() - now.getTime()));
-
-        Map<Item, Date> itemDateMap = new LinkedHashMap<>();
-
-        for(Item item : items) {
-            itemDateMap.put(item, new Date(System.currentTimeMillis() + item.getRegistrationClosingDate().getTime() - now.getTime()));
+        if (userId == null || userId.trim().isEmpty()) {
+            // Public request → fetch all upcoming items
+            items = itemRepository.findByRegistrationClosingDateAfter(now);
+        } else {
+            // User request → fetch upcoming items excluding user's own
+            items = itemRepository.getItemsByRegistrationClosingDateAndNotOwnedByUser(now, userId);
         }
 
-        return itemDateMap;
+        // Sort by soonest closing
+        items.sort(Comparator.comparingLong(i -> i.getRegistrationClosingDate().getTime() - now.getTime()));
+
+        // Convert to list of maps
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Item item : items) {
+            long timeRemaining = item.getRegistrationClosingDate().getTime() - now.getTime();
+            Map<String, Object> map = new HashMap<>();
+            map.put("item", item);
+            map.put("registrationClosingDate", item.getRegistrationClosingDate());
+            map.put("timeRemainingMillis", timeRemaining > 0 ? timeRemaining : 0);
+            list.add(map);
+        }
+
+        return list;
     }
+
+
 
     public void itemSubscribe(String itemId, String userId, boolean subscribeAction) {
         Item item = this.getItem(itemId);

@@ -67,18 +67,20 @@ public class ItemController {
     }
 
     @GetMapping("/get-upcoming-items")
-    public ResponseEntity<Object> getUpcomingItems(@RequestHeader String userId) {
-        Map<Item, Date> upcomingItemsMap = itemService.getUpcomingItems(userId);
+    public ResponseEntity<Object> getUpcomingItems(
+            @RequestParam(value = "userId", required = false) String userId) {
+
+        List<Map<String, Object>> upcomingItems = itemService.getUpcomingItems(userId);
 
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
-                .setMessage("Item fetched successfully!")
-                .setInfo(Map.of(
-                        "upcomingItemsMap", upcomingItemsMap
-                ))
+                .setMessage("Items fetched successfully!")
+                .setInfo(Map.of("upcomingItems", upcomingItems))
                 .build();
-        return ResponseEntity.status(200).body(response);
+
+        return ResponseEntity.ok(response);
     }
+
 
     @PutMapping("/item-subscribe")
     public ResponseEntity<Object> itemSubscribe(@RequestHeader String itemId, @RequestHeader String userId) {

@@ -2,6 +2,7 @@ package com.bidding.backend.entity;
 
 import com.bidding.backend.utils.enums.ItemCategory;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
@@ -31,7 +32,11 @@ public class Item {
 
     private List<String> subscribersId;
 
-    public Item(String title, String description, String sellerId, Date registrationClosingDate, Date bidStartDate, double startingPrice, ItemCategory category, List<String> tags) {
+    private LocationRequest location;
+
+//    private GeoJsonPoint location = new GeoJsonPoint(0.0, 0.0);
+
+    public Item(String title, String description, String sellerId, Date registrationClosingDate, Date bidStartDate, double startingPrice, ItemCategory category, List<String> tags, LocationRequest location) {
         this.title = title;
         this.description = description;
         this.sellerId = sellerId;
@@ -40,6 +45,7 @@ public class Item {
         this.startingPrice = startingPrice;
         this.category = category;
         this.tags = tags;
+        this.location = location;
     }
 
     public Item() {
@@ -93,7 +99,6 @@ public class Item {
         this.bidStartDate = bidStartDate;
     }
 
-
     public double getStartingPrice() {
         return startingPrice;
     }
@@ -133,6 +138,22 @@ public class Item {
     public void removeUserFromSubscribersList(String userId) {
         subscribersId.remove(userId);
     }
+
+    public LocationRequest getLocation() {
+        return location;
+    }
+
+    public void setLocation(LocationRequest location) {
+        this.location = location;
+    }
+
+//    public GeoJsonPoint getLocation() {
+//        return location;
+//    }
+//
+//    public void setLocation(double lat, double lng) {
+//        this.location = new GeoJsonPoint(lng, lat); // note: GeoJsonPoint expects (longitude, latitude)
+//    }
 
     @Override
     public String toString() {
