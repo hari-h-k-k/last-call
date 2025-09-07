@@ -73,6 +73,7 @@ export default function CreateListingPage() {
         tags: formData.tags.split(",").map((t) => t.trim()),
         registrationClosingDate: formatDate(formData.registrationClosingDate),
         bidStartDate: formatDate(formData.auctionDate),
+        location: formData.location,
         id: auctionId || null,
       };
 
