@@ -102,7 +102,7 @@ public class DataSeeder {
             room1.setStartDate(new Date());
             room1.setEndDate(new Date(System.currentTimeMillis() + 1000 * 60 * 60));
             room1.setStatus("ACTIVE");
-            room1.setListOfUserIds(List.of(uncle.getId(), peter.getId()));
+            room1.setListOfUserIds(List.of(uncle.getId(), peter.getId(), tony.getId()));
             room1.setCurrentPrice(1100.0);
             room1.setCreatedAt(new Date());
             room1.setUpdatedAt(new Date());

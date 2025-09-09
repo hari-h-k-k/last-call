@@ -23,4 +23,8 @@ public class BiddingRoomService {
         // Implement logic to start a bidding room
     }
 
+    public BiddingRoom getRoomById(String id) {
+        return biddingRoomRepository.findById(id).orElse(null);
+    }
+
 }
