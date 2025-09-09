@@ -73,26 +73,7 @@ public class ItemService {
         items.sort(Comparator.comparingLong(i -> i.getRegistrationClosingDate().getTime() - now.getTime()));
 
         // Convert to list of maps
-        List<Map<String, Object>> list = new ArrayList<>();
-        for (Item item : items) {
-            long timeRemaining = item.getRegistrationClosingDate().getTime() - now.getTime();
-
-            Map<String, Object> map = new HashMap<>();
-            map.put("item", item);
-            map.put("registrationClosingDate", item.getRegistrationClosingDate());
-            map.put("timeRemainingMillis", timeRemaining > 0 ? timeRemaining : 0);
-
-            // Add "registered" flag (true if userId is in subscribers)
-            boolean isRegistered = false;
-            if (userId != null && item.getSubscribersId() != null) {
-                isRegistered = item.getSubscribersId().contains(userId);
-            }
-            map.put("registered", isRegistered);
-
-            list.add(map);
-        }
-
-        return list;
+        return ConstructListWithValues(userId, now, items);
     }
 
     public void itemSubscribe(String itemId, String userId, boolean subscribeAction) {
@@ -161,7 +142,7 @@ public class ItemService {
                 .toArray(String[]::new);
     }
 
-    public List<Item> searchItems(String input) {
+    public List<Map<String, Object>> searchItems(String input, String userId) {
         String[] words = input.trim().split("\\s+");
         Date now = new Date();
 
@@ -176,13 +157,14 @@ public class ItemService {
             orCriteria[index++] = Criteria.where("tags").in(word);
         }
 
-        Criteria mainCriteria = new Criteria()
-                .andOperator(
-                        Criteria.where("registrationClosingDate").gt(now),
-                        new Criteria().orOperator(orCriteria)
-                );
+//        Criteria mainCriteria = new Criteria()
+//                .andOperator(
+//                        Criteria.where("registrationClosingDate").gt(now),
+//                        new Criteria().orOperator(orCriteria)
+//                );
 
-        Query query = new Query(mainCriteria);
+//        Query query = new Query(mainCriteria);
+        Query query = new Query(new Criteria().orOperator(orCriteria));
         List<Item> results = mongoTemplate.find(query, Item.class);
 
         results.sort((a, b) -> {
@@ -191,7 +173,7 @@ public class ItemService {
             return Integer.compare(scoreB, scoreA); // higher score first
         });
 
-        return results;
+        return ConstructListWithValues(userId, now, results);
     }
 
     private int getMatchScore(Item item, String[] words) {
@@ -215,5 +197,27 @@ public class ItemService {
         }
 
         return score;
+    }
+
+    private List<Map<String, Object>> ConstructListWithValues(String userId, Date now, List<Item> results) {
+        List<Map<String, Object>> list = new ArrayList<>();
+        for (Item item : results) {
+            long timeRemaining = item.getRegistrationClosingDate().getTime() - now.getTime();
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("item", item);
+            map.put("registrationClosingDate", item.getRegistrationClosingDate());
+            map.put("timeRemainingMillis", timeRemaining > 0 ? timeRemaining : 0);
+
+            // Add "registered" flag (true if userId in subscribers)
+            boolean isRegistered = false;
+            if (userId != null && item.getSubscribersId() != null) {
+                isRegistered = item.getSubscribersId().contains(userId);
+            }
+            map.put("registered", isRegistered);
+
+            list.add(map);
+        }
+        return list;
     }
 }

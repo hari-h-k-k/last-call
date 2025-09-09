@@ -157,7 +157,7 @@ public class ItemController {
         System.out.println(userId);
 
         // Do search
-        List<Item> results = itemService.searchItems(input);
+        List<Map<String, Object>> results = itemService.searchItems(input, userId);
 
         Map<String, Object> response;
         if (results.isEmpty()) {
