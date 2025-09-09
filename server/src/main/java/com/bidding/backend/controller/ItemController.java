@@ -81,7 +81,7 @@ public class ItemController {
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
                 .setMessage("Items fetched successfully!")
-                .setInfo(Map.of("upcomingItems", upcomingItems))
+                .setInfo(Map.of("itemList", upcomingItems))
                 .build();
 
         return ResponseEntity.ok(response);
@@ -161,7 +161,7 @@ public class ItemController {
             response = new ResponseBuilder()
                     .setStatus("success")
                     .setMessage("Items fetched successfully!")
-                    .setInfo(Map.of("searchResults", searchResults))
+                    .setInfo(Map.of("itemList", searchResults))
                     .build();
         }
 

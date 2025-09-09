@@ -19,7 +19,7 @@ export default function LiveAuctions() {
       <h2 className="text-2xl font-bold mb-5">🎥 Live Auctions</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         {live.map((item) => (
-          <AuctionCard key={item.id} item={item} type="live" />
+          <AuctionCard key={item.id} item={item} type="spectate" />
         ))}
       </div>
     </section>
