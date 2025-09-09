@@ -21,8 +21,4 @@ public class BiddingRoomController {
         this.userService = userService;
     }
 
-    @RequestMapping("/get-room-by-id")
-    public String getRoomById() {
-        return biddingRoomService.getRoomById(BiddingRoom roomId);
-    }
 }

@@ -22,10 +22,8 @@ export default function SearchResults({ query }) {
         const response = await api.get(`auctions/search-items/${query}`, {
           headers: { ...getAuthHeaders() },
         });
-
-        const items = Array.isArray(response.data?.info)
-          ? response.data.info
-          : [];
+        console.log("Search Results:", response);
+        const items = response?.data?.info?.itemList || [];
 
         setResults(items);
         setNoResults(items.length === 0);
@@ -53,9 +51,9 @@ export default function SearchResults({ query }) {
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-          {results.map((item) => (
-            <AuctionCard key={item.id} item={item} type="search" />
-          ))}
+          {results.map(({ item }) => (
+                    <AuctionCard key={item.id} item={item} type="register" />
+                  ))}
         </div>
       )}
     </section>

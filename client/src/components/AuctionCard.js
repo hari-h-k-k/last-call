@@ -1,70 +1,58 @@
 "use client";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { FaEdit, FaEye } from "react-icons/fa";
-import { useMemo } from "react";
+import { FaEye, FaEdit } from "react-icons/fa";
+import { useEffect, useState, useMemo } from "react";
 
-export default function AuctionCard({
-  item,
-  type = "upcoming",
-  timer,
-  isClosed,
-}) {
+export default function AuctionCard({ item, type = "register" }) {
   const router = useRouter();
+  const [timeLeft, setTimeLeft] = useState(0);
 
-  // ✅ Utility: Get token safely from sessionStorage or localStorage
-  const getToken = () => {
-    const userInfo = JSON.parse(sessionStorage.getItem("userInfo")) || {};
-    return userInfo?.token || localStorage.getItem("token") || "";
-  };
+  // ⏳ Calculate countdown based on registrationClosingDate
+  useEffect(() => {
+    if (!item?.registrationClosingDate) return;
 
-  // Handle navigation with token check
+    const closingTime = new Date(item.registrationClosingDate).getTime();
+    const updateTimer = () => {
+      const remaining = closingTime - Date.now();
+      setTimeLeft(Math.max(remaining, 0));
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [item?.registrationClosingDate]);
+
+  // Format countdown → MM:SS
+  const displayTimer = useMemo(() => {
+    if (timeLeft <= 0) return "00:00";
+    const minutes = String(Math.floor(timeLeft / 60000)).padStart(2, "0");
+    const seconds = String(Math.floor((timeLeft % 60000) / 1000)).padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  }, [timeLeft]);
+
+  const isClosed = timeLeft <= 0;
+
+  // Navigate based on type
   const handleNavigation = () => {
-    const token = getToken();
-    if (!token) {
-      router.push("/login");
-      return;
-    }
-
-    // ✅ If token exists → normal navigation
-    if (type === "live") {
-      router.push(`/spectate/${item.id}`);
-    } else if (type === "upcoming") {
-      router.push(`/item/${item.id}`);
-    } else if (type === "top-picks" || type === "bidding-history") {
-      router.push(`/auction/${item.id}`);
-    }
+    router.push(type === "spectate" ? `/spectate/${item.id}` : `/item/${item.id}`);
   };
 
-  // Edit listing button with token check
+  // Edit listing handler
   const handleEdit = () => {
-    const token = getToken();
-    if (!token) {
-      router.push("/login");
-      return;
-    }
     router.push(`/create-listing?id=${item.id}`);
   };
 
-  // ✅ Memoize timer to avoid hydration mismatches
-  const displayTimer = useMemo(() => {
-    if (!timer) return null;
-    const minutes = String(timer.minutes || 0).padStart(2, "0");
-    const seconds = String(timer.seconds || 0).padStart(2, "0");
-    return `${minutes}:${seconds}`;
-  }, [timer]);
-
   return (
     <motion.div
-      key={item.id}
       initial={{ opacity: 0, y: -15 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: 15 }}
       layout
-      className="bg-[#1E293B] border border-[#334155] rounded-2xl shadow-lg p-5 flex flex-col items-center hover:shadow-xl hover:border-[#2563EB] transition-all duration-300 relative"
+      className="bg-[#1E293B] border border-[#334155] rounded-2xl shadow-lg p-5 flex flex-col items-center hover:shadow-xl hover:border-[#2563EB] transition-all duration-300"
     >
-      {/* Image Section */}
-      <div className="w-full h-44 rounded-xl mb-4 flex items-center justify-center overflow-hidden bg-[#0F172A]">
+      {/* 🖼 Image Section */}
+      <div className="w-full h-44 rounded-xl mb-4 overflow-hidden bg-[#0F172A]">
         <img
           src={
             item?.imageUrl?.trim()
@@ -80,63 +68,58 @@ export default function AuctionCard({
         />
       </div>
 
-      {/* Title */}
+      {/* 🏷 Title */}
       <h3 className="font-semibold text-lg text-center text-white leading-snug">
         {item.title}
       </h3>
 
-      {/* Description */}
+      {/* 📝 Description */}
       <p className="text-[#94A3B8] text-sm text-center mt-1 mb-3 line-clamp-2">
         {item.description}
       </p>
 
-      {/* Auction Timer */}
-      {displayTimer && (
+      {/* ⏳ Auction Timer */}
+      {type === "register" && (
         <div
           className={`px-4 py-1 rounded-full text-xs font-bold shadow-md mb-3 transition ${
-            isClosed ? "bg-[#EF4444] text-white" : "bg-[#2563EB] text-white"
-          }`}
+            isClosed ? "bg-[#EF4444]" : "bg-[#2563EB]"
+          } text-white`}
         >
           {isClosed ? "Registration Closed" : `Closes in: ${displayTimer}`}
         </div>
       )}
 
-      {/* Live Auction Price */}
-      {type === "live" && (
+      {/* 💰 Current Bid for Spectators */}
+      {type === "spectate" && (
         <div className="text-[#34D399] font-bold text-lg mb-3">
           Current Bid: ₹{item.currentBid}
         </div>
       )}
 
-      {/* Buttons */}
+      {/* 🔘 Action Button */}
       {type === "my-listings" ? (
         <button
           onClick={handleEdit}
-          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2563EB] text-[#2563EB] font-medium hover:bg-[#2563EB]/10 hover:scale-105 transition-all duration-300"
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-[#2563EB] text-[#2563EB] font-medium hover:bg-[#2563EB]/10 hover:scale-105 transition-all"
         >
-          <FaEdit className="text-lg" />
-          Edit Listing
+          <FaEdit className="text-lg" /> Edit Listing
         </button>
       ) : (
         <button
-          disabled={isClosed && type === "upcoming"}
+          disabled={isClosed && type === "register"}
           onClick={handleNavigation}
           className={`mt-3 px-4 py-2 rounded-lg transition text-white font-medium shadow-md flex items-center gap-2 ${
-            type === "live"
+            type === "spectate"
               ? "bg-[#10B981] hover:bg-[#059669]"
               : isClosed
               ? "bg-gray-500 cursor-not-allowed"
               : "bg-[#2563EB] hover:bg-[#1D4ED8]"
           }`}
         >
-          {type === "live" ? (
+          {type === "spectate" ? (
             <>
               <FaEye /> Spectate
             </>
-          ) : type === "top-picks" ? (
-            "View Details"
-          ) : type === "bidding-history" ? (
-            "View Auction"
           ) : (
             "Register Now"
           )}
