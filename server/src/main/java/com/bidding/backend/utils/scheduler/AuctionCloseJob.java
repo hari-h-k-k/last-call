@@ -1,5 +1,6 @@
 package com.bidding.backend.utils.scheduler;
 
+import com.bidding.backend.service.ItemService;
 import com.bidding.backend.service.RoomService;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -13,10 +14,13 @@ public class AuctionCloseJob implements Job {
     @Autowired
     private RoomService roomService;
 
+    @Autowired
+    private ItemService itemService;
+
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         String itemId = context.getJobDetail().getJobDataMap().getString("itemId");
         roomService.closeRoomForItem(itemId); // finalize auction, declare winner
-        System.out.println("Auction closed for item: " + itemId);
+        System.out.println("Auction closed for item: " + itemService.getItem(itemId).getTitle());
     }
 }

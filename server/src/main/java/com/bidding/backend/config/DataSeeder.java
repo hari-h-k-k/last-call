@@ -35,92 +35,106 @@ public class DataSeeder {
             itemRepo.deleteAll();
             roomRepo.deleteAll();
 
+            Date now = new Date();
             PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-            // ---- USERS ---- (passwords are hashed)
+            // --- USERS (simple names, password = last name) ---
             User steve = new User("Steve Rogers", "steve", "steve@rogers.com",
                     passwordEncoder.encode("rogers"));
-            User uncle   = new User("Uncle Ben", "uncle", "uncle@ben.com",
-                    passwordEncoder.encode("ben"));
-            User peter = new User("Peter Parker", "peter", "peter@parker.com",
-                    passwordEncoder.encode("parker"));
             User tony = new User("Tony Stark", "tony", "tony@stark.com",
                     passwordEncoder.encode("stark"));
+            User peter = new User("Peter Parker", "peter", "peter@parker.com",
+                    passwordEncoder.encode("parker"));
+            User bruce = new User("Bruce Wayne", "bruce", "bruce@wayne.com",
+                    passwordEncoder.encode("wayne"));
+            User clark = new User("Clark Kent", "clark", "clark@dailyplanet.com",
+                    passwordEncoder.encode("kent"));
+            User thor = new User("Thor Odinson", "thor", "thor@asgard.com",
+                    passwordEncoder.encode("odinson"));
+            User bruceBanner = new User("Bruce Banner", "hulk", "bruce@banner.com",
+                    passwordEncoder.encode("banner"));
+            User uncle   = new User("Uncle Ben", "uncle", "uncle@ben.com",
+                    passwordEncoder.encode("ben"));
 
-            userService.saveUser(steve);
-            userService.saveUser(uncle);
-            userService.saveUser(peter);
-            userService.saveUser(tony);
+            // --- Save users ---
+            List<User> users = List.of(steve, tony, peter, bruce, clark, thor, bruceBanner, uncle);
 
-            Date now = new Date();
+            for (User user : users) {
+                userService.saveUser(user);
+            }
 
-            // ---- BID ITEMS ----
-            Item laptop = new Item("Gaming Laptop", "RTX 4060, 16GB RAM, 1TB SSD",
+            // --- ITEMS ---
+            // Owned by Steve Rogers
+            Item shield = new Item("Captain America Shield", "Replica of Cap's shield",
                     steve.getId(),
                     new Date(now.getTime() + 1000 * 60 * 60),     // registration closes in 1h
                     new Date(now.getTime() + 1000 * 60 * 60 * 2), // bidding starts in 2h
-                    1000.0, ItemCategory.ELECTRONICS, List.of("laptop", "gaming"), new LocationRequest(0,0));
-            laptop.setSubscribersId(List.of(uncle.getId(), peter.getId()));
+                    1200.0, ItemCategory.COLLECTIBLES, List.of("shield", "marvel"), new LocationRequest(0,0));
+            shield.setSubscribersId(List.of(uncle.getId(), peter.getId(), tony.getId()));
 
-            Item phone = new Item("iPhone 14", "128GB, Midnight Black",
+            // Owned by Uncle Ben
+            Item pocketWatch = new Item("Vintage Pocket Watch", "Antique gold pocket watch passed down in the family",
                     uncle.getId(),
-                    new Date(now.getTime() + 1000 * 60 * 60 * 3), // closes in 3h
-                    new Date(now.getTime() + 1000 * 60 * 60 * 4), // starts in 4h
-                    800.0, ItemCategory.ELECTRONICS, List.of("smartphone", "apple"), new LocationRequest(0,0));
-            phone.setSubscribersId(List.of(steve.getId(), tony.getId()));
+                    new Date(now.getTime() + 1000 * 60 * 20),   // registration closes in 20 min
+                    new Date(now.getTime() + 1000 * 60 * 40),   // auction starts in 40 min
+                    200.0, ItemCategory.COLLECTIBLES, List.of("vintage", "watch", "antique"), new LocationRequest(0,0));
+            pocketWatch.setSubscribersId(List.of(steve.getId(), peter.getId(), bruce.getId()));
 
-            Item bike = new Item("Mountain Bike", "21 speed, lightweight frame",
+            // Owned by Peter Parker
+            Item webShooter = new Item("Web Shooter", "Mechanical web-shooters replica",
                     peter.getId(),
-                    new Date(now.getTime() + 1000 * 60 * 20), // closes in 20 min
-                    new Date(now.getTime() + 1000 * 60 * 30), // starts in 30 min
-                    300.0, ItemCategory.SPORTS, List.of("bike", "outdoor"), new LocationRequest(0,0));
-            bike.setSubscribersId(List.of(steve.getId(), uncle.getId()));
+                    new Date(now.getTime() + 1000 * 60 * 15), // registration closes in 15 min
+                    new Date(now.getTime() + 1000 * 60 * 25), // auction starts in 25 min
+                    450.0, ItemCategory.COLLECTIBLES, List.of("web-shooter", "spiderman"), new LocationRequest(0,0));
+            webShooter.setSubscribersId(List.of(steve.getId(), uncle.getId(), tony.getId()));
 
-//            Item car = new Item("SUV", "4x4, 4-cylinder engine",
-//                    tony.getId(),
-//                    new Date(now.getTime() + 1000 * 60 * 20), // closes in 20 min
-//                    new Date(now.getTime() + 1000 * 60 * 10), // starts in 30 min
-//                    300.0, "Sports", List.of("car", "outdoor"));
-//            car.setSubscribersId(List.of(steve.getId(), uncle.getId()));
+            Item camera = new Item("Vintage Camera", "Classic film camera, perfect for photography fans",
+                    peter.getId(),
+                    new Date(now.getTime() + 1000 * 50),    // registration closes in 50 sec
+                    new Date(now.getTime() + 1000 * 140),   // auction starts in 2 min 20 sec
+                    200.0, ItemCategory.COLLECTIBLES, List.of("camera", "vintage"), new LocationRequest(0,0));
+            camera.setSubscribersId(List.of(steve.getId(), uncle.getId()));
 
-            Item house = new Item("House", "3BHK",
+            // Owned by Tony Stark
+            Item ironSuit = new Item("Iron Man Suit", "Mark XLVI armor replica",
                     tony.getId(),
-                    new Date(now.getTime() - 1000 * 60 * 60 * 100),
-                    new Date(now.getTime() - 1000 * 60 * 60 * 80),
-                    300.0, ItemCategory.PROPERTY, List.of("property", "house"), new LocationRequest(0,0));
-            house.setSubscribersId(List.of(steve.getId(), uncle.getId()));
+                    new Date(now.getTime() + 1000 * 60 * 50), // registration closes in 50 min
+                    new Date(now.getTime() + 1000 * 60 * 70), // auction starts in 70 min
+                    5000.0, ItemCategory.COLLECTIBLES, List.of("armor", "marvel"), new LocationRequest(0,0));
+            ironSuit.setSubscribersId(List.of(steve.getId(), peter.getId(), bruce.getId()));
 
-            itemService.saveItem(laptop);
-            itemService.saveItem(phone);
-            itemService.saveItem(bike);
-//            itemService.saveItem(car);
-            itemService.saveItem(house);
+            Item oldHelmet = new Item("Iron Man Helmet", "Scratched Mark III helmet replica",
+                    tony.getId(),
+                    new Date(now.getTime() - 1000 * 60 * 60), // registration closed 1 hour ago
+                    new Date(now.getTime() - 1000 * 30 * 60), // auction started 30 min ago
+                    1000.0, ItemCategory.COLLECTIBLES, List.of("helmet", "marvel"), new LocationRequest(0,0));
+            oldHelmet.setSubscribersId(List.of(steve.getId(), peter.getId(), bruce.getId()));
 
-            // ---- ROOMS ----
-            Room room1 = new Room();
-            room1.setItemId(laptop.getId());
-            room1.setStartDate(new Date());
-            room1.setEndDate(new Date(System.currentTimeMillis() + 1000 * 60 * 60));
-            room1.setStatus("ACTIVE");
-            room1.setListOfUserIds(List.of(uncle.getId(), peter.getId(), tony.getId()));
-            room1.setCurrentPrice(1100.0);
-            room1.setCreatedAt(new Date());
-            room1.setUpdatedAt(new Date());
-            room1.setWinnerId(null); // no winner yet
+            // Owned by Bruce Wayne
+            Item batMobile = new Item("Batmobile", "High-tech armored vehicle",
+                    bruce.getId(),
+                    new Date(now.getTime() + 1000 * 60 * 15), // registration closes in 15 min
+                    new Date(now.getTime() + 1000 * 60 * 25), // auction starts in 25 min
+                    500000.0, ItemCategory.VEHICLES, List.of("batmobile", "dc"), new LocationRequest(0,0));
+            batMobile.setSubscribersId(List.of(bruceBanner.getId(), clark.getId()));
 
-            Room room2 = new Room();
-            room2.setItemId(phone.getId());
-            room2.setStartDate(new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 2));
-            room2.setEndDate(new Date(System.currentTimeMillis() - 1000 * 60 * 30));
-            room2.setStatus("ENDED");
-            room2.setListOfUserIds(List.of(steve.getId(), peter.getId()));
-            room2.setCurrentPrice(950.0);
-            room2.setCreatedAt(new Date());
-            room2.setUpdatedAt(new Date());
-            room2.setWinnerId(steve.getId()); // Alice won
+            // Owned by Clark Kent
+            Item kryptonite = new Item("Kryptonite Shard", "Green kryptonite piece",
+                    clark.getId(),
+                    new Date(now.getTime() + 1000 * 60 * 10), // closes in 10 min
+                    new Date(now.getTime() + 1000 * 60 * 20), // auction starts in 20 min
+                    500.0, ItemCategory.COLLECTIBLES, List.of("kryptonite", "dc"), new LocationRequest(0,0));
+            kryptonite.setSubscribersId(List.of(bruce.getId(), bruceBanner.getId(), thor.getId()));
 
-            roomService.saveRoom(room1);
-            roomService.saveRoom(room2);
+            itemService.saveItem(shield);
+            itemService.saveItem(pocketWatch);
+            itemService.saveItem(webShooter);
+            itemService.saveItem(camera);
+            itemService.saveItem(ironSuit);
+            itemService.saveItem(batMobile);
+            itemService.saveItem(kryptonite);
+            itemService.saveItem(oldHelmet);
+
         };
     }
 }

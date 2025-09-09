@@ -1,6 +1,7 @@
 package com.bidding.backend.service;
 
 import com.bidding.backend.entity.Room;
+import com.bidding.backend.repository.ItemRepository;
 import com.bidding.backend.repository.RoomRepository;
 import com.bidding.backend.utils.enums.RoomStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,9 @@ public class RoomService {
 
     @Autowired
     private RoomRepository roomRepository;
+
+    @Autowired
+    private ItemRepository itemRepository;
 
     public RoomService(RoomRepository roomRepository) {
         this.roomRepository = roomRepository;
@@ -24,18 +28,18 @@ public class RoomService {
         return roomRepository.findById(id).orElse(null);
     }
 
-    public void openRoomForItem(String roomId) {
-        Room room= roomRepository.findById(roomId).orElse(null);
+    public void openRoomForItem(String itemId) {
+        Room room = roomRepository.findByItemId(itemId);
         if(room!=null) {
-            room.setStatus(String.valueOf(RoomStatus.ACTIVE));
+            room.setStatus(RoomStatus.ACTIVE.name());
             roomRepository.save(room);
         }
     }
 
-    public void closeRoomForItem(String roomId) {
-        Room room= roomRepository.findById(roomId).orElse(null);
+    public void closeRoomForItem(String itemId) {
+        Room room = roomRepository.findByItemId(itemId);
         if(room!=null) {
-            room.setStatus(String.valueOf(RoomStatus.CLOSED));
+            room.setStatus(RoomStatus.CLOSED.name());
             roomRepository.save(room);
         }
     }

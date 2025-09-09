@@ -45,6 +45,42 @@ public class Room {
     public Room() {
     }
 
+    public static class Builder {
+        private String itemId;
+        private Date startDate;
+        private Date endDate;
+        private String status;
+        private List<String> listOfUserIds;
+        private double currentPrice;
+        private Date createdAt;
+        private Date updatedAt;
+        private String winnerId;
+
+        public Builder itemId(String itemId) { this.itemId = itemId; return this; }
+        public Builder startDate(Date startDate) { this.startDate = startDate; return this; }
+        public Builder endDate(Date endDate) { this.endDate = endDate; return this; }
+        public Builder status(String status) { this.status = status; return this; }
+        public Builder listOfUserIds(List<String> listOfUserIds) { this.listOfUserIds = listOfUserIds; return this; }
+        public Builder currentPrice(double currentPrice) { this.currentPrice = currentPrice; return this; }
+        public Builder createdAt(Date createdAt) { this.createdAt = createdAt; return this; }
+        public Builder updatedAt(Date updatedAt) { this.updatedAt = updatedAt; return this; }
+        public Builder winnerId(String winnerId) { this.winnerId = winnerId; return this; }
+
+        public Room build() {
+            Room room = new Room();
+            room.itemId = this.itemId;
+            room.startDate = this.startDate;
+            room.endDate = this.endDate;
+            room.status = this.status;
+            room.listOfUserIds = this.listOfUserIds;
+            room.currentPrice = this.currentPrice;
+            room.createdAt = this.createdAt;
+            room.updatedAt = this.updatedAt;
+            room.winnerId = this.winnerId;
+            return room;
+        }
+    }
+
     public String getId() {
         return id;
     }

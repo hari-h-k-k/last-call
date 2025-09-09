@@ -1,9 +1,12 @@
 package com.bidding.backend.service;
 
 import com.bidding.backend.entity.Item;
+import com.bidding.backend.entity.Room;
 import com.bidding.backend.observer.ItemObserver;
 import com.bidding.backend.observer.NotificationService;
 import com.bidding.backend.repository.ItemRepository;
+import com.bidding.backend.repository.RoomRepository;
+import com.bidding.backend.utils.enums.RoomStatus;
 import com.bidding.backend.utils.scheduler.AuctionSchedulerService;
 import org.quartz.SchedulerException;
 import org.springframework.beans.BeanUtils;
@@ -24,6 +27,9 @@ public class ItemService {
     private ItemRepository itemRepository;
 
     @Autowired
+    private RoomRepository roomRepository;
+
+    @Autowired
     private AuctionSchedulerService auctionSchedulerService;
 
     private final MongoTemplate mongoTemplate;
@@ -42,13 +48,30 @@ public class ItemService {
         if (item.getRegistrationClosingDate().after(item.getAuctionStartDate())) {
             throw new IllegalArgumentException("Registration closing date cannot be after bid start date");
         }
+
+        // --- Save the item ---
         itemRepository.save(item);
+
+        // --- Create room using Builder ---
+        Room room = new Room.Builder()
+                .itemId(item.getId())
+                .startDate(item.getAuctionStartDate())
+                .status(RoomStatus.INACTIVE.name())
+                .currentPrice(item.getStartingPrice())
+                .listOfUserIds(item.getSubscribersId())
+                .createdAt(new Date())
+                .updatedAt(new Date())
+                .build();
+
+        roomRepository.save(room);
+
+        // --- Schedule auction start and close jobs ---
         auctionSchedulerService.scheduleAuctionJobs(
                 item.getId(),
-                item.getAuctionStartDate(),
-                item.getRegistrationClosingDate()
+                item.getAuctionStartDate()
         );
     }
+
 
     public void removeItem(String itemId) {
         itemRepository.deleteById(itemId);
@@ -160,8 +183,7 @@ public class ItemService {
             // Schedule new jobs with updated dates
             auctionSchedulerService.scheduleAuctionJobs(
                     existingItem.getId(),
-                    existingItem.getAuctionStartDate(),
-                    existingItem.getRegistrationClosingDate()
+                    existingItem.getAuctionStartDate()
             );
         }
 

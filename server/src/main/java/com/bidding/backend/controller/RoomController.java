@@ -26,13 +26,13 @@ public class RoomController {
 
     @GetMapping("/get-room")
     public ResponseEntity<Object> getRoom(@RequestParam String roomId) {
-        Map<String, Object> info = new HashMap<>();
-        info.put("room", roomService.getRoomById(roomId));
+        Map<String, Object> rooms = new HashMap<>();
+        rooms.put("room", roomService.getRoomById(roomId));
 
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
                 .setMessage("Room fetched successfully!")
-                .setInfo(info)
+                .setInfo(rooms)
                 .build();
 
         return ResponseEntity.status(200).body(response);

@@ -12,7 +12,7 @@ public class AuctionSchedulerService {
     @Autowired
     private Scheduler scheduler;
 
-    public void scheduleAuctionJobs(String itemId, Date bidStartDate, Date registrationClosingDate) throws SchedulerException {
+    public void scheduleAuctionJobs(String itemId, Date bidStartDate) throws SchedulerException {
 
         // --- Start Job ---
         JobDetail startJob = JobBuilder.newJob(AuctionStartJob.class)
@@ -28,21 +28,6 @@ public class AuctionSchedulerService {
                 .build();
 
         scheduler.scheduleJob(startJob, startTrigger);
-
-        // --- Close Job ---
-        JobDetail closeJob = JobBuilder.newJob(AuctionCloseJob.class)
-                .withIdentity("auctionCloseJob_" + itemId, "auctionJobs")
-                .usingJobData("itemId", itemId)
-                .build();
-
-        Trigger closeTrigger = TriggerBuilder.newTrigger()
-                .withIdentity("auctionCloseTrigger_" + itemId, "auctionTriggers")
-                .startAt(registrationClosingDate) // close auction at registrationClosingDate or bidEndDate
-                .withSchedule(SimpleScheduleBuilder.simpleSchedule()
-                        .withMisfireHandlingInstructionFireNow())
-                .build();
-
-        scheduler.scheduleJob(closeJob, closeTrigger);
     }
 
     public void deleteAuctionJobs(String itemId) throws SchedulerException {
