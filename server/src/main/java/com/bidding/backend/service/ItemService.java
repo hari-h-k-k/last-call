@@ -76,10 +76,19 @@ public class ItemService {
         List<Map<String, Object>> list = new ArrayList<>();
         for (Item item : items) {
             long timeRemaining = item.getRegistrationClosingDate().getTime() - now.getTime();
+
             Map<String, Object> map = new HashMap<>();
             map.put("item", item);
             map.put("registrationClosingDate", item.getRegistrationClosingDate());
             map.put("timeRemainingMillis", timeRemaining > 0 ? timeRemaining : 0);
+
+            // Add "registered" flag (true if userId is in subscribers)
+            boolean isRegistered = false;
+            if (userId != null && item.getSubscribersId() != null) {
+                isRegistered = item.getSubscribersId().contains(userId);
+            }
+            map.put("registered", isRegistered);
+
             list.add(map);
         }
 

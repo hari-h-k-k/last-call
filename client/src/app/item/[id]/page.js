@@ -82,16 +82,27 @@ export default function ItemDetails() {
         return;
       }
 
-      await api.put(`/auctions/item-subscribe`, null, {
-        headers: {
-          ...getAuthHeaders(),
-          itemId: id,
-          userId: userInfo.userId,
-        },
-      });
+      console.log("User info:", userInfo)
+      console.log("User id:", userInfo.id)
 
-      alert("Successfully registered for bidding!");
-      setIsSubscribed(true);
+      const response = await api.put(
+        `/auctions/item-subscribe?itemId=${id}&userId=${userInfo.id}`,
+        null,
+        {
+          headers: {
+            ...getAuthHeaders(),
+          },
+        }
+      );
+
+      console.log("Subscription response:", response.data);
+
+      if (response.data.status === "success") {
+        alert(response.data.message || "Successfully registered for bidding!");
+        setIsSubscribed(true);
+      } else {
+        alert("Failed to register. Please try again!");
+      }
     } catch (err) {
       console.error("Registration failed:", err);
       alert("Failed to register for bidding. Try again!");
@@ -99,6 +110,7 @@ export default function ItemDetails() {
       setIsRegistering(false);
     }
   };
+
 
   if (loading) {
     return (

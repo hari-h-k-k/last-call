@@ -91,7 +91,7 @@ export default function AuctionCard({
       </p>
 
       {/* Auction Timer */}
-      {type === "upcoming" && displayTimer && (
+      {displayTimer && (
         <div
           className={`px-4 py-1 rounded-full text-xs font-bold shadow-md mb-3 transition ${
             isClosed ? "bg-[#EF4444] text-white" : "bg-[#2563EB] text-white"

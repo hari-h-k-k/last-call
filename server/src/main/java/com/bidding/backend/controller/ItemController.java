@@ -5,6 +5,7 @@ import com.bidding.backend.entity.Item;
 import com.bidding.backend.service.ItemService;
 
 import com.bidding.backend.utils.enums.ItemCategory;
+import com.bidding.backend.utils.jwt.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +21,12 @@ public class ItemController {
     private ItemService itemService;
 
     @Autowired
-    public ItemController(ItemService itemService) {
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    public ItemController(ItemService itemService, JwtUtil jwtUtil) {
         this.itemService = itemService;
+        this.jwtUtil = jwtUtil;
     }
 
     @PostMapping("/place-item")
@@ -81,19 +86,19 @@ public class ItemController {
         return ResponseEntity.ok(response);
     }
 
-
     @PutMapping("/item-subscribe")
-    public ResponseEntity<Object> itemSubscribe(@RequestHeader String itemId, @RequestHeader String userId) {
+    public ResponseEntity<Object> itemSubscribe(@RequestParam String itemId, @RequestParam String userId) {
         itemService.itemSubscribe(itemId, userId, true);
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
                 .setMessage("User subscribed to item successfully!")
                 .build();
+
         return ResponseEntity.status(200).body(response);
     }
 
     @PutMapping("/item-unsubscribe")
-    public ResponseEntity<Object> itemUnsubscribe(@RequestHeader String itemId, @RequestHeader String userId) {
+    public ResponseEntity<Object> itemUnsubscribe(@RequestParam String itemId, @RequestParam String userId) {
         itemService.itemSubscribe(itemId, userId, false);
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
@@ -135,10 +140,27 @@ public class ItemController {
     }
 
     @GetMapping("/search-items/{input}")
-    public ResponseEntity<Object> searchItems(@PathVariable String input) {
+    public ResponseEntity<Object> searchItems(
+            @PathVariable String input,
+            @RequestHeader(value = "Authorization", required = false) String token) {
+
+        String userId = null;
+
+        // If token is present, validate and extract userId
+        if (token != null && token.startsWith("Bearer ")) {
+            String jwt = token.substring(7); // remove "Bearer "
+            if (jwtUtil.validateToken(jwt)) {
+                userId = jwtUtil.extractUserId(jwt);
+            }
+        }
+
+        System.out.println(userId);
+
+        // Do search
         List<Item> results = itemService.searchItems(input);
+
         Map<String, Object> response;
-        if(results.isEmpty()) {
+        if (results.isEmpty()) {
             response = new ResponseBuilder()
                     .setStatus("success")
                     .setMessage("No items found!")
@@ -150,6 +172,13 @@ public class ItemController {
                     .setInfo(results)
                     .build();
         }
-        return ResponseEntity.status(200).body(response);
+
+        // Add userId info to response if present
+        if (userId != null) {
+            response.put("userId", userId);
+        }
+
+        return ResponseEntity.ok(response);
     }
+
 }
