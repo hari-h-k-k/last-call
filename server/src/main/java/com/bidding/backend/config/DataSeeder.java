@@ -1,13 +1,13 @@
 package com.bidding.backend.config;
 
 import com.bidding.backend.entity.Item;
-import com.bidding.backend.entity.BiddingRoom;
+import com.bidding.backend.entity.Room;
 import com.bidding.backend.entity.LocationRequest;
 import com.bidding.backend.entity.User;
 import com.bidding.backend.repository.ItemRepository;
-import com.bidding.backend.repository.BiddingRoomRepository;
+import com.bidding.backend.repository.RoomRepository;
 import com.bidding.backend.repository.UserRepository;
-import com.bidding.backend.service.BiddingRoomService;
+import com.bidding.backend.service.RoomService;
 import com.bidding.backend.service.ItemService;
 import com.bidding.backend.service.UserService;
 import com.bidding.backend.utils.enums.ItemCategory;
@@ -28,12 +28,12 @@ public class DataSeeder {
                                    UserService userService,
                                    ItemRepository itemRepo,
                                    ItemService itemService,
-                                   BiddingRoomRepository biddingRoomRepo,
-                                   BiddingRoomService biddingRoomService) {
+                                   RoomRepository roomRepo,
+                                   RoomService roomService) {
         return args -> {
             userRepo.deleteAll();
             itemRepo.deleteAll();
-            biddingRoomRepo.deleteAll();
+            roomRepo.deleteAll();
 
             PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
@@ -96,8 +96,8 @@ public class DataSeeder {
 //            itemService.saveItem(car);
             itemService.saveItem(house);
 
-            // ---- BIDDING ROOMS ----
-            BiddingRoom room1 = new BiddingRoom();
+            // ---- ROOMS ----
+            Room room1 = new Room();
             room1.setItemId(laptop.getId());
             room1.setStartDate(new Date());
             room1.setEndDate(new Date(System.currentTimeMillis() + 1000 * 60 * 60));
@@ -108,7 +108,7 @@ public class DataSeeder {
             room1.setUpdatedAt(new Date());
             room1.setWinnerId(null); // no winner yet
 
-            BiddingRoom room2 = new BiddingRoom();
+            Room room2 = new Room();
             room2.setItemId(phone.getId());
             room2.setStartDate(new Date(System.currentTimeMillis() - 1000 * 60 * 60 * 2));
             room2.setEndDate(new Date(System.currentTimeMillis() - 1000 * 60 * 30));
@@ -119,8 +119,8 @@ public class DataSeeder {
             room2.setUpdatedAt(new Date());
             room2.setWinnerId(steve.getId()); // Alice won
 
-            biddingRoomService.saveBiddingRoom(room1);
-            biddingRoomService.saveBiddingRoom(room2);
+            roomService.saveRoom(room1);
+            roomService.saveRoom(room2);
         };
     }
 }

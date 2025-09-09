@@ -6,8 +6,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Date;
 import java.util.List;
 
-@Document(collection = "bidding_rooms")
-public class BiddingRoom {
+@Document(collection = "rooms")
+public class Room {
 
     @Id
     private String id;
@@ -30,7 +30,7 @@ public class BiddingRoom {
 
     private String winnerId;
 
-    public BiddingRoom(String itemId, Date startDate, Date endDate, String status, List<String> listOfUserIds, double currentPrice, Date createdAt, Date updatedAt, String winnerId) {
+    public Room(String itemId, Date startDate, Date endDate, String status, List<String> listOfUserIds, double currentPrice, Date createdAt, Date updatedAt, String winnerId) {
         this.itemId = itemId;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -42,7 +42,7 @@ public class BiddingRoom {
         this.winnerId = winnerId;
     }
 
-    public BiddingRoom() {
+    public Room() {
     }
 
     public String getId() {
@@ -127,7 +127,7 @@ public class BiddingRoom {
 
     @Override
     public String toString() {
-        return "BiddingRoom{" +
+        return "Room{" +
                 "id=" + id +
                 ", itemId=" + itemId +
                 ", startDate=" + startDate +

@@ -6,6 +6,7 @@ import com.bidding.backend.service.ItemService;
 
 import com.bidding.backend.utils.enums.ItemCategory;
 import com.bidding.backend.utils.jwt.JwtUtil;
+import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +31,7 @@ public class ItemController {
     }
 
     @PostMapping("/place-item")
-    public ResponseEntity<Object> placeItem(@RequestBody Item item) {
+    public ResponseEntity<Object> placeItem(@RequestBody Item item) throws SchedulerException {
         if(item.getId() != null) {
             itemService.updateItem(item);
             Map<String, Object> response = new ResponseBuilder()
@@ -68,7 +69,7 @@ public class ItemController {
                 .setInfo(info)
                 .build();
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(200).body(response);
     }
 
     @GetMapping("/get-upcoming-items")
@@ -107,15 +108,6 @@ public class ItemController {
         return ResponseEntity.status(200).body(response);
     }
 
-    @PutMapping("/update-item")
-    public ResponseEntity<Object> itemRegisterUser(@RequestBody Item item) {
-        itemService.updateItem(item);
-        Map<String, Object> response = new ResponseBuilder()
-                .setStatus("success")
-                .setMessage("Item updated successfully!")
-                .build();
-        return ResponseEntity.status(200).body(response);
-    }
 
     @DeleteMapping("/remove-item/{itemId}")
     public ResponseEntity<Object> removeItem(@PathVariable String itemId) {
@@ -157,10 +149,10 @@ public class ItemController {
         System.out.println(userId);
 
         // Do search
-        List<Map<String, Object>> results = itemService.searchItems(input, userId);
+        List<Map<String, Object>> searchResults = itemService.searchItems(input, userId);
 
         Map<String, Object> response;
-        if (results.isEmpty()) {
+        if (searchResults.isEmpty()) {
             response = new ResponseBuilder()
                     .setStatus("success")
                     .setMessage("No items found!")
@@ -169,7 +161,7 @@ public class ItemController {
             response = new ResponseBuilder()
                     .setStatus("success")
                     .setMessage("Items fetched successfully!")
-                    .setInfo(results)
+                    .setInfo(Map.of("searchResults", searchResults))
                     .build();
         }
 
@@ -178,7 +170,7 @@ public class ItemController {
             response.put("userId", userId);
         }
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(200).body(response);
     }
 
 }

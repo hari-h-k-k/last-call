@@ -23,6 +23,8 @@ export default function SearchResults({ query }) {
           headers: { ...getAuthHeaders() },
         });
 
+        console.log("Search Response:", response);
+
         const items = Array.isArray(response.data?.info)
           ? response.data.info
           : [];

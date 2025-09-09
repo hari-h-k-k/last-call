@@ -4,6 +4,8 @@ import com.bidding.backend.entity.Item;
 import com.bidding.backend.observer.ItemObserver;
 import com.bidding.backend.observer.NotificationService;
 import com.bidding.backend.repository.ItemRepository;
+import com.bidding.backend.utils.scheduler.AuctionSchedulerService;
+import org.quartz.SchedulerException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
@@ -21,6 +23,9 @@ public class ItemService {
     @Autowired
     private ItemRepository itemRepository;
 
+    @Autowired
+    private AuctionSchedulerService auctionSchedulerService;
+
     private final MongoTemplate mongoTemplate;
 
     private final List<ItemObserver> observers = new ArrayList<>();
@@ -33,11 +38,16 @@ public class ItemService {
     }
 
 
-    public void saveItem(Item item) {
-        if (item.getRegistrationClosingDate().after(item.getBidStartDate())) {
+    public void saveItem(Item item) throws SchedulerException {
+        if (item.getRegistrationClosingDate().after(item.getAuctionStartDate())) {
             throw new IllegalArgumentException("Registration closing date cannot be after bid start date");
         }
         itemRepository.save(item);
+        auctionSchedulerService.scheduleAuctionJobs(
+                item.getId(),
+                item.getAuctionStartDate(),
+                item.getRegistrationClosingDate()
+        );
     }
 
     public void removeItem(String itemId) {
@@ -106,30 +116,54 @@ public class ItemService {
         }
     }
 
-    public void updateItem(Item item) {
+    public void updateItem(Item item) throws SchedulerException {
         Item existingItem = this.getItem(item.getId());
-
         List<String> alerts = new ArrayList<>();
 
-        if(!existingItem.getRegistrationClosingDate().toString().equals(item.getRegistrationClosingDate().toString())) {
+        boolean datesChanged = false;
+
+        // --- Registration Closing Date ---
+        if (!existingItem.getRegistrationClosingDate().equals(item.getRegistrationClosingDate())) {
+            if (item.getRegistrationClosingDate().after(item.getAuctionStartDate())) {
+                throw new IllegalArgumentException("Registration closing date cannot be after bid start date");
+            }
             alerts.add(String.format("Registration Closing Date of %s was updated.", item.getTitle()));
         }
 
-        if(!existingItem.getBidStartDate().toString().equals(item.getBidStartDate().toString())) {
-            alerts.add(String.format("Bid Start Date of %s was updated.", item.getTitle()));
+        // --- Auction Start Date ---
+        if (!existingItem.getAuctionStartDate().equals(item.getAuctionStartDate())) {
+            if (item.getRegistrationClosingDate().after(item.getAuctionStartDate())) {
+                throw new IllegalArgumentException("Registration closing date cannot be after bid start date");
+            }
+            alerts.add(String.format("Auction Start Date of %s was updated.", item.getTitle()));
+            datesChanged = true;
         }
 
-        if(existingItem.getStartingPrice() != item.getStartingPrice()) {
+        // --- Starting Price ---
+        if (existingItem.getStartingPrice() != item.getStartingPrice()) {
             alerts.add(String.format("Starting Price of %s was updated.", item.getTitle()));
         }
 
-        if(alerts.isEmpty()) {
+        if (alerts.isEmpty()) {
             alerts.add(String.format("%s in your watchlist was updated.", item.getTitle()));
         }
 
+        // Copy non-null properties
         BeanUtils.copyProperties(item, existingItem, getNullPropertyNames(item));
-
         itemRepository.save(existingItem);
+
+        // --- Reschedule Quartz jobs if dates changed ---
+        if (datesChanged) {
+            // Cancel existing jobs
+            auctionSchedulerService.deleteAuctionJobs(existingItem.getId());
+
+            // Schedule new jobs with updated dates
+            auctionSchedulerService.scheduleAuctionJobs(
+                    existingItem.getId(),
+                    existingItem.getAuctionStartDate(),
+                    existingItem.getRegistrationClosingDate()
+            );
+        }
 
         notifyObservers(existingItem, alerts);
     }

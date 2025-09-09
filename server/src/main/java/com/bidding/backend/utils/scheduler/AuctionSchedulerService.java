@@ -1,0 +1,59 @@
+package com.bidding.backend.utils.scheduler;
+
+import org.quartz.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Date;
+
+@Service
+public class AuctionSchedulerService {
+
+    @Autowired
+    private Scheduler scheduler;
+
+    public void scheduleAuctionJobs(String itemId, Date bidStartDate, Date registrationClosingDate) throws SchedulerException {
+
+        // --- Start Job ---
+        JobDetail startJob = JobBuilder.newJob(AuctionStartJob.class)
+                .withIdentity("auctionStartJob_" + itemId, "auctionJobs")
+                .usingJobData("itemId", itemId)
+                .build();
+
+        Trigger startTrigger = TriggerBuilder.newTrigger()
+                .withIdentity("auctionStartTrigger_" + itemId, "auctionTriggers")
+                .startAt(bidStartDate)
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule()
+                        .withMisfireHandlingInstructionFireNow())
+                .build();
+
+        scheduler.scheduleJob(startJob, startTrigger);
+
+        // --- Close Job ---
+        JobDetail closeJob = JobBuilder.newJob(AuctionCloseJob.class)
+                .withIdentity("auctionCloseJob_" + itemId, "auctionJobs")
+                .usingJobData("itemId", itemId)
+                .build();
+
+        Trigger closeTrigger = TriggerBuilder.newTrigger()
+                .withIdentity("auctionCloseTrigger_" + itemId, "auctionTriggers")
+                .startAt(registrationClosingDate) // close auction at registrationClosingDate or bidEndDate
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule()
+                        .withMisfireHandlingInstructionFireNow())
+                .build();
+
+        scheduler.scheduleJob(closeJob, closeTrigger);
+    }
+
+    public void deleteAuctionJobs(String itemId) throws SchedulerException {
+        JobKey startJobKey = new JobKey("auctionStartJob_" + itemId, "auctionJobs");
+        JobKey closeJobKey = new JobKey("auctionCloseJob_" + itemId, "auctionJobs");
+
+        if (scheduler.checkExists(startJobKey)) {
+            scheduler.deleteJob(startJobKey);
+        }
+        if (scheduler.checkExists(closeJobKey)) {
+            scheduler.deleteJob(closeJobKey);
+        }
+    }
+}

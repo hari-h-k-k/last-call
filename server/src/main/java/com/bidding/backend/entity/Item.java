@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Date;
 import java.util.List;
 
-@Document(collection = "bid_items")
+@Document(collection = "items")
 public class Item {
 
     @Id
@@ -22,7 +22,7 @@ public class Item {
 
     private Date registrationClosingDate;
 
-    private Date bidStartDate;
+    private Date auctionStartDate;
 
     private double startingPrice;
 
@@ -36,11 +36,11 @@ public class Item {
 
 //    private GeoJsonPoint location = new GeoJsonPoint(0.0, 0.0);
 
-    public Item(String title, String description, String sellerId, Date registrationClosingDate, Date bidStartDate, double startingPrice, ItemCategory category, List<String> tags, LocationRequest location) {
+    public Item(String title, String description, String sellerId, Date registrationClosingDate, Date auctionStartDate, double startingPrice, ItemCategory category, List<String> tags, LocationRequest location) {
         this.title = title;
         this.description = description;
         this.sellerId = sellerId;
-        this.bidStartDate = bidStartDate;
+        this.auctionStartDate = auctionStartDate;
         this.registrationClosingDate = registrationClosingDate;
         this.startingPrice = startingPrice;
         this.category = category;
@@ -91,12 +91,12 @@ public class Item {
         this.registrationClosingDate = registrationClosingDate;
     }
 
-    public Date getBidStartDate() {
-        return bidStartDate;
+    public Date getAuctionStartDate() {
+        return auctionStartDate;
     }
 
-    public void setBidStartDate(Date bidStartDate) {
-        this.bidStartDate = bidStartDate;
+    public void setAuctionStartDate(Date auctionStartDate) {
+        this.auctionStartDate = auctionStartDate;
     }
 
     public double getStartingPrice() {
@@ -163,7 +163,7 @@ public class Item {
                 ", description='" + description + '\'' +
                 ", sellerId='" + sellerId + '\'' +
                 ", registrationClosingDate=" + registrationClosingDate +
-                ", bidStartDate=" + bidStartDate +
+                ", auctionStartDate=" + auctionStartDate +
                 ", startingPrice=" + startingPrice +
                 ", category='" + category + '\'' +
                 ", tags=" + tags +
