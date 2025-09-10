@@ -68,7 +68,8 @@ public class ItemService {
         // --- Schedule auction start and close jobs ---
         auctionSchedulerService.scheduleAuctionJobs(
                 item.getId(),
-                item.getAuctionStartDate()
+                item.getAuctionStartDate(),
+                item.getRegistrationClosingDate()
         );
     }
 
@@ -151,6 +152,7 @@ public class ItemService {
                 throw new IllegalArgumentException("Registration closing date cannot be after bid start date");
             }
             alerts.add(String.format("Registration Closing Date of %s was updated.", item.getTitle()));
+            datesChanged = true;
         }
 
         // --- Auction Start Date ---
@@ -183,7 +185,8 @@ public class ItemService {
             // Schedule new jobs with updated dates
             auctionSchedulerService.scheduleAuctionJobs(
                     existingItem.getId(),
-                    existingItem.getAuctionStartDate()
+                    existingItem.getAuctionStartDate(),
+                    item.getRegistrationClosingDate()
             );
         }
 

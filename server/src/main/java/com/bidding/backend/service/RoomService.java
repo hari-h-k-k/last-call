@@ -28,6 +28,14 @@ public class RoomService {
         return roomRepository.findById(id).orElse(null);
     }
 
+    public void closeRegistrationForItem(String itemId) {
+        Room room = roomRepository.findByItemId(itemId);
+        if(room!=null) {
+            room.setStatus(RoomStatus.PENDING.name());
+            roomRepository.save(room);
+        }
+    }
+
     public void openRoomForItem(String itemId) {
         Room room = roomRepository.findByItemId(itemId);
         if(room!=null) {

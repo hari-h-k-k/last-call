@@ -146,8 +146,6 @@ public class ItemController {
             }
         }
 
-        System.out.println(userId);
-
         // Do search
         List<Map<String, Object>> searchResults = itemService.searchItems(input, userId);
 
