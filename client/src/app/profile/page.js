@@ -43,7 +43,7 @@ export default function ProfilePage() {
 
   const fetchMyListings = async (userId, token) => {
     try {
-      const response = await api.get(`auctions/items/user/${userId}`, {
+      const response = await api.get(`/items/user/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

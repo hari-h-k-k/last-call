@@ -24,7 +24,7 @@ export default function CreateListingPage() {
   // Fetch categories
   useEffect(() => {
     api
-      .get("auctions/categories", { headers: getAuthHeaders() })
+      .get("/categories", { headers: getAuthHeaders() })
       .then((res) => {
         setCategories(Array.isArray(res.data?.info?.[0]) ? res.data.info[0] : []);
       })
@@ -35,7 +35,7 @@ export default function CreateListingPage() {
   useEffect(() => {
     if (!auctionId) return;
     api
-      .get(`/auctions/items/${auctionId}`, { headers: getAuthHeaders() })
+      .get(`/items/${auctionId}`, { headers: getAuthHeaders() })
       .then((res) => {
         const item = res.data?.info?.item || {};
         setInitialData({
@@ -47,8 +47,8 @@ export default function CreateListingPage() {
           registrationClosingDate: item.registrationClosingDate
               ? new Date(item.registrationClosingDate).toISOString().slice(0, 16)
               : "",
-          auctionDate: item.bidStartDate
-              ? new Date(item.bidStartDate).toISOString().slice(0, 16)
+          auctionDate: item.auctionStartDate
+              ? new Date(item.auctionStartDate).toISOString().slice(0, 16)
               : "",
         });
       })
@@ -72,12 +72,12 @@ export default function CreateListingPage() {
         category: formData.category,
         tags: formData.tags.split(",").map((t) => t.trim()),
         registrationClosingDate: formatDate(formData.registrationClosingDate),
-        bidStartDate: formatDate(formData.auctionDate),
+        auctionStartDate: formatDate(formData.auctionDate),
         location: formData.location,
         id: auctionId || null,
       };
 
-      const res = await api.post("/auctions/place-item", payload, {
+      const res = await api.post("/place-item", payload, {
         headers: { "Content-Type": "application/json", ...getAuthHeaders() },
       });
 
@@ -95,7 +95,7 @@ export default function CreateListingPage() {
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this listing?")) return;
     try {
-      await api.delete(`auctions/remove-item/${auctionId}`, {
+      await api.delete(`/remove-item/${auctionId}`, {
         headers: getAuthHeaders(),
       });
       alert("Auction deleted!");

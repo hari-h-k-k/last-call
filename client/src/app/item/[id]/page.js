@@ -29,12 +29,12 @@ export default function ItemDetails() {
 
     const fetchItem = async () => {
       try {
-        const response = await api.get(`/auctions/items/${id}`, {
+        const response = await api.get(`/items/${id}`, {
           headers: { ...getAuthHeaders() },
         });
         setItem(response.data.info.item);
         setIsSubscribed(response.data.info.item.isSubscribed || false);
-        startCountdown(response.data.info.item.bidStartDate);
+        startCountdown(response.data.info.item.auctionStartDate);
       } catch (err) {
         console.error("Error fetching item:", err);
       } finally {
@@ -46,9 +46,9 @@ export default function ItemDetails() {
   }, [id]);
 
   // Countdown for auction start
-  const startCountdown = (bidStartDate) => {
+  const startCountdown = (auctionStartDate) => {
     const updateCountdown = () => {
-      const startTime = new Date(bidStartDate).getTime();
+      const startTime = new Date(auctionStartDate).getTime();
       const now = new Date().getTime();
       const diff = startTime - now;
 
@@ -86,7 +86,7 @@ export default function ItemDetails() {
       console.log("User id:", userInfo.id)
 
       const response = await api.put(
-        `/auctions/item-subscribe?itemId=${id}&userId=${userInfo.id}`,
+        `/item-subscribe?itemId=${id}&userId=${userInfo.id}`,
         null,
         {
           headers: {
@@ -187,7 +187,7 @@ export default function ItemDetails() {
               {new Date(item.registrationClosingDate).toLocaleString()}
             </p>
             <p className="text-gray-400 mt-1">
-              Bid Start: {new Date(item.bidStartDate).toLocaleString()}
+              Bid Start: {new Date(item.auctionStartDate).toLocaleString()}
             </p>
             <p className="text-gray-400 mt-1">
               Category: <span className="text-white">{item.category}</span>

@@ -20,7 +20,7 @@ export default function UpcomingAuctions() {
       const params = {};
       if (userId) params.userId = userId;
 
-      const response = await api.get("auctions/get-upcoming-items", {
+      const response = await api.get("/get-upcoming-items", {
         params,
         headers: {
           Authorization: token ? `Bearer ${token}` : "",
