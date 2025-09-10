@@ -28,7 +28,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/auctions/search-items/**", "/auctions/get-upcoming-items/**").permitAll()
+                        .requestMatchers("/auth/**", "/search-items/**", "/get-upcoming-items/**","/items/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -50,3 +50,5 @@ public class SecurityConfig {
         return source;
     }
 }
+
+// permit /items/{itemId} only    @GetMapping({"/items", "/items/{itemId}", "/items/user/{userId}"})

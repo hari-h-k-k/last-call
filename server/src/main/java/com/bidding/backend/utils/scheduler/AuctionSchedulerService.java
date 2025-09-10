@@ -47,7 +47,7 @@ public class AuctionSchedulerService {
 
     public void deleteAuctionJobs(String itemId) throws SchedulerException {
         JobKey startJobKey = new JobKey("auctionStartJob_" + itemId, "auctionJobs");
-        JobKey closeJobKey = new JobKey("auctionCloseJob_" + itemId, "auctionJobs");
+        JobKey closeJobKey = new JobKey("registrationCloseJob_" + itemId, "auctionJobs");
 
         if (scheduler.checkExists(startJobKey)) {
             scheduler.deleteJob(startJobKey);

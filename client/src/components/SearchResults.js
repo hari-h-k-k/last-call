@@ -19,7 +19,7 @@ export default function SearchResults({ query }) {
 
       setLoading(true);
       try {
-        const response = await api.get(`auctions/search-items/${query}`, {
+        const response = await api.get(`/search-items/${query}`, {
           headers: { ...getAuthHeaders() },
         });
         console.log("Search Results:", response);
