@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
-public class RegistrationCloseJob implements Job {
+public class RoomCreationJob implements Job {
 
     @Autowired
     private RoomService roomService;
@@ -20,7 +20,7 @@ public class RegistrationCloseJob implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         String itemId = context.getJobDetail().getJobDataMap().getString("itemId");
-        roomService.closeRegistrationForItem(itemId);
-        System.out.println("Registration closed for item: " + itemService.getItem(itemId).getTitle());
+        roomService.createRoom(itemService.getItem(itemId));
+        System.out.println("Registration closed, Created Room for item: " + itemService.getItem(itemId).getTitle());
     }
 }

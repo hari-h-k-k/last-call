@@ -43,7 +43,6 @@ public class ItemService {
         this.observers.add(notificationService);
     }
 
-
     public void saveItem(Item item) throws SchedulerException {
         if (item.getRegistrationClosingDate().after(item.getAuctionStartDate())) {
             throw new IllegalArgumentException("Registration closing date cannot be after bid start date");
@@ -52,20 +51,7 @@ public class ItemService {
         // --- Save the item ---
         itemRepository.save(item);
 
-        // --- Create room using Builder ---
-        Room room = new Room.Builder()
-                .itemId(item.getId())
-                .startDate(item.getAuctionStartDate())
-                .status(RoomStatus.INACTIVE.name())
-                .currentPrice(item.getStartingPrice())
-                .listOfUserIds(item.getSubscribersId())
-                .createdAt(new Date())
-                .updatedAt(new Date())
-                .build();
-
-        roomRepository.save(room);
-
-        // --- Schedule auction start and close jobs ---
+        // --- Schedule Room Creation and Start Auction jobs ---
         auctionSchedulerService.scheduleAuctionJobs(
                 item.getId(),
                 item.getAuctionStartDate(),
