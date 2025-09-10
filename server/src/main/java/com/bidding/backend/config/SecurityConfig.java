@@ -28,7 +28,7 @@ public class SecurityConfig {
         http.csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "/auctions/search-items/**", "/auctions/get-upcoming-items/**").permitAll()
+                        .requestMatchers("/auth/**", "/auctions/search-items/**", "/auctions/get-upcoming-items/**","/auctions/items/*").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
