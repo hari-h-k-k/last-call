@@ -1,8 +1,8 @@
 "use client";
+
 import { useState } from "react";
-import AuthForm from "../../components/AuthForm";
-import api from "@/lib/axios";
 import { useRouter } from "next/navigation";
+import { useSignup } from "@/hooks/useSignUp";
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -10,14 +10,14 @@ export default function SignupPage() {
     password: "",
     confirmPassword: ""
   });
-  const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { signup, loading, error } = useSignup();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSignup = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const { username, password, confirmPassword } = formData;
 
@@ -26,79 +26,55 @@ export default function SignupPage() {
       return;
     }
 
-    setLoading(true);
     try {
-      const response = await api.post("/auth/register", { username, password });
-
-      if (response.status === 201) {
-        alert(`Account created for ${username}`);
-        router.replace("/login"); // ✅ Pops signup from history and goes to login
-      } else {
-        alert(response.data.message || "Signup failed!");
-      }
-    } catch (error) {
-      console.error(error);
-      alert("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
+      await signup(username, password);
+      alert(`Account created for ${username}`);
+      router.replace("/login");
+    } catch (err) {
+      console.error(err);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[#111827]">
-      <div className="bg-[#1F2937] shadow-xl rounded-2xl p-8 w-96">
-        <h1 className="text-3xl font-bold text-[#FFFFFF] text-center mb-6">
-          Sign Up
-        </h1>
-        <p className="text-[#9CA3AF] text-center mb-6">
+    <div className="flex items-center justify-center min-h-screen bg-gray-900">
+      <div className="bg-gray-800 shadow-xl rounded-2xl p-8 w-96">
+        <h1 className="text-3xl font-bold text-white text-center mb-6">Sign Up</h1>
+        <p className="text-gray-400 text-center mb-6">
           Create your account to start bidding
         </p>
 
-        <form onSubmit={handleSignup} className="space-y-4">
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-            className="w-full p-3 rounded-lg bg-[#111827] border border-[#2563EB] text-[#FFFFFF] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            className="w-full p-3 rounded-lg bg-[#111827] border border-[#2563EB] text-[#FFFFFF] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-          />
-          <input
-            type="password"
-            name="confirmPassword"
-            placeholder="Confirm Password"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            required
-            className="w-full p-3 rounded-lg bg-[#111827] border border-[#2563EB] text-[#FFFFFF] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-          />
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {["username", "password", "confirmPassword"].map((field) => (
+            <input
+              key={field}
+              type={field.includes("password") ? "password" : "text"}
+              name={field}
+              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+              value={formData[field]}
+              onChange={handleChange}
+              required
+              className="w-full p-3 rounded-lg bg-gray-900 border border-blue-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            />
+          ))}
+
           <button
             type="submit"
             disabled={loading}
-            className={`w-full py-3 rounded-lg ${
-              loading ? "bg-gray-500 cursor-not-allowed" : "bg-[#2563EB] hover:bg-[#1d4ed8]"
-            } text-[#FFFFFF] font-semibold transition duration-300`}
+            className={`w-full py-3 rounded-lg text-white font-semibold transition duration-300 ${
+              loading ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+            }`}
           >
             {loading ? "Signing Up..." : "Sign Up"}
           </button>
+
+          {error && <p className="text-red-400 text-center">{error}</p>}
         </form>
 
-        {/* Extra Links */}
         <div className="mt-4 text-center">
-          <p className="text-[#9CA3AF]">
+          <p className="text-gray-400">
             Already have an account?{" "}
             <span
-              className="text-[#FACC15] font-semibold cursor-pointer hover:underline"
+              className="text-yellow-400 font-semibold cursor-pointer hover:underline"
               onClick={() => router.push("/login")}
             >
               Login
