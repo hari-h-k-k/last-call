@@ -3,6 +3,8 @@ package com.bidding.backend.entity;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Map;
+
 @Document(collection = "users")
 public class User {
     @Id
@@ -11,6 +13,8 @@ public class User {
     private String username;
     private String email;
     private String password;
+
+    Map<String, Double> bidsPerRoom;
 
     public User(String name, String username, String email, String password) {
         this.name = name;
@@ -62,6 +66,21 @@ public class User {
         this.password = password;
     }
 
+
+    public Map<String, Double> getBidsPerRoom() {
+        return bidsPerRoom;
+    }
+
+    public void setBidsPerRoom(Map<String, Double> bidsPerRoom) {
+        this.bidsPerRoom = bidsPerRoom;
+    }
+
+    public void updateUserBid(String roomId, double bidAmount) {
+        if (bidsPerRoom == null) {
+            bidsPerRoom = new java.util.HashMap<>();
+        }
+        bidsPerRoom.put(roomId, bidAmount);
+    }
 
     @Override
     public String toString() {

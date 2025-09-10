@@ -1,48 +1,48 @@
 package com.bidding.backend.controller;
 
 import com.bidding.backend.entity.User;
+import com.bidding.backend.service.RoomService;
 import com.bidding.backend.service.UserService;
+import com.bidding.backend.utils.common.ResponseBuilder;
 import com.bidding.backend.utils.jwt.JwtUtil;
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
+    private final RoomService roomService;
     private final JwtUtil jwtUtil;
 
-    public UserController(UserService userService, JwtUtil jwtUtil) {
+    @Autowired
+    public UserController(UserService userService, RoomService roomService, JwtUtil jwtUtil) {
         this.userService = userService;
+        this.roomService = roomService;
         this.jwtUtil = jwtUtil;
     }
 
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
-    }
+    public ResponseEntity<Object> placeBid(@RequestParam String roomId, @RequestParam Double amount, @RequestHeader(value = "Authorization", required = false) String token) {
 
-    @GetMapping("/getAll")
-    public List<User> getUsers() {
-        return userService.getAllUsers();
-    }
+        String userId = null;
 
-    @GetMapping("/me")
-    public String getProfile(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return "No token provided!";
+        if (token != null && token.startsWith("Bearer ")) {
+            userId = jwtUtil.extractUserId(token.substring(7));
         }
-        String token = authHeader.substring(7);
-        String userId = jwtUtil.extractUserId(token);
-        return "Hello, " + userService.getUserById(userId).get().getName();
-    }
 
-    @GetMapping("/{email}")
-    public User getUserByEmail(@PathVariable String email) {
-        return userService.getUserByEmail(email);
+        userService.placeBid(roomId, userId, amount);
+        roomService.updateCurrentBid(roomId, userId, amount);
+
+        Map<String, Object> response = new ResponseBuilder()
+                .setStatus("success")
+                .setMessage("Item removed successfully!")
+                .build();
+        return ResponseEntity.status(200).body(response);
     }
 }

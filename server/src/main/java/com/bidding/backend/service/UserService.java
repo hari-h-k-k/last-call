@@ -47,5 +47,13 @@ public class UserService {
     public User findUser(User user) {
         return userRepository.findByUsername(user.getUsername());
     }
+
+    public void placeBid(String roomId, String userId, double bidAmount) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null) {
+            user.updateUserBid(roomId, bidAmount);
+            userRepository.save(user);
+        }
+    }
 }
 

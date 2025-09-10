@@ -62,6 +62,16 @@ public class RoomService {
         Room room = roomRepository.findByItemId(itemId);
         if(room!=null) {
             room.setStatus(RoomStatus.CLOSED.name());
+            room.setUpdatedAt(new Date());
+            roomRepository.save(room);
+        }
+    }
+
+    public void updateCurrentBid(String roomId, String userId, double currentPrice) {
+        Room room = roomRepository.findById(roomId).orElse(null);
+        if(room != null) {
+            room.updateRoomBid(userId, currentPrice);
+            room.setUpdatedAt(new Date());
             roomRepository.save(room);
         }
     }
