@@ -138,12 +138,8 @@ public class ItemController {
 
         String userId = null;
 
-        // If token is present, validate and extract userId
         if (token != null && token.startsWith("Bearer ")) {
-            String jwt = token.substring(7); // remove "Bearer "
-            if (jwtUtil.validateToken(jwt)) {
-                userId = jwtUtil.extractUserId(jwt);
-            }
+            userId = jwtUtil.extractUserId(token.substring(7));
         }
 
         // Do search

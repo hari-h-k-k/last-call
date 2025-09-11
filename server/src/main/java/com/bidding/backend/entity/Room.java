@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Document(collection = "rooms")
 public class Room {
@@ -22,6 +23,8 @@ public class Room {
 
     private List<String> listOfUserIds;
 
+    private Map<String, Double> bids;
+
     private double currentPrice;
 
     private Date createdAt;
@@ -30,12 +33,15 @@ public class Room {
 
     private String winnerId;
 
-    public Room(String itemId, Date startDate, Date endDate, String status, List<String> listOfUserIds, double currentPrice, Date createdAt, Date updatedAt, String winnerId) {
+    public Room(String itemId, Date startDate, Date endDate, String status,
+                List<String> listOfUserIds, Map<String, Double> bids,
+                double currentPrice, Date createdAt, Date updatedAt, String winnerId) {
         this.itemId = itemId;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
         this.listOfUserIds = listOfUserIds;
+        this.bids = bids;
         this.currentPrice = currentPrice;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -51,6 +57,7 @@ public class Room {
         private Date endDate;
         private String status;
         private List<String> listOfUserIds;
+        private Map<String, Double> bids;
         private double currentPrice;
         private Date createdAt;
         private Date updatedAt;
@@ -61,6 +68,7 @@ public class Room {
         public Builder endDate(Date endDate) { this.endDate = endDate; return this; }
         public Builder status(String status) { this.status = status; return this; }
         public Builder listOfUserIds(List<String> listOfUserIds) { this.listOfUserIds = listOfUserIds; return this; }
+        public Builder bids(Map<String, Double> bids) { this.bids = bids; return this; }
         public Builder currentPrice(double currentPrice) { this.currentPrice = currentPrice; return this; }
         public Builder createdAt(Date createdAt) { this.createdAt = createdAt; return this; }
         public Builder updatedAt(Date updatedAt) { this.updatedAt = updatedAt; return this; }
@@ -73,6 +81,7 @@ public class Room {
             room.endDate = this.endDate;
             room.status = this.status;
             room.listOfUserIds = this.listOfUserIds;
+            room.bids = this.bids;
             room.currentPrice = this.currentPrice;
             room.createdAt = this.createdAt;
             room.updatedAt = this.updatedAt;
@@ -124,15 +133,27 @@ public class Room {
     public List<String> getListOfUserIds() {
         return listOfUserIds;
     }
-
     public void setListOfUserIds(List<String> listOfUserIds) {
         this.listOfUserIds = listOfUserIds;
+    }
+
+    public Map<String, Double> getBids() {
+        return bids;
+    }
+    public void setBids(Map<String, Double> bids) {
+        this.bids = bids;
+    }
+
+    public void updateRoomBid(String userId, double bidAmount) {
+        if (bids == null) {
+            bids = new java.util.HashMap<>();
+        }
+        bids.put(userId, bidAmount);
     }
 
     public double getCurrentPrice() {
         return currentPrice;
     }
-
     public void setCurrentPrice(double currentPrice) {
         this.currentPrice = currentPrice;
     }
@@ -140,7 +161,6 @@ public class Room {
     public Date getCreatedAt() {
         return createdAt;
     }
-
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
@@ -148,7 +168,6 @@ public class Room {
     public Date getUpdatedAt() {
         return updatedAt;
     }
-
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
@@ -156,7 +175,6 @@ public class Room {
     public String getWinnerId() {
         return winnerId;
     }
-
     public void setWinnerId(String winnerId) {
         this.winnerId = winnerId;
     }
@@ -164,16 +182,17 @@ public class Room {
     @Override
     public String toString() {
         return "Room{" +
-                "id=" + id +
-                ", itemId=" + itemId +
+                "id='" + id + '\'' +
+                ", itemId='" + itemId + '\'' +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", status='" + status + '\'' +
                 ", listOfUserIds=" + listOfUserIds +
+                ", bids=" + bids +
                 ", currentPrice=" + currentPrice +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", winnerId=" + winnerId +
+                ", winnerId='" + winnerId + '\'' +
                 '}';
     }
 }
