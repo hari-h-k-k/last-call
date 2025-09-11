@@ -27,22 +27,4 @@ public class UserController {
         this.jwtUtil = jwtUtil;
     }
 
-    @PostMapping
-    public ResponseEntity<Object> placeBid(@RequestParam String roomId, @RequestParam Double amount, @RequestHeader(value = "Authorization", required = false) String token) {
-
-        String userId = null;
-
-        if (token != null && token.startsWith("Bearer ")) {
-            userId = jwtUtil.extractUserId(token.substring(7));
-        }
-
-        userService.placeBid(roomId, userId, amount);
-        roomService.updateCurrentBid(roomId, userId, amount);
-
-        Map<String, Object> response = new ResponseBuilder()
-                .setStatus("success")
-                .setMessage("Item removed successfully!")
-                .build();
-        return ResponseEntity.status(200).body(response);
-    }
 }

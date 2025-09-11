@@ -1,7 +1,10 @@
 package com.bidding.backend.service;
 
+import com.bidding.backend.entity.Room;
 import com.bidding.backend.entity.User;
+import com.bidding.backend.repository.RoomRepository;
 import com.bidding.backend.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,9 +14,12 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    @Autowired
+    private final RoomService roomService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, RoomService roomService) {
         this.userRepository = userRepository;
+        this.roomService = roomService;
     }
 
     public Optional<User> getUserById(String id) {
@@ -48,12 +54,5 @@ public class UserService {
         return userRepository.findByUsername(user.getUsername());
     }
 
-    public void placeBid(String roomId, String userId, double bidAmount) {
-        User user = userRepository.findById(userId).orElse(null);
-        if (user != null) {
-            user.updateUserBid(roomId, bidAmount);
-            userRepository.save(user);
-        }
-    }
 }
 
