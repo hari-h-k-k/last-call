@@ -50,5 +50,3 @@ public class SecurityConfig {
         return source;
     }
 }
-
-// permit /items/{itemId} only    @GetMapping({"/items", "/items/{itemId}", "/items/user/{userId}"})
