@@ -21,4 +21,8 @@ public interface ItemRepository extends MongoRepository<Item, String> {
 
     @Query("{ 'registrationClosingDate': { $gt: ?0 } }")
     List<Item> getItemsByRegistrationClosingDate(Date date);
+
+    @Query("{ 'subscribersId': ?0 }")
+    List<Item> findSubscribedItemsByUserId(String userId);
+
 }

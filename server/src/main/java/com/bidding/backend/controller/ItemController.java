@@ -10,7 +10,7 @@ import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.http.HttpStatus;
 
 import java.util.*;
 
@@ -167,4 +167,31 @@ public class ItemController {
         return ResponseEntity.status(200).body(response);
     }
 
+    @GetMapping("/subscribed-items")
+    public ResponseEntity<Object> getSubscribedItems(@RequestHeader(value = "Authorization", required = false) String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "error", "message", "Unauthorized"));
+        }
+
+        String userId = null;
+        if (token != null && token.startsWith("Bearer ")) {
+            userId = jwtUtil.extractUserId(token.substring(7));
+        }
+        List<Map<String, Object>> subscribedItems = itemService.getSubscribedItems(userId);
+        Map<String, Object> response;
+        if (subscribedItems.isEmpty()) {
+            response = new ResponseBuilder()
+                    .setStatus("success")
+                    .setMessage("No items!")
+                    .build();
+        } else {
+            response = new ResponseBuilder()
+                    .setStatus("success")
+                    .setMessage("Items fetched successfully!")
+                    .setInfo(Map.of("itemList", subscribedItems))
+                    .build();
+        }
+        return ResponseEntity.status(200).body(response);
+    }
 }
