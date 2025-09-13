@@ -144,11 +144,28 @@ public class Room {
         this.bids = bids;
     }
 
-    public void updateRoomBid(String userId, double bidAmount) {
+    public boolean updateRoomBid(String userId, double bidAmount) {
         if (bids == null) {
             bids = new java.util.HashMap<>();
         }
+
+        // Check if this user's bid is valid
+        if (bids.containsKey(userId)) {
+            double currentBid = bids.get(userId);
+            if (bidAmount <= currentBid) {
+                throw new IllegalArgumentException("Bid amount must be higher than the current bid.");
+            }
+        }
+
+        // Find the current highest bid in the room
+        double highestBid = bids.values().stream()
+                .max(Double::compare)
+                .orElse(0.0);
+
         bids.put(userId, bidAmount);
+
+        // Return true only if this bid is now the new highest
+        return bidAmount > highestBid;
     }
 
     public double getCurrentPrice() {

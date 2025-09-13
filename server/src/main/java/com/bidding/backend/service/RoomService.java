@@ -80,25 +80,30 @@ public class RoomService {
     public void placeBid(String roomId, String userId, double bidAmount) {
         Room room = validateBid(roomId, bidAmount);
 
-        // Update room bid
-        room.updateRoomBid(userId, bidAmount);
-        room.setWinnerId(userId); // current leader
-        room.setUpdatedAt(new Date());
-        roomRepository.save(room);
+        // Update room bid only if higher
+        boolean isNewHigh = room.updateRoomBid(userId, bidAmount);
 
-        // Update user's bid
+        if (isNewHigh) {
+            room.setWinnerId(userId); // update winner only if this user now leads
+            room.setUpdatedAt(new Date());
+            roomRepository.save(room);
+
+            // Notify clients of new leader + price
+            Map<String, Object> socketPayload = Map.of(
+                    "currentPrice", bidAmount,
+                    "leaderId", userId,
+                    "roomId", roomId
+            );
+            messagingTemplate.convertAndSend("/topic/currentBid/" + roomId, socketPayload);
+        }
+
+        // Always store user's personal bid history
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.updateUserBid(roomId, bidAmount);
         userRepository.save(user);
-
-        Map<String, Object> socketPayload = Map.of(
-                "currentPrice", bidAmount,
-                "leaderId", userId,
-                "roomId", roomId
-        );
-        messagingTemplate.convertAndSend("/topic/currentBid/" + roomId, socketPayload);
     }
+
 
     public Room validateBid(String roomId, double bidAmount) {
         Room room = roomRepository.findById(roomId)
