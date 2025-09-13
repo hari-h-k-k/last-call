@@ -51,12 +51,4 @@ public class JwtUtil {
         }
     }
 
-    public Authentication getAuthentication(String token) {
-        Claims claims = Jwts.parser().setSigningKey(secretKey)
-                .parseClaimsJws(token)
-                .getBody();
-        String username = claims.getSubject();
-        return new UsernamePasswordAuthenticationToken(username, null,
-                Collections.singletonList(new SimpleGrantedAuthority("USER")));
-    }
 }

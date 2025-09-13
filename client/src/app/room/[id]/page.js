@@ -45,13 +45,14 @@ export default function BiddingRoom({ roomId }) {
 
   // Setup WebSocket Connection
   useEffect(() => {
-    const token = localStorage.getItem("jwtToken");
+    const token = sessionStorage.getItem("userInfo")
+      ? JSON.parse(sessionStorage.getItem("userInfo")).token
+      : null;
 
     const client = new Client({
-      brokerURL: undefined,
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws-auction"),
+      brokerURL: "ws://localhost:8080/ws-auction",
       connectHeaders: {
-        Authorization: "Bearer " + token
+        Authorization: `Bearer ${token}`
       },
       debug: (str) => console.log(str),
       reconnectDelay: 5000,
@@ -66,18 +67,12 @@ export default function BiddingRoom({ roomId }) {
         console.log("Server says:", data.message);
       });
 
-      console.log("Subscribing to room:", id)
-
       // Subscribe to room topic for live bids
       client.subscribe(`/topic/currentBid/${id}`, (message) => {
         const data = JSON.parse(message.body);
         console.log("New bid:", data);
         setBids((prev) => [data, ...prev]);
       });
-    };
-
-    client.onStompError = (frame) => {
-      console.error("STOMP error:", frame.headers["message"], frame.body);
     };
 
     client.activate();
