@@ -265,4 +265,10 @@ public class ItemService {
         }
         return list;
     }
+
+    public List<Map<String, Object>> getSubscribedItems(String userId) {
+        Date now = new Date();
+        List<Item> subscribedItems = itemRepository.findSubscribedItemsByUserId(userId);
+        return ConstructListWithValues(userId,now,subscribedItems);
+    }
 }
