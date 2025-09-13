@@ -17,17 +17,24 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         this.jwtUtil = jwtUtil;
     }
 
+//    @Override
+//    public void registerStompEndpoints(StompEndpointRegistry registry) {
+//        registry.addEndpoint("/ws-auction")
+//                .setAllowedOriginPatterns("*")
+//                .addInterceptors(new JwtHandshakeInterceptor(jwtUtil))
+//                .withSockJS();
+//    }
+
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws-auction")
+        registry.addEndpoint("/ws-auction") // endpoint used in SockJS
                 .setAllowedOriginPatterns("*")
-                .addInterceptors(new JwtHandshakeInterceptor(jwtUtil))
                 .withSockJS();
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/topic", "/queue");
         registry.setApplicationDestinationPrefixes("/app");
     }
 }

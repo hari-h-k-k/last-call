@@ -10,31 +10,24 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { Client } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
+import {useParams} from "next/navigation";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
-export default function BiddingRoom() {
+export default function BiddingRoom({ roomId }) {
   const [timeLeft, setTimeLeft] = useState(300); // 5 min countdown
-  const [isSubscribed, setIsSubscribed] = useState(true); // Change based on user subscription
+  const [isSubscribed, setIsSubscribed] = useState(true);
   const [currentBid, setCurrentBid] = useState(500);
   const [bidAmount, setBidAmount] = useState("");
-  const [minIncrement, setMinIncrement] = useState(500); // Minimum increment amount
-  const [leaderboard, setLeaderboard] = useState([
-    { name: "Alice", amount: 1200 },
-    { name: "John", amount: 1100 },
-    { name: "Sophia", amount: 1000 },
-    { name: "Mike", amount: 900 },
-    { name: "Emma", amount: 850 },
-    { name: "Chris", amount: 800 },
-  ]);
-  const [bidHistory, setBidHistory] = useState([
-    { user: "Alice", amount: 1200 },
-    { user: "John", amount: 1100 },
-    { user: "Sophia", amount: 1000 },
-    { user: "Mike", amount: 900 },
-    { user: "Emma", amount: 850 },
-    { user: "Chris", amount: 800 },
-  ]);
+  const [minIncrement, setMinIncrement] = useState(500);
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [bidHistory, setBidHistory] = useState([]);
+
+  const [stompClient, setStompClient] = useState(null);
+  const { id } = useParams();
+  console.log(id)
 
   // Countdown Timer
   useEffect(() => {
@@ -43,39 +36,105 @@ export default function BiddingRoom() {
     return () => clearInterval(interval);
   }, [timeLeft]);
 
-  // Format Time in MM:SS
+  // Format Time
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  // Handle New Bid
-  const handleBid = () => {
+  // Setup WebSocket Connection
+  useEffect(() => {
+    const token = localStorage.getItem("jwtToken");
+
+    const client = new Client({
+      brokerURL: undefined,
+      webSocketFactory: () => new SockJS("http://localhost:8080/ws-auction"),
+      connectHeaders: {
+        Authorization: "Bearer " + token
+      },
+      debug: (str) => console.log(str),
+      reconnectDelay: 5000,
+    });
+
+    client.onConnect = (frame) => {
+      console.log("Connected:", frame);
+
+      // Subscribe to welcome queue
+      client.subscribe("/user/queue/welcome", (message) => {
+        const data = JSON.parse(message.body);
+        console.log("Server says:", data.message);
+      });
+
+      console.log("Subscribing to room:", id)
+
+      // Subscribe to room topic for live bids
+      client.subscribe(`/topic/currentBid/${id}`, (message) => {
+        const data = JSON.parse(message.body);
+        console.log("New bid:", data);
+        setBids((prev) => [data, ...prev]);
+      });
+    };
+
+    client.onStompError = (frame) => {
+      console.error("STOMP error:", frame.headers["message"], frame.body);
+    };
+
+    client.activate();
+    setStompClient(client);
+
+    return () => {
+      client.deactivate();
+    };
+  }, [roomId]);
+
+  // Handle New Bid (send to backend)
+  const handleBid = async () => {
     if (!bidAmount || parseInt(bidAmount) <= currentBid) {
       alert("Your bid must be higher than the current bid!");
       return;
     }
 
-    const newBid = {
-      user: "You",
-      amount: parseInt(bidAmount),
-    };
+    const token = localStorage.getItem("jwtToken");
+    if (!token) {
+      alert("Unauthorized! Please log in.");
+      return;
+    }
 
-    setBidHistory([newBid, ...bidHistory]); // newest at top
-    setLeaderboard((prev) =>
-      [...prev, newBid].sort((a, b) => b.amount - a.amount).slice(0, 5) // Keep only top 5
-    );
-    setCurrentBid(parseInt(bidAmount));
-    setBidAmount("");
+    try {
+      const response = await api.post(
+        "/place-bid",
+        {}, // no body since backend expects query params
+        {
+          params: {
+            roomId,
+            bidAmount,
+          },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        console.log("Bid placed:", response.data.message);
+        setBidAmount(""); // clear input
+        // ✅ Don't update state here manually
+        // WebSocket will push the new bid
+      }
+    } catch (error) {
+      console.error("Error placing bid:", error);
+      const msg = error.response?.data?.message || "Failed to place bid";
+      alert(msg);
+    }
   };
 
   // Quick Bid Increment Handler
   const handleQuickBid = (increment) => {
-    setBidAmount(currentBid + increment); // Always based on highest bid
+    setBidAmount(currentBid + increment);
   };
 
-  // Chart Data (Oldest on Left, Newest on Right)
+  // Chart Data
   const reversedHistory = [...bidHistory].reverse();
   const chartData = {
     labels: reversedHistory.map((_, i) => `Bid ${i + 1}`),
@@ -97,7 +156,8 @@ export default function BiddingRoom() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">🏆 Live Bidding Room</h1>
         <div className="bg-gray-800 px-4 py-2 rounded-lg shadow-md">
-          ⏳ Time Left: <span className="font-bold text-yellow-400">{formatTime(timeLeft)}</span>
+          ⏳ Time Left:{" "}
+          <span className="font-bold text-yellow-400">{formatTime(timeLeft)}</span>
         </div>
       </div>
 
@@ -106,7 +166,8 @@ export default function BiddingRoom() {
         <div className="lg:col-span-2 bg-gray-800 rounded-xl shadow-lg p-5">
           <h2 className="text-2xl font-semibold mb-4">💰 Place Your Bids</h2>
           <p className="text-gray-300 mb-4">
-            Current Highest Bid: <span className="font-bold text-green-400">₹{currentBid}</span>
+            Current Highest Bid:{" "}
+            <span className="font-bold text-green-400">₹{currentBid}</span>
           </p>
 
           {isSubscribed ? (
@@ -141,7 +202,9 @@ export default function BiddingRoom() {
               </div>
             </>
           ) : (
-            <p className="text-red-400 mt-3">⚠️ You are in spectator mode. Subscribe to place bids.</p>
+            <p className="text-red-400 mt-3">
+              ⚠️ You are in spectator mode. Subscribe to place bids.
+            </p>
           )}
 
           {/* Bid History */}
@@ -166,7 +229,9 @@ export default function BiddingRoom() {
                 key={idx}
                 className="flex justify-between bg-gray-700 px-4 py-2 rounded-lg shadow-md"
               >
-                <span className="font-medium">{idx + 1}. {entry.name}</span>
+                <span className="font-medium">
+                  {idx + 1}. {entry.name}
+                </span>
                 <span className="font-bold text-green-400">₹{entry.amount}</span>
               </div>
             ))}
