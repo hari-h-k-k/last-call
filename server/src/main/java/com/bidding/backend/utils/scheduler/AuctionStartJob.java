@@ -22,6 +22,6 @@ public class AuctionStartJob implements Job {
     public void execute(JobExecutionContext context) throws JobExecutionException {
         String itemId = context.getJobDetail().getJobDataMap().getString("itemId");
         roomService.openRoomForItem(itemId);
-        System.out.println("Auction started for item: " + itemService.getItem(itemId).getTitle());
+        System.out.println("Auction started for item: " + itemService.getItem(itemId).get(0).getTitle());
     }
 }

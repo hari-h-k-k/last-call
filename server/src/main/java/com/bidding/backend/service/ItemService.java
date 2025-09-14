@@ -19,6 +19,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.Collections;
 
 @Service
 public class ItemService {
@@ -64,8 +65,16 @@ public class ItemService {
         itemRepository.deleteById(itemId);
     }
 
-    public Item getItem(String id) {
-        return itemRepository.findById(id).orElse(null);
+//    public Item getItem(String id) {
+//        return itemRepository.findById(id).orElse(null);
+//    }
+
+    public List<Item> getItem(String itemId) {
+        if (itemId == null || itemId.trim().isEmpty()) {
+            return itemRepository.findAll();
+        } else {
+            return Collections.singletonList(itemRepository.findById(itemId).orElse(null));
+        }
     }
 
     public List<Item> getAllItems() {
@@ -97,7 +106,7 @@ public class ItemService {
     }
 
     public void itemSubscribe(String itemId, String userId, boolean subscribeAction) {
-        Item item = this.getItem(itemId);
+        Item item = this.getItem(itemId).get(0);
         List<Item> itemsList = itemRepository.getItemsByRegistrationClosingDate(new Date());
 
         if(subscribeAction) {
@@ -127,7 +136,7 @@ public class ItemService {
     }
 
     public void updateItem(Item item) throws SchedulerException {
-        Item existingItem = this.getItem(item.getId());
+        Item existingItem = this.getItem(item.getId()).get(0);
         List<String> alerts = new ArrayList<>();
 
         boolean datesChanged = false;
@@ -243,7 +252,7 @@ public class ItemService {
         return score;
     }
 
-    private List<Map<String, Object>> ConstructItemListWithValues(String userId, List<Item> results) {
+    public List<Map<String, Object>> ConstructItemListWithValues(String userId, List<Item> results) {
         List<Map<String, Object>> list = new ArrayList<>();
         for (Item item : results) {
 
