@@ -6,13 +6,14 @@ import EditProfileModal from "../../components/EditProfileModal";
 import { useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import AuctionCard from "../../components/AuctionCard";
-import api from "../../lib/axios"; // or import your axios instance
+import api from "../../lib/axios";
 
 export default function ProfilePage() {
   const { info } = useAuth();
-  const [activeTab, setActiveTab] = useState("active");
+  const [activeTab, setActiveTab] = useState("registered");
   const [showEditModal, setShowEditModal] = useState(false);
   const [myListings, setMyListings] = useState([]);
+  const [mySubscription, setMySubscription] = useState([]);
   const router = useRouter();
 
   const handleSaveProfile = (updatedInfo) => {
@@ -20,11 +21,7 @@ export default function ProfilePage() {
   };
 
   const tabs = [
-    { id: "active", label: "Active Biddings" },
-    { id: "past", label: "Past Biddings" },
-    { id: "transactions", label: "Transactions" },
-    { id: "bank", label: "Bank Accounts" },
-    { id: "settings", label: "Settings" },
+    { id: "registered", label: "Registered Items" },
     { id: "my-listings", label: "My Listings" },
   ];
 
@@ -35,34 +32,46 @@ export default function ProfilePage() {
       return;
     }
 
-    // Fetch My Listings when tab is active
     if (activeTab === "my-listings") {
       fetchMyListings(userInfo.id, userInfo.token);
+    }
+
+    if (activeTab === "registered") {
+      fetchSubscribedItems(userInfo.id, userInfo.token);
     }
   }, [router, activeTab]);
 
   const fetchMyListings = async (userId, token) => {
     try {
-      const response = await api.get(`/items/user/${userId}`, {
+      const response = await api.get(`/my-items`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      console.log("My Listings Response:", response);
       if (response.status === 200) {
-
-        setMyListings(response.data.info.items || []);
+        setMyListings(response.data.info.itemList || []);
       }
     } catch (error) {
       console.error("Failed to fetch My Listings:", error);
     }
   };
 
-  // Dummy data for other tabs (active, past, transactions)
-  const dummyCards = [
-    { id: 1, title: "Vintage Watch", description: "Classic collector's item", currentBid: 2500 },
-    { id: 2, title: "Antique Vase", description: "Rare Ming dynasty vase", currentBid: 15000 },
-    { id: 3, title: "Luxury Handbag", description: "Limited edition designer bag", currentBid: 8000 },
-  ];
+  const fetchSubscribedItems = async (userId, token) => {
+    try {
+      const response = await api.get(`/subscribed-items`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      console.log("Subscribed Items Response:", response);
+      if (response.status === 200) {
+        setMySubscription(response.data.info.itemList || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch Subscribed Items:", error);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0F172A] text-white pt-28 px-6 md:px-16">
@@ -121,58 +130,38 @@ export default function ProfilePage() {
 
         {/* Tabs Content */}
         <div className="mt-6 bg-[#1E293B] p-6 rounded-2xl shadow-lg border border-[#334155]">
-          {activeTab === "active" && (
+          {/* Registered Items */}
+          {activeTab === "registered" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {dummyCards.map((item) => (
-                <AuctionCard key={item.id} type="active" item={item} />
-              ))}
+              {mySubscription.length > 0 ? (
+                mySubscription.map((entry) => (
+                  <AuctionCard
+                    key={entry.item.id}
+                    type="registered"
+                    item={entry.item}
+                    registered={entry.registered}
+                  />
+                ))
+              ) : (
+                <p className="text-[#9CA3AF] col-span-full text-center mt-4">
+                  You haven’t registered for any items yet.
+                </p>
+              )}
             </div>
           )}
 
-          {activeTab === "past" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {dummyCards.map((item) => (
-                <AuctionCard key={item.id} type="past" item={item} />
-              ))}
-            </div>
-          )}
-
-          {activeTab === "transactions" && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {dummyCards.map((item) => (
-                <AuctionCard key={item.id} type="transaction" item={item} />
-              ))}
-            </div>
-          )}
-
-          {activeTab === "bank" && (
-            <div>
-              <h2 className="text-xl font-bold mb-4">Linked Bank Accounts</h2>
-              <p className="text-[#9CA3AF]">
-                Add or manage your payment accounts for faster bidding.
-              </p>
-              <button className="mt-3 px-5 py-2 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] transition text-white font-semibold shadow-md">
-                Link New Account
-              </button>
-            </div>
-          )}
-
-          {activeTab === "settings" && (
-            <div>
-              <h2 className="text-xl font-bold mb-4">Account Settings</h2>
-              <p className="text-[#9CA3AF]">Manage your account preferences and security.</p>
-              <button className="mt-3 px-5 py-2 rounded-lg bg-[#F43F5E] hover:bg-[#e11d48] transition text-white font-semibold shadow-md">
-                Delete Account
-              </button>
-            </div>
-          )}
-
+          {/* My Listings */}
           {activeTab === "my-listings" && (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {myListings.length > 0 ? (
-                myListings.map((item) => (
-                  <AuctionCard key={item.id} type="my-listings" item={item} />
-                ))
+                myListings.map((entry) => (
+                                  <AuctionCard
+                                    key={entry.item.id}
+                                    type="my-listings"
+                                    item={entry.item}
+                                    registered={entry.registered}
+                                  />
+                                ))
               ) : (
                 <p className="text-[#9CA3AF] col-span-full text-center mt-4">
                   You have no listings yet.

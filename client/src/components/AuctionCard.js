@@ -8,21 +8,33 @@ import { useEffect, useState, useMemo } from "react";
 export default function AuctionCard({ item, type = "register" }) {
   const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(0);
+  const [phase, setPhase] = useState("registration"); // "registration", "auction", or "closed"
 
-  // ⏳ Countdown timer
   useEffect(() => {
-    if (!item?.registrationClosingDate) return;
+    if (!item?.registrationClosingDate || !item?.auctionStartDate) return;
 
-    const closingTime = new Date(item.registrationClosingDate).getTime();
+    const registrationCloseTime = new Date(item.registrationClosingDate).getTime();
+    const auctionStartTime = new Date(item.auctionStartDate).getTime();
 
     const updateTimer = () => {
-      setTimeLeft(Math.max(closingTime - Date.now(), 0));
+      const now = Date.now();
+
+      if (now < registrationCloseTime) {
+        setPhase("registration");
+        setTimeLeft(registrationCloseTime - now);
+      } else if (now >= registrationCloseTime && now < auctionStartTime) {
+        setPhase("auction");
+        setTimeLeft(auctionStartTime - now);
+      } else {
+        setPhase("closed");
+        setTimeLeft(0);
+      }
     };
 
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [item?.registrationClosingDate]);
+  }, [item?.registrationClosingDate, item?.auctionStartDate]);
 
   const displayTimer = useMemo(() => {
     if (timeLeft <= 0) return "00:00";
@@ -31,16 +43,12 @@ export default function AuctionCard({ item, type = "register" }) {
     return `${minutes}:${seconds}`;
   }, [timeLeft]);
 
-  const isClosed = timeLeft <= 0;
-
-  // Handlers
   const handleNavigation = () => {
     router.push(type === "spectate" ? `/spectate/${item.id}` : `/item/${item.id}`);
   };
 
   const handleEdit = () => router.push(`/create-listing?id=${item.id}`);
 
-  // Constants
   const imageUrl =
     item?.imageUrl?.trim() ||
     "https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?w=600&h=400&fit=crop";
@@ -57,29 +65,57 @@ export default function AuctionCard({ item, type = "register" }) {
       );
     }
 
+    // Button classes
     const btnClasses = [
       "mt-3 px-4 py-2 rounded-lg transition text-white font-medium shadow-md flex items-center gap-2",
     ];
 
-    if (type === "spectate") btnClasses.push("bg-green-500 hover:bg-green-600");
-    else if (isClosed) btnClasses.push("bg-gray-500 cursor-not-allowed");
-    else btnClasses.push("bg-blue-600 hover:bg-blue-700");
+    // Spectate button
+    if (type === "spectate") {
+      btnClasses.push("bg-green-500 hover:bg-green-600");
+      return (
+        <button onClick={handleNavigation} className={btnClasses.join(" ")}>
+          <FaEye /> Spectate
+        </button>
+      );
+    }
 
-    return (
-      <button
-        disabled={isClosed && type === "register"}
-        onClick={handleNavigation}
-        className={btnClasses.join(" ")}
-      >
-        {type === "spectate" ? (
-          <>
-            <FaEye /> Spectate
-          </>
-        ) : (
-          "Register Now"
-        )}
-      </button>
-    );
+    // Register button states
+    if (item.registered) {
+      btnClasses.push("bg-green-600");
+      return (
+        <button onClick={handleNavigation} className={btnClasses.join(" ")}>
+          ✅ Registered
+        </button>
+      );
+    }
+
+    if (phase === "registration") {
+      btnClasses.push("bg-blue-600 hover:bg-blue-700");
+      return (
+        <button onClick={handleNavigation} className={btnClasses.join(" ")}>
+          Register Now
+        </button>
+      );
+    }
+
+    if (phase === "auction") {
+      btnClasses.push("bg-gray-500");
+      return (
+        <button onClick={handleNavigation} className={btnClasses.join(" ")}>
+          Registration Closed
+        </button>
+      );
+    }
+
+    if (phase === "closed") {
+      btnClasses.push("bg-red-600");
+      return (
+        <button onClick={handleNavigation} className={btnClasses.join(" ")}>
+          Auction Started
+        </button>
+      );
+    }
   };
 
   return (
@@ -106,14 +142,20 @@ export default function AuctionCard({ item, type = "register" }) {
       {/* Description */}
       <p className="text-gray-400 text-sm text-center mt-1 mb-3 line-clamp-2">{item.description}</p>
 
-      {/* Registration Timer */}
-      {type === "register" && (
-        <div
-          className={`px-4 py-1 rounded-full text-xs font-bold shadow-md mb-3 transition ${
-            isClosed ? "bg-red-500" : "bg-blue-600"
-          } text-white`}
-        >
-          {isClosed ? "Registration Closed" : `Closes in: ${displayTimer}`}
+      {/* Timer */}
+      {phase === "registration" && (
+        <div className="px-4 py-1 rounded-full text-xs font-bold shadow-md mb-3 bg-blue-600 text-white">
+          Registration closes in: {displayTimer}
+        </div>
+      )}
+      {phase === "auction" && (
+        <div className="px-4 py-1 rounded-full text-xs font-bold shadow-md mb-3 bg-yellow-600 text-white">
+          Auction starts in: {displayTimer}
+        </div>
+      )}
+      {phase === "closed" && (
+        <div className="px-4 py-1 rounded-full text-xs font-bold shadow-md mb-3 bg-red-500 text-white">
+          Auction Started
         </div>
       )}
 
