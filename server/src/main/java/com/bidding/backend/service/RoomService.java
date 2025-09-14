@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 
@@ -42,20 +43,28 @@ public class RoomService {
     }
 
     public void createRoom(Item item) {
-        if(item == null) {
+        if (item == null) {
             return;
         }
+
+        Date startDate = item.getAuctionStartDate();
+        Date endDate = Date.from(startDate.toInstant().plus(Duration.ofMinutes(15)));
+
         Room room = new Room.Builder()
                 .itemId(item.getId())
-                .startDate(item.getAuctionStartDate())
+                .startDate(startDate)
                 .status(RoomStatus.PENDING.name())
                 .currentPrice(item.getStartingPrice())
                 .listOfUserIds(item.getSubscribersId())
                 .createdAt(new Date())
                 .updatedAt(new Date())
+                .endDate(endDate)
                 .build();
 
-        roomRepository.save(room);
+        Room savedRoom = roomRepository.save(room);
+
+        item.setRoomId(savedRoom.getId());
+        itemRepository.save(item);
     }
 
 

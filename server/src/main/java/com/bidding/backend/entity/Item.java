@@ -19,6 +19,8 @@ public class Item {
 
     private String sellerId;
 
+    private String roomId;
+
     private Date registrationClosingDate;
 
     private Date auctionStartDate;
@@ -80,6 +82,14 @@ public class Item {
 
     public void setSellerId(String sellerId) {
         this.sellerId = sellerId;
+    }
+
+    public String getRoomId() {
+        return roomId;
+    }
+
+    public void setRoomId(String roomId) {
+        this.roomId = roomId;
     }
 
     public Date getRegistrationClosingDate() {
