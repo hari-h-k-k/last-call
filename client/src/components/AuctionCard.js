@@ -5,11 +5,17 @@ import { useRouter } from "next/navigation";
 import { FaEye, FaEdit } from "react-icons/fa";
 import { useEffect, useState, useMemo } from "react";
 
-export default function AuctionCard({ item, type = "register" }) {
+export default function AuctionCard({ item, registered, type = "register" }) {
   const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(0);
-  const [phase, setPhase] = useState("registration"); // "registration", "auction", or "closed"
+  const [phase, setPhase] = useState("registration"); // "registration" | "waiting" | "auction"
 
+  // Debug log
+  useEffect(() => {
+    console.log("AuctionCard Item:", item);
+  }, [item]);
+
+  // Timer + Phase logic
   useEffect(() => {
     if (!item?.registrationClosingDate || !item?.auctionStartDate) return;
 
@@ -23,10 +29,10 @@ export default function AuctionCard({ item, type = "register" }) {
         setPhase("registration");
         setTimeLeft(registrationCloseTime - now);
       } else if (now >= registrationCloseTime && now < auctionStartTime) {
-        setPhase("auction");
+        setPhase("waiting");
         setTimeLeft(auctionStartTime - now);
       } else {
-        setPhase("closed");
+        setPhase("auction");
         setTimeLeft(0);
       }
     };
@@ -36,6 +42,7 @@ export default function AuctionCard({ item, type = "register" }) {
     return () => clearInterval(interval);
   }, [item?.registrationClosingDate, item?.auctionStartDate]);
 
+  // Display timer as mm:ss
   const displayTimer = useMemo(() => {
     if (timeLeft <= 0) return "00:00";
     const minutes = String(Math.floor(timeLeft / 60000)).padStart(2, "0");
@@ -43,17 +50,20 @@ export default function AuctionCard({ item, type = "register" }) {
     return `${minutes}:${seconds}`;
   }, [timeLeft]);
 
-  const handleNavigation = () => {
-    router.push(type === "spectate" ? `/spectate/${item.id}` : `/item/${item.id}`);
-  };
-
+  const handleNavigation = (path) => router.push(path);
   const handleEdit = () => router.push(`/create-listing?id=${item.id}`);
 
   const imageUrl =
     item?.imageUrl?.trim() ||
     "https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?w=600&h=400&fit=crop";
 
+  // 🔑 Action Button logic
   const actionButton = () => {
+    const now = Date.now();
+    const regClose = new Date(item.registrationClosingDate).getTime();
+    const auctionStart = new Date(item.auctionStartDate).getTime();
+
+    // Case: My Listings
     if (type === "my-listings") {
       return (
         <button
@@ -65,57 +75,59 @@ export default function AuctionCard({ item, type = "register" }) {
       );
     }
 
-    // Button classes
-    const btnClasses = [
-      "mt-3 px-4 py-2 rounded-lg transition text-white font-medium shadow-md flex items-center gap-2",
-    ];
-
-    // Spectate button
-    if (type === "spectate") {
-      btnClasses.push("bg-green-500 hover:bg-green-600");
+    // Case: Before registration closing
+    if (now < regClose) {
+      if (registered) {
+        return (
+          <button
+            onClick={() => handleNavigation(`/item/${item.id}`)}
+            className="px-4 py-2 rounded-lg bg-green-600 text-white font-medium shadow-md hover:scale-105 transition"
+          >
+            View
+          </button>
+        );
+      }
       return (
-        <button onClick={handleNavigation} className={btnClasses.join(" ")}>
+        <button
+          onClick={() => handleNavigation(`/item/${item.id}`)}
+          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md"
+        >
+          Register
+        </button>
+      );
+    }
+
+    // Case: After auction start
+    if (now >= auctionStart) {
+      if (registered) {
+        return (
+          <button
+            onClick={() => handleNavigation(`/item/${item.id}`)}
+            className="px-4 py-2 rounded-lg bg-green-600 text-white font-medium shadow-md hover:scale-105 transition"
+          >
+            View
+          </button>
+        );
+      }
+      return (
+        <button
+          onClick={() => handleNavigation(`/spectate/${item.id}`)}
+          className="px-4 py-2 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white font-medium shadow-md flex items-center gap-2"
+        >
           <FaEye /> Spectate
         </button>
       );
     }
 
-    // Register button states
-    if (item.registered) {
-      btnClasses.push("bg-green-600");
-      return (
-        <button onClick={handleNavigation} className={btnClasses.join(" ")}>
-          ✅ Registered
-        </button>
-      );
-    }
-
-    if (phase === "registration") {
-      btnClasses.push("bg-blue-600 hover:bg-blue-700");
-      return (
-        <button onClick={handleNavigation} className={btnClasses.join(" ")}>
-          Register Now
-        </button>
-      );
-    }
-
-    if (phase === "auction") {
-      btnClasses.push("bg-gray-500");
-      return (
-        <button onClick={handleNavigation} className={btnClasses.join(" ")}>
-          Registration Closed
-        </button>
-      );
-    }
-
-    if (phase === "closed") {
-      btnClasses.push("bg-red-600");
-      return (
-        <button onClick={handleNavigation} className={btnClasses.join(" ")}>
-          Auction Started
-        </button>
-      );
-    }
+    // Fallback (between registration close & auction start)
+    return (
+      <button
+        disabled
+        className="px-4 py-2 rounded-lg bg-gray-600 text-white font-medium shadow-md cursor-not-allowed"
+      >
+        Waiting for auction
+      </button>
+    );
   };
 
   return (
@@ -132,7 +144,6 @@ export default function AuctionCard({ item, type = "register" }) {
           src={imageUrl}
           alt={item?.title || "Auction Item"}
           className="w-full h-full object-cover rounded-xl"
-          onError={(e) => (e.target.src = imageUrl)}
         />
       </div>
 
@@ -148,21 +159,14 @@ export default function AuctionCard({ item, type = "register" }) {
           Registration closes in: {displayTimer}
         </div>
       )}
-      {phase === "auction" && (
+      {phase === "waiting" && (
         <div className="px-4 py-1 rounded-full text-xs font-bold shadow-md mb-3 bg-yellow-600 text-white">
           Auction starts in: {displayTimer}
         </div>
       )}
-      {phase === "closed" && (
+      {phase === "auction" && (
         <div className="px-4 py-1 rounded-full text-xs font-bold shadow-md mb-3 bg-red-500 text-white">
           Auction Started
-        </div>
-      )}
-
-      {/* Current Bid */}
-      {type === "spectate" && (
-        <div className="text-green-400 font-bold text-lg mb-3">
-          Current Bid: ₹{item.currentBid || 0}
         </div>
       )}
 

@@ -37,13 +37,12 @@ export default function ItemDetails() {
         const response = await api.get(`/items/${id}`, {
           headers: { ...getAuthHeaders() },
         });
-
-        const fetchedItem = response.data.info.item;
+        const fetchedItem = response.data.info.itemList[0].item;
         setItem(fetchedItem);
-        setRegistered(fetchedItem.registered || false);
+        setRegistered(response.data.info.itemList[0].registered || false);
 
         startCountdown(fetchedItem.auctionStartDate);
-        console.log("Item Details Response:", response);
+
       } catch (err) {
         console.error("Error fetching item:", err);
       } finally {
@@ -181,7 +180,7 @@ export default function ItemDetails() {
     if (now >= auctionStart && !registered) {
       return (
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/room/" + item.roomId)}
           className="px-6 py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-semibold shadow-lg"
         >
           Spectate Auction
@@ -193,7 +192,7 @@ export default function ItemDetails() {
     if (now >= auctionStart && registered) {
       return (
         <button
-          onClick={() => router.push("/")}
+          onClick={() => router.push("/room/" + item.roomId)}
           className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg"
         >
           Start Bidding

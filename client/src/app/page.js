@@ -43,7 +43,8 @@ export default function HomePage() {
         ) : (
           <>
             <UpcomingAuctions />
-            <LiveAuctions />
+            {/* <LiveAuctions /> */}
+
           </>
         )}
       </div>

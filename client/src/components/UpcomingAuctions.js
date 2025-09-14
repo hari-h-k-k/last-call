@@ -26,9 +26,6 @@ export default function UpcomingAuctions() {
           Authorization: token ? `Bearer ${token}` : "",
         },
       });
-
-      console.log("Upcoming Auctions Response:", response);
-
       // Extract upcomingItems array
       const upcomingItems = response?.data?.info?.itemList || [];
       setUpcoming(upcomingItems);
@@ -56,8 +53,8 @@ export default function UpcomingAuctions() {
     <section className="bg-[#1F2937] rounded-2xl p-6 shadow-xl border border-[#2D3748]">
       <h2 className="text-2xl font-bold mb-5">⏳ Upcoming Auctions</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-        {upcoming.map(({ item }) => (
-          <AuctionCard key={item.id} item={item} type="register" />
+        {upcoming.map(({ item,registered }) => (
+          <AuctionCard key={item.id} item={item} registered={registered}  type="register" />
         ))}
       </div>
     </section>
