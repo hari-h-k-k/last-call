@@ -14,6 +14,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 
@@ -101,23 +102,31 @@ public class RoomService {
             room.setWinnerId(userId);
             room.setCurrentPrice(bidAmount);
 
-            // Extend auction by 5 mins from *current* endDate
-            Date newEndDate = Date.from(room.getEndDate().toInstant().plus(Duration.ofMinutes(5)));
-            room.setEndDate(newEndDate);
+            // --- Extend auction only if less than 5 mins remaining ---
+            Instant now = Instant.now();
+            Instant currentEnd = room.getEndDate().toInstant();
+            long remainingSeconds = Duration.between(now, currentEnd).getSeconds();
+
+            if (remainingSeconds < 5 * 60) { // less than 5 minutes
+                Instant newEnd = now.plus(Duration.ofMinutes(5));
+                room.setEndDate(Date.from(newEnd));
+
+                try {
+                    auctionSchedulerService.scheduleCloseRoomJob(room.getItemId(), room.getEndDate());
+                } catch (SchedulerException e) {
+                    throw new RuntimeException("Failed to reschedule room close job", e);
+                }
+            }
+
             room.setUpdatedAt(new Date());
             roomRepository.save(room);
-
-            try {
-                auctionSchedulerService.scheduleCloseRoomJob(room.getItemId(), newEndDate);
-            } catch (SchedulerException e) {
-                throw new RuntimeException("Failed to reschedule room close job", e);
-            }
 
             // Notify clients
             Map<String, Object> socketPayload = Map.of(
                     "currentPrice", bidAmount,
                     "leaderId", userId,
-                    "roomId", roomId
+                    "roomId", roomId,
+                    "newEndDate", room.getEndDate() // optional: notify new end date
             );
             messagingTemplate.convertAndSend("/topic/currentBid/" + roomId, socketPayload);
         }
