@@ -72,10 +72,10 @@ public class ItemService {
         return itemRepository.findAll();
     }
 
-    public List<Item> getAllItemsBySellerId(String userId) {
-        return itemRepository.findBySellerId(userId);
+    public List<Map<String, Object>> getItemsBySeller(String userId) {
+        List<Item> myItems = itemRepository.findBySellerId(userId);
+        return ConstructItemListWithValues(userId, myItems);
     }
-
 
     public List<Map<String, Object>> getUpcomingItems(String userId) {
         Date now = new Date();
@@ -93,7 +93,7 @@ public class ItemService {
         items.sort(Comparator.comparingLong(i -> i.getRegistrationClosingDate().getTime() - now.getTime()));
 
         // Convert to list of maps
-        return ConstructListWithValues(userId, now, items);
+        return ConstructItemListWithValues(userId, items);
     }
 
     public void itemSubscribe(String itemId, String userId, boolean subscribeAction) {
@@ -189,7 +189,6 @@ public class ItemService {
 
     public List<Map<String, Object>> searchItems(String input, String userId) {
         String[] words = input.trim().split("\\s+");
-        Date now = new Date();
 
         // Build OR criteria
         Criteria[] orCriteria = new Criteria[words.length * 4]; // 4 fields per word
@@ -218,7 +217,7 @@ public class ItemService {
             return Integer.compare(scoreB, scoreA); // higher score first
         });
 
-        return ConstructListWithValues(userId, now, results);
+        return ConstructItemListWithValues(userId, results);
     }
 
     private int getMatchScore(Item item, String[] words) {
@@ -244,15 +243,12 @@ public class ItemService {
         return score;
     }
 
-    private List<Map<String, Object>> ConstructListWithValues(String userId, Date now, List<Item> results) {
+    private List<Map<String, Object>> ConstructItemListWithValues(String userId, List<Item> results) {
         List<Map<String, Object>> list = new ArrayList<>();
         for (Item item : results) {
-            long timeRemaining = item.getRegistrationClosingDate().getTime() - now.getTime();
 
             Map<String, Object> map = new HashMap<>();
             map.put("item", item);
-            map.put("registrationClosingDate", item.getRegistrationClosingDate());
-            map.put("timeRemainingMillis", timeRemaining > 0 ? timeRemaining : 0);
 
             // Add "registered" flag (true if userId in subscribers)
             boolean isRegistered = false;
@@ -267,8 +263,7 @@ public class ItemService {
     }
 
     public List<Map<String, Object>> getSubscribedItems(String userId) {
-        Date now = new Date();
         List<Item> subscribedItems = itemRepository.findSubscribedItemsByUserId(userId);
-        return ConstructListWithValues(userId,now,subscribedItems);
+        return ConstructItemListWithValues(userId, subscribedItems);
     }
 }

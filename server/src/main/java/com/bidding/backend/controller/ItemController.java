@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.*;
 
@@ -48,17 +49,14 @@ public class ItemController {
         return ResponseEntity.status(200).body(response);
     }
 
-    @GetMapping({"/items", "/items/{itemId}", "/items/user/{userId}"})
+    @GetMapping({"/items", "/items/{itemId}", })
     public ResponseEntity<Object> getItems(
-            @PathVariable(required = false) String itemId,
-            @PathVariable(required = false) String userId) {
+            @PathVariable(required = false) String itemId) {
 
         Map<String, Object> info = new HashMap<>();
 
         if (itemId != null) {
             info.put("item", itemService.getItem(itemId));
-        } else if (userId != null) {
-            info.put("items", itemService.getAllItemsBySellerId(userId));
         } else {
             info.put("items", itemService.getAllItems());
         }
@@ -72,9 +70,32 @@ public class ItemController {
         return ResponseEntity.status(200).body(response);
     }
 
+    @GetMapping("/my-items")
+    public ResponseEntity<Object> getUserItems(@RequestHeader(value = "Authorization", required = false) String token) {
+        String userId = getUserIdFromToken(token);
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "error", "message", "Unauthorized"));
+        }
+
+        List<Map<String, Object>> myItems = itemService.getItemsBySeller(userId);
+
+        Map<String, Object> response = new ResponseBuilder()
+                .setStatus("success")
+                .setMessage("Items fetched successfully!")
+                .setInfo(Map.of("itemList", myItems))
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping("/get-upcoming-items")
-    public ResponseEntity<Object> getUpcomingItems(
-            @RequestParam(value = "userId", required = false) String userId) {
+    public ResponseEntity<Object> getUpcomingItems(@RequestHeader(value = "Authorization", required = false) String token) {
+        String userId = null;
+
+        if (token != null && token.startsWith("Bearer ")) {
+            userId = jwtUtil.extractUserId(token.substring(7));
+        }
 
         List<Map<String, Object>> upcomingItems = itemService.getUpcomingItems(userId);
 
@@ -169,15 +190,12 @@ public class ItemController {
 
     @GetMapping("/subscribed-items")
     public ResponseEntity<Object> getSubscribedItems(@RequestHeader(value = "Authorization", required = false) String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
+        String userId = getUserIdFromToken(token);
+        if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("status", "error", "message", "Unauthorized"));
         }
 
-        String userId = null;
-        if (token != null && token.startsWith("Bearer ")) {
-            userId = jwtUtil.extractUserId(token.substring(7));
-        }
         List<Map<String, Object>> subscribedItems = itemService.getSubscribedItems(userId);
         Map<String, Object> response;
         if (subscribedItems.isEmpty()) {
@@ -193,5 +211,13 @@ public class ItemController {
                     .build();
         }
         return ResponseEntity.status(200).body(response);
+    }
+
+    private String getUserIdFromToken(String token) {
+        if (token == null || !token.startsWith("Bearer ")) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+
+        return jwtUtil.extractUserId(token.substring(7));
     }
 }
