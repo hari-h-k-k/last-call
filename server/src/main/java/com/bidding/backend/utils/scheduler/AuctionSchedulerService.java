@@ -13,8 +13,11 @@ public class AuctionSchedulerService {
     private Scheduler scheduler;
 
     public void scheduleAuctionJobs(String itemId, Date bidStartDate, Date registrationClosingDate) throws SchedulerException {
+        scheduleRoomCreationJob(itemId, registrationClosingDate);
+        scheduleAuctionStartJob(itemId, bidStartDate);
+    }
 
-        // --- Room Creation Job ---
+    public void scheduleRoomCreationJob(String itemId, Date registrationClosingDate) throws SchedulerException {
         JobDetail roomCreationJob = JobBuilder.newJob(RoomCreationJob.class)
                 .withIdentity("roomCreationJob_" + itemId, "auctionJobs")
                 .usingJobData("itemId", itemId)
@@ -22,14 +25,15 @@ public class AuctionSchedulerService {
 
         Trigger roomCreationTrigger = TriggerBuilder.newTrigger()
                 .withIdentity("roomCreationTrigger_" + itemId, "auctionTriggers")
-                .startAt(registrationClosingDate) // close registration at registrationClosingDate
+                .startAt(registrationClosingDate)
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule()
                         .withMisfireHandlingInstructionFireNow())
                 .build();
 
         scheduler.scheduleJob(roomCreationJob, roomCreationTrigger);
+    }
 
-        // --- Start Auction Job ---
+    public void scheduleAuctionStartJob(String itemId, Date bidStartDate) throws SchedulerException {
         JobDetail startAuctionJob = JobBuilder.newJob(AuctionStartJob.class)
                 .withIdentity("auctionStartJob_" + itemId, "auctionJobs")
                 .usingJobData("itemId", itemId)
@@ -44,6 +48,30 @@ public class AuctionSchedulerService {
 
         scheduler.scheduleJob(startAuctionJob, startTrigger);
     }
+
+    public void scheduleCloseRoomJob(String itemId, Date endDate) throws SchedulerException {
+        JobKey closeJobKey = new JobKey("closeRoomJob_" + itemId, "roomJobs");
+
+        // Delete existing job if it exists (so we can reschedule)
+        if (scheduler.checkExists(closeJobKey)) {
+            scheduler.deleteJob(closeJobKey);
+        }
+
+        JobDetail closeRoomJob = JobBuilder.newJob(CloseRoomJob.class)
+                .withIdentity(closeJobKey)
+                .usingJobData("itemId", itemId)
+                .build();
+
+        Trigger closeTrigger = TriggerBuilder.newTrigger()
+                .withIdentity("closeRoomTrigger_" + itemId, "roomTriggers")
+                .startAt(endDate)
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule()
+                        .withMisfireHandlingInstructionFireNow())
+                .build();
+
+        scheduler.scheduleJob(closeRoomJob, closeTrigger);
+    }
+
 
     public void deleteAuctionJobs(String itemId) throws SchedulerException {
         JobKey startJobKey = new JobKey("auctionStartJob_" + itemId, "auctionJobs");

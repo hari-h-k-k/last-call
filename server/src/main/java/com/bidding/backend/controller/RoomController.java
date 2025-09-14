@@ -4,6 +4,7 @@ import com.bidding.backend.service.RoomService;
 import com.bidding.backend.service.UserService;
 import com.bidding.backend.utils.common.ResponseBuilder;
 import com.bidding.backend.utils.jwt.JwtUtil;
+import com.bidding.backend.utils.scheduler.AuctionSchedulerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
