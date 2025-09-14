@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Navbar from "../../../components/Navbar";
-import BiddingModal from "../../../components/BiddingModal";
 import api from "@/lib/axios";
 
 export default function ItemDetails() {
@@ -12,10 +11,16 @@ export default function ItemDetails() {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
-  const [showModal, setShowModal] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [registered, setRegistered] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
+  const [now, setNow] = useState(new Date());
+
+  // Update "now" every second for real-time status check
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Get Auth Headers
   const getAuthHeaders = () => {
@@ -32,9 +37,13 @@ export default function ItemDetails() {
         const response = await api.get(`/items/${id}`, {
           headers: { ...getAuthHeaders() },
         });
-        setItem(response.data.info.item);
-        setIsSubscribed(response.data.info.item.isSubscribed || false);
-        startCountdown(response.data.info.item.auctionStartDate);
+
+        const fetchedItem = response.data.info.item;
+        setItem(fetchedItem);
+        setRegistered(fetchedItem.registered || false);
+
+        startCountdown(fetchedItem.auctionStartDate);
+        console.log("Item Details Response:", response);
       } catch (err) {
         console.error("Error fetching item:", err);
       } finally {
@@ -49,8 +58,8 @@ export default function ItemDetails() {
   const startCountdown = (auctionStartDate) => {
     const updateCountdown = () => {
       const startTime = new Date(auctionStartDate).getTime();
-      const now = new Date().getTime();
-      const diff = startTime - now;
+      const current = new Date().getTime();
+      const diff = startTime - current;
 
       if (diff <= 0) {
         setTimeLeft("Auction Started!");
@@ -82,9 +91,6 @@ export default function ItemDetails() {
         return;
       }
 
-      console.log("User info:", userInfo)
-      console.log("User id:", userInfo.id)
-
       const response = await api.put(
         `/item-subscribe?itemId=${id}&userId=${userInfo.id}`,
         null,
@@ -99,7 +105,7 @@ export default function ItemDetails() {
 
       if (response.data.status === "success") {
         alert(response.data.message || "Successfully registered for bidding!");
-        setIsSubscribed(true);
+        setRegistered(true);
       } else {
         alert("Failed to register. Please try again!");
       }
@@ -111,6 +117,92 @@ export default function ItemDetails() {
     }
   };
 
+  // Handle button state and label
+  const renderButton = () => {
+    if (!item) return null;
+
+    const regClose = new Date(item.registrationClosingDate);
+    const auctionStart = new Date(item.auctionStartDate);
+
+    // Case 1: Registration open, not registered
+    if (now < regClose && !registered) {
+      return (
+        <button
+          onClick={handleRegister}
+          disabled={isRegistering}
+          className={`px-6 py-3 rounded-lg text-lg font-semibold shadow-lg transition duration-300 ${
+            isRegistering
+              ? "bg-gray-600 cursor-not-allowed"
+              : "bg-green-500 hover:bg-green-600"
+          }`}
+        >
+          {isRegistering ? "Registering..." : "Register for Bidding"}
+        </button>
+      );
+    }
+
+    // Case 2: Registration open, already registered
+    if (now < regClose && registered) {
+      return (
+        <button
+          disabled
+          className="px-6 py-3 rounded-lg bg-yellow-600 text-white font-semibold shadow-lg cursor-not-allowed"
+        >
+          Waiting for auction to start
+        </button>
+      );
+    }
+
+    // Case 3: Registration closed, not registered
+    if (now >= regClose && now < auctionStart && !registered) {
+      return (
+        <button
+          disabled
+          className="px-6 py-3 rounded-lg bg-gray-700 text-white font-semibold shadow-lg cursor-not-allowed"
+        >
+          Registration Closed
+        </button>
+      );
+    }
+
+    // Case 4: Registration closed, registered, before auction start
+    if (now >= regClose && now < auctionStart && registered) {
+      return (
+        <button
+          disabled
+          className="px-6 py-3 rounded-lg bg-yellow-600 text-white font-semibold shadow-lg cursor-not-allowed"
+        >
+          Waiting for auction to start
+        </button>
+      );
+    }
+
+    // Case 5: After auction start, not registered -> Spectate
+    if (now >= auctionStart && !registered) {
+      return (
+        <button
+          onClick={() => router.push("/")}
+          className="px-6 py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-semibold shadow-lg"
+        >
+          Spectate Auction
+        </button>
+      );
+    }
+
+    // Case 6: After auction start, registered -> Start Bidding
+    if (now >= auctionStart && registered) {
+      return (
+        <button
+          onClick={() => router.push("/")}
+          className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg"
+        >
+          Start Bidding
+        </button>
+      );
+    }
+
+    return null;
+  };
 
   if (loading) {
     return (
@@ -200,55 +292,10 @@ export default function ItemDetails() {
             </p>
           </div>
 
-          {/* Register or Place Bid */}
-          {!isSubscribed ? (
-            <button
-              onClick={handleRegister}
-              disabled={isRegistering}
-              className={`px-6 py-3 rounded-lg text-lg font-semibold shadow-lg transition duration-300 ${
-                isRegistering
-                  ? "bg-gray-600 cursor-not-allowed"
-                  : "bg-green-500 hover:bg-green-600"
-              }`}
-            >
-              {isRegistering ? "Registering..." : "Register for Bidding"}
-            </button>
-          ) : (
-            <button
-              onClick={() => setShowModal(true)}
-              className="px-6 py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-lg transition duration-300"
-            >
-              Place Bid
-            </button>
-          )}
+          {/* Dynamic Button */}
+          {renderButton()}
         </div>
       </div>
-
-      {/* Related Items Section */}
-      <div className="max-w-7xl mx-auto px-6 mt-10">
-        <h2 className="text-2xl font-bold text-white mb-5">You Might Also Like</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {[1, 2, 3].map((_, idx) => (
-            <div
-              key={idx}
-              className="bg-[#1f2937] p-4 rounded-xl shadow-lg hover:scale-105 transition cursor-pointer"
-            >
-              <img
-                src="https://via.placeholder.com/400x250"
-                alt="Related Item"
-                className="w-full h-[180px] object-cover rounded-lg mb-3"
-              />
-              <h3 className="text-lg font-semibold">Similar Product {idx + 1}</h3>
-              <p className="text-gray-400 text-sm">Explore related auctions.</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Bidding Modal */}
-      {showModal && (
-        <BiddingModal item={item} onClose={() => setShowModal(false)} />
-      )}
     </div>
   );
 }
