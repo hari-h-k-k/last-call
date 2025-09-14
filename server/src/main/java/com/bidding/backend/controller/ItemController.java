@@ -51,20 +51,21 @@ public class ItemController {
 
     @GetMapping({"/items", "/items/{itemId}", })
     public ResponseEntity<Object> getItems(
-            @PathVariable(required = false) String itemId) {
+            @PathVariable(required = false) String itemId, @RequestHeader(value = "Authorization", required = false) String token) {
 
-        Map<String, Object> info = new HashMap<>();
+        String userId = null;
 
-        if (itemId != null) {
-            info.put("item", itemService.getItem(itemId));
-        } else {
-            info.put("items", itemService.getAllItems());
+        if (token != null && token.startsWith("Bearer ")) {
+            userId = jwtUtil.extractUserId(token.substring(7));
         }
+
+        List<Item> itemList = itemService.getItem(itemId);
+        List<Map<String, Object>> itemMapList = itemService.ConstructItemListWithValues(userId, itemList);
 
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
                 .setMessage("Items fetched successfully!")
-                .setInfo(info)
+                .setInfo(Map.of("itemList", itemMapList))
                 .build();
 
         return ResponseEntity.status(200).body(response);

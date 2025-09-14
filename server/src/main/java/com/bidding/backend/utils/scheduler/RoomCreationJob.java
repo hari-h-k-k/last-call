@@ -20,7 +20,7 @@ public class RoomCreationJob implements Job {
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         String itemId = context.getJobDetail().getJobDataMap().getString("itemId");
-        roomService.createRoom(itemService.getItem(itemId));
-        System.out.println("Registration closed, Created Room for item: " + itemService.getItem(itemId).getTitle());
+        roomService.createRoom(itemService.getItem(itemId).get(0));
+        System.out.println("Registration closed, Created Room for item: " + itemService.getItem(itemId).get(0).getTitle());
     }
 }

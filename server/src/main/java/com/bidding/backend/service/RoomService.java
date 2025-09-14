@@ -7,11 +7,14 @@ import com.bidding.backend.repository.ItemRepository;
 import com.bidding.backend.repository.RoomRepository;
 import com.bidding.backend.repository.UserRepository;
 import com.bidding.backend.utils.enums.RoomStatus;
+import com.bidding.backend.utils.scheduler.AuctionSchedulerService;
+import org.quartz.SchedulerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 
@@ -30,12 +33,11 @@ public class RoomService {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
+    @Autowired
+    private AuctionSchedulerService auctionSchedulerService;
+
     public RoomService(RoomRepository roomRepository) {
         this.roomRepository = roomRepository;
-    }
-
-    public void saveRoom(Room room) {
-        roomRepository.save(room);
     }
 
     public Room getRoomById(String id) {
@@ -47,18 +49,14 @@ public class RoomService {
             return;
         }
 
-        Date startDate = item.getAuctionStartDate();
-        Date endDate = Date.from(startDate.toInstant().plus(Duration.ofMinutes(15)));
-
         Room room = new Room.Builder()
                 .itemId(item.getId())
-                .startDate(startDate)
+                .startDate(item.getAuctionStartDate())
                 .status(RoomStatus.PENDING.name())
                 .currentPrice(item.getStartingPrice())
                 .listOfUserIds(item.getSubscribersId())
                 .createdAt(new Date())
                 .updatedAt(new Date())
-                .endDate(endDate)
                 .build();
 
         Room savedRoom = roomRepository.save(room);
@@ -70,10 +68,18 @@ public class RoomService {
 
     public void openRoomForItem(String itemId) {
         Room room = roomRepository.findByItemId(itemId);
-        if(room!=null) {
+        if (room != null) {
+            Date endDate = Date.from(room.getStartDate().toInstant().plus(Duration.ofMinutes(15)));
             room.setStatus(RoomStatus.ACTIVE.name());
+            room.setEndDate(endDate);
             room.setUpdatedAt(new Date());
             roomRepository.save(room);
+
+            try {
+                auctionSchedulerService.scheduleCloseRoomJob(itemId, endDate);
+            } catch (SchedulerException e) {
+                throw new RuntimeException("Failed to schedule room close job", e);
+            }
         }
     }
 
@@ -93,20 +99,39 @@ public class RoomService {
         boolean isNewHigh = room.updateRoomBid(userId, bidAmount);
 
         if (isNewHigh) {
-            room.setWinnerId(userId); // update winner only if this user now leads
+            room.setWinnerId(userId);
+            room.setCurrentPrice(bidAmount);
+
+            // --- Extend auction only if less than 5 mins remaining ---
+            Instant now = Instant.now();
+            Instant currentEnd = room.getEndDate().toInstant();
+            long remainingSeconds = Duration.between(now, currentEnd).getSeconds();
+
+            if (remainingSeconds < 5 * 60) { // less than 5 minutes
+                Instant newEnd = now.plus(Duration.ofMinutes(5));
+                room.setEndDate(Date.from(newEnd));
+
+                try {
+                    auctionSchedulerService.scheduleCloseRoomJob(room.getItemId(), room.getEndDate());
+                } catch (SchedulerException e) {
+                    throw new RuntimeException("Failed to reschedule room close job", e);
+                }
+            }
+
             room.setUpdatedAt(new Date());
             roomRepository.save(room);
 
-            // Notify clients of new leader + price
+            // Notify clients
             Map<String, Object> socketPayload = Map.of(
                     "currentPrice", bidAmount,
                     "leaderId", userId,
-                    "roomId", roomId
+                    "roomId", roomId,
+                    "newEndDate", room.getEndDate() // optional: notify new end date
             );
             messagingTemplate.convertAndSend("/topic/currentBid/" + roomId, socketPayload);
         }
 
-        // Always store user's personal bid history
+        // Save user's bid history
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         user.updateUserBid(roomId, bidAmount);
