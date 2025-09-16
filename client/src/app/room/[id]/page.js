@@ -16,7 +16,7 @@ import {useParams} from "next/navigation";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
-export default function BiddingRoom({ roomId }) {
+export default function BiddingRoom() {
   const [timeLeft, setTimeLeft] = useState(300); // 5 min countdown
   const [isSubscribed, setIsSubscribed] = useState(true);
   const [currentBid, setCurrentBid] = useState(500);
@@ -31,6 +31,7 @@ export default function BiddingRoom({ roomId }) {
 
   // Countdown Timer
   useEffect(() => {
+  console.log("Room Id:", id);
     if (timeLeft <= 0) return;
     const interval = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearInterval(interval);
@@ -81,7 +82,7 @@ export default function BiddingRoom({ roomId }) {
     return () => {
       client.deactivate();
     };
-  }, [roomId]);
+  }, [id]);
 
   // Handle New Bid (send to backend)
   const handleBid = async () => {
@@ -102,7 +103,7 @@ export default function BiddingRoom({ roomId }) {
         {}, // no body since backend expects query params
         {
           params: {
-            roomId,
+            id,
             bidAmount,
           },
           headers: {
