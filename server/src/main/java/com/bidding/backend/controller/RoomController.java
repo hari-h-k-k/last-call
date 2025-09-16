@@ -2,6 +2,7 @@ package com.bidding.backend.controller;
 
 import com.bidding.backend.entity.Item;
 import com.bidding.backend.entity.Room;
+import com.bidding.backend.service.BidService;
 import com.bidding.backend.service.ItemService;
 import com.bidding.backend.service.RoomService;
 import com.bidding.backend.service.UserService;
@@ -23,12 +24,14 @@ public class RoomController {
 
     private ItemService itemService;
     private final RoomService roomService;
+    private BidService bidService;
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public RoomController(ItemService itemService, RoomService roomService, JwtUtil jwtUtil) {
+    public RoomController(ItemService itemService, RoomService roomService, BidService bidService, JwtUtil jwtUtil) {
         this.itemService = itemService;
         this.roomService = roomService;
+        this.bidService = bidService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -61,7 +64,10 @@ public class RoomController {
                 .constructResponse("startingPrice", item.getStartingPrice())
                 .constructResponse("currentPrice", room.getCurrentPrice())
                 .constructResponse("roomEndDate", room.getEndDate())
-                .constructResponse("bids", room.getEndDate())
+                .constructResponse("bidHistory", bidService.getBidHistory(roomId))
+                .constructResponse("leaderboard", bidService.getTop5Bids(roomId))
+                .constructResponse("highestBid", bidService.getUserHighestBid(roomId, userId))
+                .constructResponse("latestBid", bidService.getUserLatestBid(roomId, userId))
                 .constructResponse("winnerId", room.getWinnerId())
                 .constructResponse("registered", subscribed)
                 .build();
@@ -88,6 +94,7 @@ public class RoomController {
 
         try {
             roomService.placeBid(roomId, userId, bidAmount);
+            bidService.placeBid(roomId, userId, bidAmount);
             return ResponseEntity.ok(Map.of("status", "success", "message", "Bid placed successfully!"));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
