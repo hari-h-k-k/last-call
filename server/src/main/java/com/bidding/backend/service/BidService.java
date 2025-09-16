@@ -2,6 +2,7 @@ package com.bidding.backend.service;
 
 import com.bidding.backend.entity.Bid;
 import com.bidding.backend.repository.BidRepository;
+import com.bidding.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -12,12 +13,16 @@ public class BidService {
 
     private final BidRepository bidRepository;
 
-    public BidService(BidRepository bidRepository) {
+    private final UserRepository userRepository;
+
+    public BidService(BidRepository bidRepository, UserRepository userRepository) {
         this.bidRepository = bidRepository;
+        this.userRepository = userRepository;
     }
 
     public Bid placeBid(String roomId, String userId, double amount) {
-        Bid bid = new Bid(roomId, userId, amount, new Date());
+        String username = userRepository.findById(userId).get().getUsername();
+        Bid bid = new Bid(roomId, userId, username, amount, new Date());
         return bidRepository.save(bid);
     }
 
