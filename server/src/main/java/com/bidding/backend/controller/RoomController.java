@@ -63,6 +63,11 @@ public class RoomController {
                 .constructResponse("itemTitle", item.getTitle())
                 .constructResponse("startingPrice", item.getStartingPrice())
                 .constructResponse("bidHistory", bidService.getBidHistory(roomId))
+                .constructResponse("currentPrice", room.getCurrentPrice())
+                .constructResponse("roomEndDate", room.getEndDate())
+                .constructResponse("leaderboard", bidService.getTop5Bids(roomId))
+                .constructResponse("myBid", bidService.getUserHighestBid(roomId, userId))
+                .constructResponse("winnerId", room.getWinnerId())
                 .constructResponse("registered", subscribed)
                 .build();
 

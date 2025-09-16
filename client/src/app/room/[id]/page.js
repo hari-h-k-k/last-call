@@ -204,7 +204,7 @@ export default function BiddingRoom() {
             <p className="text-gray-300 mb-4">
               Current Highest Bid:{" "}
               <span className="font-bold text-green-400">₹{currentBid}</span>
-              {winnerId && myBid?.userId === winnerId && (
+              {winnerId && myBid?.username === winnerId && (
                 <span className="ml-2 text-sm text-yellow-400">(You are winning 🎉)</span>
               )}
             </p>
@@ -257,7 +257,7 @@ export default function BiddingRoom() {
                         myBid && myBid.id === bid.id ? "text-yellow-400 font-semibold" : ""
                       }`}
                     >
-                      <span className="font-semibold">{bid.userId}</span> bid ₹{bid.amount}
+                      <span className="font-semibold">{bid.username}</span> bid ₹{bid.amount}
                     </p>
                   ))
                 ) : (
@@ -282,7 +282,7 @@ export default function BiddingRoom() {
                     }`}
                   >
                     <span className="font-medium">
-                      {idx + 1}. {entry.userId}
+                      {idx + 1}. {entry.username}
                     </span>
                     <span className="font-bold text-green-400">₹{entry.amount}</span>
                   </div>
