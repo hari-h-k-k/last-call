@@ -37,7 +37,7 @@ export default function CreateListingPage() {
     api
       .get(`/items/${auctionId}`, { headers: getAuthHeaders() })
       .then((res) => {
-        const item = res.data?.info?.item || {};
+        const item = res.data?.info?.itemList[0].item || {};
         setInitialData({
           title: item.title,
           description: item.description,
@@ -50,6 +50,7 @@ export default function CreateListingPage() {
           auctionDate: item.auctionStartDate
               ? new Date(item.auctionStartDate).toISOString().slice(0, 16)
               : "",
+          location: item.location,
         });
       })
       .catch(() => alert("Failed to fetch auction details."));
