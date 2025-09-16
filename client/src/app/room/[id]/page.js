@@ -26,6 +26,8 @@ export default function BiddingRoom() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [bidHistory, setBidHistory] = useState([]);
   const [roomInfo, setRoomInfo] = useState(null);
+  const [myBid, setMyBid] = useState(null);
+  const [winnerId, setWinnerId] = useState(null);
 
   const [stompClient, setStompClient] = useState(null);
   const { id } = useParams();
@@ -59,11 +61,11 @@ export default function BiddingRoom() {
         setBidHistory(data.bidHistory || []);
         setLeaderboard(data.leaderboard || []);
 
-        // Calculate time left from roomEndDate
+        // Calculate time left
         if (data.roomEndDate) {
           const end = new Date(data.roomEndDate).getTime();
           const now = Date.now();
-          const diff = Math.max(Math.floor((end - now) / 1000), 0); // seconds
+          const diff = Math.max(Math.floor((end - now) / 1000), 0);
           setTimeLeft(diff);
         }
       } catch (error) {
@@ -100,8 +102,19 @@ export default function BiddingRoom() {
       client.subscribe(`/topic/currentBid/${id}`, (message) => {
         const data = JSON.parse(message.body);
         console.log("New bid:", data);
-        setBidHistory((prev) => [data, ...prev]);
-        setCurrentBid(data.amount);
+
+        // Update state with new payload
+        if (data.currentPrice) setCurrentBid(data.currentPrice);
+        if (data.bid) setBidHistory((prev) => [data.bid, ...prev]);
+        if (data.leaderboard) setLeaderboard(data.leaderboard);
+        if (data.newEndDate) {
+          const end = new Date(data.newEndDate).getTime();
+          const now = Date.now();
+          const diff = Math.max(Math.floor((end - now) / 1000), 0);
+          setTimeLeft(diff);
+        }
+        if (data.myBid) setMyBid(data.myBid);
+        if (data.winnerId) setWinnerId(data.winnerId);
       });
     };
 
@@ -191,6 +204,9 @@ export default function BiddingRoom() {
             <p className="text-gray-300 mb-4">
               Current Highest Bid:{" "}
               <span className="font-bold text-green-400">₹{currentBid}</span>
+              {winnerId && myBid?.userId === winnerId && (
+                <span className="ml-2 text-sm text-yellow-400">(You are winning 🎉)</span>
+              )}
             </p>
 
             {isSubscribed ? (
@@ -235,7 +251,12 @@ export default function BiddingRoom() {
               <div className="max-h-48 overflow-y-auto bg-gray-700 rounded-lg p-3">
                 {bidHistory.length > 0 ? (
                   bidHistory.map((bid, idx) => (
-                    <p key={idx} className="text-gray-300">
+                    <p
+                      key={idx}
+                      className={`text-gray-300 ${
+                        myBid && myBid.id === bid.id ? "text-yellow-400 font-semibold" : ""
+                      }`}
+                    >
                       <span className="font-semibold">{bid.userId}</span> bid ₹{bid.amount}
                     </p>
                   ))
@@ -254,10 +275,14 @@ export default function BiddingRoom() {
                 leaderboard.slice(0, 5).map((entry, idx) => (
                   <div
                     key={idx}
-                    className="flex justify-between bg-gray-700 px-4 py-2 rounded-lg shadow-md"
+                    className={`flex justify-between bg-gray-700 px-4 py-2 rounded-lg shadow-md ${
+                      myBid && entry.userId === myBid.userId
+                        ? "border border-yellow-400"
+                        : ""
+                    }`}
                   >
                     <span className="font-medium">
-                      {idx + 1}. {entry.name}
+                      {idx + 1}. {entry.userId}
                     </span>
                     <span className="font-bold text-green-400">₹{entry.amount}</span>
                   </div>
