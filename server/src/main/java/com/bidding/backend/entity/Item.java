@@ -171,12 +171,14 @@ public class Item {
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", sellerId='" + sellerId + '\'' +
+                ", roomId='" + roomId + '\'' +
                 ", registrationClosingDate=" + registrationClosingDate +
                 ", auctionStartDate=" + auctionStartDate +
                 ", startingPrice=" + startingPrice +
-                ", category='" + category + '\'' +
+                ", category=" + category +
                 ", tags=" + tags +
                 ", subscribersId=" + subscribersId +
+                ", location=" + location +
                 '}';
     }
 }

@@ -2,22 +2,36 @@
 
 import { useState, useEffect } from "react";
 import MapDialog from "./MapDialog";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
+// helper function to format Date -> "YYYY-MM-DDTHH:mm"
+const formatDateTime = (date) => {
+  if (!date) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
 
 export default function ListingForm({
-  initialData = null,
-  categories = [],
-  onSubmit,
-  onDelete,
-  loading,
-}) {
+                                      initialData = null,
+                                      categories = [],
+                                      onSubmit,
+                                      onDelete,
+                                      loading,
+                                    }) {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     startingPrice: "",
     category: "",
     tags: "",
-    registrationClosingDate: "",
-    auctionDate: "",
+    registrationClosingDate: null,
+    auctionDate: null,
     location: null,
   });
 
@@ -31,18 +45,26 @@ export default function ListingForm({
         startingPrice: initialData.startingPrice || "",
         category: initialData.category || "",
         tags: initialData.tags ? initialData.tags.join(", ") : "",
-        registrationClosingDate: initialData.registrationClosingDate || "",
-        auctionDate: initialData.auctionDate || "",
+        registrationClosingDate: initialData.registrationClosingDate
+          ? new Date(initialData.registrationClosingDate)
+          : null,
+        auctionDate: initialData.auctionDate
+          ? new Date(initialData.auctionDate)
+          : null,
         location: initialData.location || null,
       });
     }
   }, [initialData]);
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
   const inputClass =
-    "peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#111827] border border-[#374151] focus:outline-none focus:ring-2 focus:ring-[#2563EB] placeholder-transparent";
+    "peer w-full px-4 pt-6 pb-2 rounded-lg bg-[#111827] border border-[#374151] focus:outline-none focus:ring-2 focus:ring-[#2563EB] placeholder-transparent text-white";
 
   const labelClass =
     "absolute left-4 top-1 text-gray-400 text-sm transition-all " +
@@ -51,7 +73,21 @@ export default function ListingForm({
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+
+    // Convert dates to formatted string
+    const submissionData = {
+      ...formData,
+      registrationClosingDate: formData.registrationClosingDate
+        ? formatDateTime(formData.registrationClosingDate)
+        : null,
+      auctionDate: formData.auctionDate
+        ? formatDateTime(formData.auctionDate)
+        : null,
+    };
+
+    console.log(submissionData)
+
+    onSubmit(submissionData);
   };
 
   return (
@@ -136,29 +172,44 @@ export default function ListingForm({
           <label className={labelClass}>Tags</label>
         </div>
 
-        {/* Dates */}
+        {/* Registration Closing Date */}
         <div className="relative">
-          <input
-            type="datetime-local"
-            name="registrationClosingDate"
-            value={formData.registrationClosingDate}
-            onChange={handleChange}
-            className={inputClass}
+          <DatePicker
+            selected={formData.registrationClosingDate}
+            onChange={(date) =>
+              handleChange({
+                target: { name: "registrationClosingDate", value: date },
+              })
+            }
+            showTimeSelect
+            dateFormat="Pp"
+            placeholderText="Select registration closing date"
+            className={`${inputClass}`}
+            wrapperClassName="w-full"
             required
           />
-          <label className={labelClass}>Registration Closing Date</label>
+          <label className="absolute left-4 -top-3 text-sm text-[#2563EB]">
+            Registration Closing Date
+          </label>
         </div>
 
+        {/* Auction Date */}
         <div className="relative">
-          <input
-            type="datetime-local"
-            name="auctionDate"
-            value={formData.auctionDate}
-            onChange={handleChange}
-            className={inputClass}
+          <DatePicker
+            selected={formData.auctionDate}
+            onChange={(date) =>
+              handleChange({ target: { name: "auctionDate", value: date } })
+            }
+            showTimeSelect
+            dateFormat="Pp"
+            placeholderText="Select auction date"
+            className={`${inputClass}`}
+            wrapperClassName="w-full"
             required
           />
-          <label className={labelClass}>Auction Date</label>
+          <label className="absolute left-4 -top-3 text-sm text-[#2563EB]">
+            Auction Date
+          </label>
         </div>
 
         {/* Location Selector */}
@@ -170,8 +221,8 @@ export default function ListingForm({
           >
             {formData.location
               ? `📍 Location: (${formData.location.lat.toFixed(
-                  4
-                )}, ${formData.location.lng.toFixed(4)})`
+                4
+              )}, ${formData.location.lng.toFixed(4)})`
               : "Choose Location"}
           </button>
         </div>
@@ -186,8 +237,8 @@ export default function ListingForm({
             {loading
               ? "Saving..."
               : initialData
-              ? "Update Auction"
-              : "Create Auction"}
+                ? "Update Auction"
+                : "Create Auction"}
           </button>
 
           {initialData && (
