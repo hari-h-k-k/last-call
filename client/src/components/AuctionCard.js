@@ -2,20 +2,15 @@
 
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { FaEye, FaEdit } from "react-icons/fa";
+import { FaEdit } from "react-icons/fa";
 import { useEffect, useState, useMemo } from "react";
 
-export default function AuctionCard({ item, registered, type = "register" }) {
+export default function AuctionCard({ item, registered = false, type = "register" }) {
   const router = useRouter();
   const [timeLeft, setTimeLeft] = useState(0);
   const [phase, setPhase] = useState("registration"); // "registration" | "waiting" | "auction"
 
-  // Debug log
-  useEffect(() => {
-    console.log("AuctionCard Item:", item);
-  }, [item]);
-
-  // Timer + Phase logic
+  // Timer Setup
   useEffect(() => {
     if (!item?.registrationClosingDate || !item?.auctionStartDate) return;
 
@@ -42,7 +37,7 @@ export default function AuctionCard({ item, registered, type = "register" }) {
     return () => clearInterval(interval);
   }, [item?.registrationClosingDate, item?.auctionStartDate]);
 
-  // Display timer as mm:ss
+  // Timer Display
   const displayTimer = useMemo(() => {
     if (timeLeft <= 0) return "00:00";
     const minutes = String(Math.floor(timeLeft / 60000)).padStart(2, "0");
@@ -50,20 +45,16 @@ export default function AuctionCard({ item, registered, type = "register" }) {
     return `${minutes}:${seconds}`;
   }, [timeLeft]);
 
-  const handleNavigation = (path) => router.push(path);
+  const handleNavigation = () => router.push(`/item/${item.id}`);
   const handleEdit = () => router.push(`/create-listing?id=${item.id}`);
 
   const imageUrl =
     item?.imageUrl?.trim() ||
     "https://images.unsplash.com/photo-1526948128573-703ee1aeb6fa?w=600&h=400&fit=crop";
 
-  // 🔑 Action Button logic
+  // 🔑 Action Button Logic (always navigates to item)
   const actionButton = () => {
-    const now = Date.now();
-    const regClose = new Date(item.registrationClosingDate).getTime();
-    const auctionStart = new Date(item.auctionStartDate).getTime();
-
-    // Case: My Listings
+    // My Listings → Edit only
     if (type === "my-listings") {
       return (
         <button
@@ -75,57 +66,17 @@ export default function AuctionCard({ item, registered, type = "register" }) {
       );
     }
 
-    // Case: Before registration closing
-    if (now < regClose) {
-      if (registered) {
-        return (
-          <button
-            onClick={() => handleNavigation(`/item/${item.id}`)}
-            className="px-4 py-2 rounded-lg bg-green-600 text-white font-medium shadow-md hover:scale-105 transition"
-          >
-            View
-          </button>
-        );
-      }
-      return (
-        <button
-          onClick={() => handleNavigation(`/item/${item.id}`)}
-          className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md"
-        >
-          Register
-        </button>
-      );
-    }
+    let label = "View";
+    if (phase === "registration" && !registered) label = "Register";
+    if (phase === "waiting") label = "Waiting for auction";
+    if (phase === "auction" && !registered) label = "Spectate";
 
-    // Case: After auction start
-    if (now >= auctionStart) {
-      if (registered) {
-        return (
-          <button
-            onClick={() => handleNavigation(`/item/${item.id}`)}
-            className="px-4 py-2 rounded-lg bg-green-600 text-white font-medium shadow-md hover:scale-105 transition"
-          >
-            View
-          </button>
-        );
-      }
-      return (
-        <button
-          onClick={() => handleNavigation(`/spectate/${item.id}`)}
-          className="px-4 py-2 rounded-lg bg-yellow-600 hover:bg-yellow-700 text-white font-medium shadow-md flex items-center gap-2"
-        >
-          <FaEye /> Spectate
-        </button>
-      );
-    }
-
-    // Fallback (between registration close & auction start)
     return (
       <button
-        disabled
-        className="px-4 py-2 rounded-lg bg-gray-600 text-white font-medium shadow-md cursor-not-allowed"
+        onClick={handleNavigation}
+        className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md hover:scale-105 transition"
       >
-        Waiting for auction
+        {label}
       </button>
     );
   };
