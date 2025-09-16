@@ -13,14 +13,16 @@ public class Bid {
 
     private String roomId;
     private String userId;
+    private String username;
     private double amount;
     private Date timestamp;
 
     public Bid() {}
 
-    public Bid(String roomId, String userId, double amount, Date timestamp) {
+    public Bid(String roomId, String userId, String username, double amount, Date timestamp) {
         this.roomId = roomId;
         this.userId = userId;
+        this.username = username;
         this.amount = amount;
         this.timestamp = timestamp;
     }
@@ -34,6 +36,9 @@ public class Bid {
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
 
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+
     public double getAmount() { return amount; }
     public void setAmount(double amount) { this.amount = amount; }
 
@@ -46,6 +51,7 @@ public class Bid {
                 "id='" + id + '\'' +
                 ", roomId='" + roomId + '\'' +
                 ", userId='" + userId + '\'' +
+                ", username='" + username + '\'' +
                 ", amount=" + amount +
                 ", timestamp=" + timestamp +
                 '}';
