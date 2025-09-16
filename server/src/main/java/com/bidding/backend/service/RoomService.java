@@ -1,5 +1,6 @@
 package com.bidding.backend.service;
 
+import com.bidding.backend.entity.Bid;
 import com.bidding.backend.entity.Item;
 import com.bidding.backend.entity.Room;
 import com.bidding.backend.entity.User;
@@ -29,6 +30,9 @@ public class RoomService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private BidService bidService;
 
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
@@ -93,6 +97,12 @@ public class RoomService {
     }
 
     public void placeBid(String roomId, String userId, double bidAmount) {
+        // Save user's bid history
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.updateUserBid(roomId, bidAmount);
+        userRepository.save(user);
+
         Room room = validateBid(roomId, bidAmount);
 
         // Update room bid only if higher
@@ -121,21 +131,21 @@ public class RoomService {
             room.setUpdatedAt(new Date());
             roomRepository.save(room);
 
+            Bid bid = bidService.placeBid(roomId, userId, bidAmount);
+
             // Notify clients
             Map<String, Object> socketPayload = Map.of(
-                    "currentPrice", bidAmount,
-                    "leaderId", userId,
                     "roomId", roomId,
-                    "newEndDate", room.getEndDate() // optional: notify new end date
+                    "newEndDate", room.getEndDate(),
+                    "currentPrice", room.getCurrentPrice(),
+                    "winnerId", room.getWinnerId(),
+                    "leaderboard", bidService.getTop5Bids(roomId),
+                    "myBid", bidService.getUserLatestBid(roomId, userId),
+                    "bid", bid
             );
             messagingTemplate.convertAndSend("/topic/currentBid/" + roomId, socketPayload);
         }
 
-        // Save user's bid history
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        user.updateUserBid(roomId, bidAmount);
-        userRepository.save(user);
     }
 
 

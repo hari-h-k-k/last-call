@@ -26,7 +26,7 @@ public class BidService {
     }
 
     public List<Bid> getTop5Bids(String roomId) {
-        return bidRepository.findTop5ByRoomIdOrderByAmountDesc(roomId);
+        return bidRepository.findTop5UniqueByRoomId(roomId);
     }
 
     public Bid getUserLatestBid(String roomId, String userId) {

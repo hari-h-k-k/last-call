@@ -62,12 +62,7 @@ public class RoomController {
                 .constructResponse("itemId", itemId)
                 .constructResponse("itemTitle", item.getTitle())
                 .constructResponse("startingPrice", item.getStartingPrice())
-                .constructResponse("currentPrice", room.getCurrentPrice())
-                .constructResponse("roomEndDate", room.getEndDate())
                 .constructResponse("bidHistory", bidService.getBidHistory(roomId))
-                .constructResponse("leaderboard", bidService.getTop5Bids(roomId))
-                .constructResponse("myBid", bidService.getUserHighestBid(roomId, userId))
-                .constructResponse("winnerId", room.getWinnerId())
                 .constructResponse("registered", subscribed)
                 .build();
 
@@ -93,7 +88,6 @@ public class RoomController {
 
         try {
             roomService.placeBid(roomId, userId, bidAmount);
-            bidService.placeBid(roomId, userId, bidAmount);
             return ResponseEntity.ok(Map.of("status", "success", "message", "Bid placed successfully!"));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
