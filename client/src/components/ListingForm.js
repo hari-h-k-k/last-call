@@ -36,6 +36,7 @@ export default function ListingForm({
   });
 
   const [mapOpen, setMapOpen] = useState(false);
+  const [placeName, setPlaceName] = useState("");
 
   useEffect(() => {
     if (initialData) {
@@ -55,6 +56,32 @@ export default function ListingForm({
       });
     }
   }, [initialData]);
+
+  // fetch place name when location changes
+  useEffect(() => {
+    const fetchPlaceName = async () => {
+      if (formData.location) {
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${formData.location.lat}&lon=${formData.location.lng}&format=json`
+          );
+          const data = await res.json();
+          if (data && data.display_name) {
+            setPlaceName(data.display_name);
+          } else {
+            setPlaceName("Unknown Location");
+          }
+        } catch (err) {
+          console.error("Error fetching place name:", err);
+          setPlaceName("Unknown Location");
+        }
+      } else {
+        setPlaceName("");
+      }
+    };
+
+    fetchPlaceName();
+  }, [formData.location]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -85,7 +112,7 @@ export default function ListingForm({
         : null,
     };
 
-    console.log(submissionData)
+    console.log(submissionData);
 
     onSubmit(submissionData);
   };
@@ -220,9 +247,7 @@ export default function ListingForm({
             className="w-full py-3 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold"
           >
             {formData.location
-              ? `📍 Location: (${formData.location.lat.toFixed(
-                4
-              )}, ${formData.location.lng.toFixed(4)})`
+              ? `📍 ${placeName || "Loading..."}`
               : "Choose Location"}
           </button>
         </div>
