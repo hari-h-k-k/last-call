@@ -61,7 +61,8 @@ public class RoomController {
                 .constructResponse("startingPrice", item.getStartingPrice())
                 .constructResponse("currentPrice", room.getCurrentPrice())
                 .constructResponse("roomEndDate", room.getEndDate())
-                .constructResponse("bids", room.getEndDate())
+                .constructResponse("bids", room.getBids())
+                .constructResponse("leaderBoard", room.getLeaderBoard())
                 .constructResponse("winnerId", room.getWinnerId())
                 .constructResponse("registered", subscribed)
                 .build();

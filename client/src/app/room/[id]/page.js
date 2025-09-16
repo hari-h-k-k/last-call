@@ -12,37 +12,64 @@ import {
 } from "chart.js";
 import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import {useParams} from "next/navigation";
+import { useParams } from "next/navigation";
+import api from "@/lib/axios";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 export default function BiddingRoom() {
-  const [timeLeft, setTimeLeft] = useState(300); // 5 min countdown
+  const [timeLeft, setTimeLeft] = useState(300);
   const [isSubscribed, setIsSubscribed] = useState(true);
   const [currentBid, setCurrentBid] = useState(500);
   const [bidAmount, setBidAmount] = useState("");
   const [minIncrement, setMinIncrement] = useState(500);
   const [leaderboard, setLeaderboard] = useState([]);
   const [bidHistory, setBidHistory] = useState([]);
+  const [roomInfo, setRoomInfo] = useState(null); // ✅ state for room info
 
   const [stompClient, setStompClient] = useState(null);
   const { id } = useParams();
-  console.log(id)
 
   // Countdown Timer
   useEffect(() => {
-  console.log("Room Id:", id);
     if (timeLeft <= 0) return;
     const interval = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
     return () => clearInterval(interval);
   }, [timeLeft]);
 
-  // Format Time
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
+
+  // ✅ Fetch room info from API
+  useEffect(() => {
+    const fetchRoomInfo = async () => {
+      try {
+        const userInfo = JSON.parse(sessionStorage.getItem("userInfo")) || {};
+        const userId = userInfo?.id || "";
+        const token = userInfo?.token || "";
+
+        const response = await api.get("/get-room", {
+          params: { roomId: id },
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        setRoomInfo(response.data);
+        console.log("Room Info:", response.data);
+
+        // Optionally: set initial subscription state if backend returns it
+        if (response.data?.isSubscribed !== undefined) {
+          setIsSubscribed(response.data.isSubscribed);
+        }
+      } catch (error) {
+        console.error("Error fetching room info:", error);
+      }
+    };
+
+    if (id) fetchRoomInfo();
+  }, [id]);
 
   // Setup WebSocket Connection
   useEffect(() => {
@@ -52,9 +79,7 @@ export default function BiddingRoom() {
 
     const client = new Client({
       brokerURL: "ws://localhost:8080/ws-auction",
-      connectHeaders: {
-        Authorization: `Bearer ${token}`
-      },
+      connectHeaders: { Authorization: `Bearer ${token}` },
       debug: (str) => console.log(str),
       reconnectDelay: 5000,
     });
@@ -62,17 +87,16 @@ export default function BiddingRoom() {
     client.onConnect = (frame) => {
       console.log("Connected:", frame);
 
-      // Subscribe to welcome queue
       client.subscribe("/user/queue/welcome", (message) => {
         const data = JSON.parse(message.body);
         console.log("Server says:", data.message);
       });
 
-      // Subscribe to room topic for live bids
       client.subscribe(`/topic/currentBid/${id}`, (message) => {
         const data = JSON.parse(message.body);
         console.log("New bid:", data);
-        setBids((prev) => [data, ...prev]);
+        setBidHistory((prev) => [data, ...prev]);
+        setCurrentBid(data.amount);
       });
     };
 
@@ -84,7 +108,7 @@ export default function BiddingRoom() {
     };
   }, [id]);
 
-  // Handle New Bid (send to backend)
+  // Handle New Bid
   const handleBid = async () => {
     if (!bidAmount || parseInt(bidAmount) <= currentBid) {
       alert("Your bid must be higher than the current bid!");
@@ -100,23 +124,16 @@ export default function BiddingRoom() {
     try {
       const response = await api.post(
         "/place-bid",
-        {}, // no body since backend expects query params
+        {},
         {
-          params: {
-            id,
-            bidAmount,
-          },
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          params: { id, bidAmount },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
       if (response.status === 200) {
         console.log("Bid placed:", response.data.message);
-        setBidAmount(""); // clear input
-        // ✅ Don't update state here manually
-        // WebSocket will push the new bid
+        setBidAmount("");
       }
     } catch (error) {
       console.error("Error placing bid:", error);
@@ -125,7 +142,6 @@ export default function BiddingRoom() {
     }
   };
 
-  // Quick Bid Increment Handler
   const handleQuickBid = (increment) => {
     setBidAmount(currentBid + increment);
   };
@@ -157,8 +173,20 @@ export default function BiddingRoom() {
         </div>
       </div>
 
+      {/* ✅ Show Room Info */}
+      {roomInfo && (
+        <div className="bg-gray-800 p-4 mb-6 rounded-lg shadow-md">
+          <p className="text-lg">
+            <span className="font-bold">Room Name:</span> {roomInfo.name}
+          </p>
+          <p className="text-gray-400">
+            <span className="font-bold">Created By:</span> {roomInfo.owner}
+          </p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Section: Bidding Panel */}
+        {/* Left Section */}
         <div className="lg:col-span-2 bg-gray-800 rounded-xl shadow-lg p-5">
           <h2 className="text-2xl font-semibold mb-4">💰 Place Your Bids</h2>
           <p className="text-gray-300 mb-4">
@@ -184,7 +212,6 @@ export default function BiddingRoom() {
                 </button>
               </div>
 
-              {/* Quick Bid Suggestions */}
               <div className="flex gap-3 mb-5">
                 {[1, 2, 3].map((multiplier) => (
                   <button
@@ -216,7 +243,7 @@ export default function BiddingRoom() {
           </div>
         </div>
 
-        {/* Right Section: Leaderboard */}
+        {/* Leaderboard */}
         <div className="bg-gray-800 rounded-xl shadow-lg p-5">
           <h2 className="text-2xl font-semibold mb-4">🏅 Leaderboard</h2>
           <div className="space-y-3">
@@ -235,7 +262,7 @@ export default function BiddingRoom() {
         </div>
       </div>
 
-      {/* Bidding Trends Chart */}
+      {/* Chart */}
       <div className="mt-8 bg-gray-800 rounded-xl shadow-lg p-5">
         <h2 className="text-2xl font-semibold mb-4">📈 Bidding Trends</h2>
         <Line
@@ -243,7 +270,10 @@ export default function BiddingRoom() {
           options={{
             responsive: true,
             plugins: { legend: { labels: { color: "white" } } },
-            scales: { x: { ticks: { color: "white" } }, y: { ticks: { color: "white" } } },
+            scales: {
+              x: { ticks: { color: "white" } },
+              y: { ticks: { color: "white" } },
+            },
           }}
         />
       </div>
