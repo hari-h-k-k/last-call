@@ -22,6 +22,11 @@ public class ResponseBuilder {
         return this;
     }
 
+    public ResponseBuilder constructResponse(String key, Object value) {
+        response.put(key, value);
+        return this;
+    }
+
     public Map<String, Object> build() {
         return response;
     }

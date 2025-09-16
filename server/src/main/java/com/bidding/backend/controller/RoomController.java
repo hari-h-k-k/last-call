@@ -49,13 +49,21 @@ public class RoomController {
         }
 
         Room room = roomService.getRoomById(roomId);
+        String itemId = room.getItemId();
         Item item = itemService.getItem(room.getItemId()).get(0);
         boolean subscribed = item.getSubscribersId().contains(userId);
 
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
                 .setMessage("Room fetched successfully!")
-                .setInfo(List.of(Map.of("item", item), Map.of("room", room), Map.of("registered", subscribed)))
+                .constructResponse("itemId", itemId)
+                .constructResponse("itemTitle", item.getTitle())
+                .constructResponse("startingPrice", item.getStartingPrice())
+                .constructResponse("currentPrice", room.getCurrentPrice())
+                .constructResponse("roomEndDate", room.getEndDate())
+                .constructResponse("bids", room.getEndDate())
+                .constructResponse("winnerId", room.getWinnerId())
+                .constructResponse("registered", subscribed)
                 .build();
 
         return ResponseEntity.status(200).body(response);
