@@ -90,8 +90,8 @@ public class DataSeeder {
 
             Item camera = new Item("Vintage Camera", "Classic film camera, perfect for photography fans",
                     peter.getId(),
-                    new Date(now.getTime() + 1000 * 50),    // registration closes in 50 sec
-                    new Date(now.getTime() + 1000 * 140),   // auction starts in 2 min 20 sec
+                    new Date(now.getTime() + 1000 * 05),    // registration closes in 5 sec
+                    new Date(now.getTime() + 1000 * 10),   // auction starts in 10 sec
                     200.0, ItemCategory.COLLECTIBLES, List.of("camera", "vintage"), new LocationRequest(0,0));
             camera.setSubscribersId(List.of(steve.getId(), uncle.getId()));
 
@@ -113,8 +113,8 @@ public class DataSeeder {
             // Owned by Bruce Wayne
             Item batMobile = new Item("Batmobile", "High-tech armored vehicle",
                     bruce.getId(),
-                    new Date(now.getTime() + 1000 * 60 * 15), // registration closes in 15 min
-                    new Date(now.getTime() + 1000 * 60 * 25), // auction starts in 25 min
+                    new Date(now.getTime() + 1000 * 05),    // registration closes in 5 sec
+                    new Date(now.getTime() + 1000 * 10),   // auction starts in 10 sec
                     500000.0, ItemCategory.VEHICLES, List.of("batmobile", "dc"), new LocationRequest(0,0));
             batMobile.setSubscribersId(List.of(bruceBanner.getId(), clark.getId()));
 

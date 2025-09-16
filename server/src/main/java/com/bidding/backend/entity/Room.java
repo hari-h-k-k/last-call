@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Document(collection = "rooms")
 public class Room {
@@ -23,7 +24,7 @@ public class Room {
 
     private List<String> listOfUserIds;
 
-    private Map<String, Double> bids;
+    private Map<String, Double> leaderboard;
 
     private double currentPrice;
 
@@ -34,14 +35,14 @@ public class Room {
     private String winnerId;
 
     public Room(String itemId, Date startDate, Date endDate, String status,
-                List<String> listOfUserIds, Map<String, Double> bids,
+                List<String> listOfUserIds, Map<String, Double> leaderboard,
                 double currentPrice, Date createdAt, Date updatedAt, String winnerId) {
         this.itemId = itemId;
         this.startDate = startDate;
         this.endDate = endDate;
         this.status = status;
         this.listOfUserIds = listOfUserIds;
-        this.bids = bids;
+        this.leaderboard = leaderboard;
         this.currentPrice = currentPrice;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -57,7 +58,7 @@ public class Room {
         private Date endDate;
         private String status;
         private List<String> listOfUserIds;
-        private Map<String, Double> bids;
+        private Map<String, Double> leaderboard;
         private double currentPrice;
         private Date createdAt;
         private Date updatedAt;
@@ -68,7 +69,7 @@ public class Room {
         public Builder endDate(Date endDate) { this.endDate = endDate; return this; }
         public Builder status(String status) { this.status = status; return this; }
         public Builder listOfUserIds(List<String> listOfUserIds) { this.listOfUserIds = listOfUserIds; return this; }
-        public Builder bids(Map<String, Double> bids) { this.bids = bids; return this; }
+        public Builder leaderboard(Map<String, Double> leaderboard) { this.leaderboard = leaderboard; return this; }
         public Builder currentPrice(double currentPrice) { this.currentPrice = currentPrice; return this; }
         public Builder createdAt(Date createdAt) { this.createdAt = createdAt; return this; }
         public Builder updatedAt(Date updatedAt) { this.updatedAt = updatedAt; return this; }
@@ -81,7 +82,7 @@ public class Room {
             room.endDate = this.endDate;
             room.status = this.status;
             room.listOfUserIds = this.listOfUserIds;
-            room.bids = this.bids;
+            room.leaderboard = this.leaderboard;
             room.currentPrice = this.currentPrice;
             room.createdAt = this.createdAt;
             room.updatedAt = this.updatedAt;
@@ -137,32 +138,43 @@ public class Room {
         this.listOfUserIds = listOfUserIds;
     }
 
-    public Map<String, Double> getBids() {
-        return bids;
+    public Map<String, Double> getLeaderboard() {
+        return leaderboard;
     }
-    public void setBids(Map<String, Double> bids) {
-        this.bids = bids;
+    public void setLeaderboard(Map<String, Double> leaderboard) {
+        this.leaderboard = leaderboard;
+    }
+
+    public List<Map.Entry<String, Double>> getTop5Leaderboard() {
+        if (leaderboard == null || leaderboard.isEmpty()) {
+            return java.util.Collections.emptyList();
+        }
+
+        return leaderboard.entrySet().stream()
+                .sorted((e1, e2) -> Double.compare(e2.getValue(), e1.getValue())) // sort descending
+                .limit(5) // take top 5
+                .collect(Collectors.toList());
     }
 
     public boolean updateRoomBid(String userId, double bidAmount) {
-        if (bids == null) {
-            bids = new java.util.HashMap<>();
+        if (leaderboard == null) {
+            leaderboard = new java.util.HashMap<>();
         }
 
         // Check if this user's bid is valid
-        if (bids.containsKey(userId)) {
-            double currentBid = bids.get(userId);
+        if (leaderboard.containsKey(userId)) {
+            double currentBid = leaderboard.get(userId);
             if (bidAmount <= currentBid) {
                 throw new IllegalArgumentException("Bid amount must be higher than the current bid.");
             }
         }
 
         // Find the current highest bid in the room
-        double highestBid = bids.values().stream()
+        double highestBid = leaderboard.values().stream()
                 .max(Double::compare)
                 .orElse(0.0);
 
-        bids.put(userId, bidAmount);
+        leaderboard.put(userId, bidAmount);
 
         // Return true only if this bid is now the new highest
         return bidAmount > highestBid;
@@ -205,7 +217,7 @@ public class Room {
                 ", endDate=" + endDate +
                 ", status='" + status + '\'' +
                 ", listOfUserIds=" + listOfUserIds +
-                ", bids=" + bids +
+                ", leaderboard=" + leaderboard +
                 ", currentPrice=" + currentPrice +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
