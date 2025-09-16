@@ -65,6 +65,7 @@ public class RoomController {
                 .constructResponse("bidHistory", bidService.getBidHistory(roomId))
                 .constructResponse("currentPrice", room.getCurrentPrice())
                 .constructResponse("roomEndDate", room.getEndDate())
+                .constructResponse("roomStatus", room.getStatus())
                 .constructResponse("leaderboard", bidService.getTop5Bids(roomId))
                 .constructResponse("myBid", bidService.getUserHighestBid(roomId, userId))
                 .constructResponse("winnerId", room.getWinnerId())

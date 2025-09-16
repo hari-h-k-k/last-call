@@ -73,7 +73,7 @@ public class RoomService {
     public void openRoomForItem(String itemId) {
         Room room = roomRepository.findByItemId(itemId);
         if (room != null) {
-            Date endDate = Date.from(room.getStartDate().toInstant().plus(Duration.ofMinutes(15)));
+            Date endDate = Date.from(room.getStartDate().toInstant().plus(Duration.ofMinutes(10)));
             room.setStatus(RoomStatus.ACTIVE.name());
             room.setEndDate(endDate);
             room.setUpdatedAt(new Date());
