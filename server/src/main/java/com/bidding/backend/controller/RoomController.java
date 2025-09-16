@@ -1,5 +1,8 @@
 package com.bidding.backend.controller;
 
+import com.bidding.backend.entity.Item;
+import com.bidding.backend.entity.Room;
+import com.bidding.backend.service.ItemService;
 import com.bidding.backend.service.RoomService;
 import com.bidding.backend.service.UserService;
 import com.bidding.backend.utils.common.ResponseBuilder;
@@ -11,32 +14,48 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/")
 public class RoomController {
 
-    private final UserService userService;
+    private ItemService itemService;
     private final RoomService roomService;
     private final JwtUtil jwtUtil;
 
     @Autowired
-    public RoomController(UserService userService, RoomService roomService, JwtUtil jwtUtil) {
-        this.userService = userService;
+    public RoomController(ItemService itemService, RoomService roomService, JwtUtil jwtUtil) {
+        this.itemService = itemService;
         this.roomService = roomService;
         this.jwtUtil = jwtUtil;
     }
 
     @GetMapping("/get-room")
-    public ResponseEntity<Object> getRoom(@RequestParam String roomId) {
-        Map<String, Object> rooms = new HashMap<>();
-        rooms.put("room", roomService.getRoomById(roomId));
+    public ResponseEntity<Object> getRoom(
+            @RequestParam String roomId,
+            @RequestHeader(value = "Authorization") String token) {
+
+        if (token == null || !token.startsWith("Bearer ")) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "error", "message", "Unauthorized"));
+        }
+
+        String userId = jwtUtil.extractUserId(token.substring(7));
+        if (userId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("status", "error", "message", "Unauthorized"));
+        }
+
+        Room room = roomService.getRoomById(roomId);
+        Item item = itemService.getItem(room.getItemId()).get(0);
+        boolean subscribed = item.getSubscribersId().contains(userId);
 
         Map<String, Object> response = new ResponseBuilder()
                 .setStatus("success")
                 .setMessage("Room fetched successfully!")
-                .setInfo(rooms)
+                .setInfo(List.of(Map.of("item", item), Map.of("room", room), Map.of("registered", subscribed)))
                 .build();
 
         return ResponseEntity.status(200).body(response);
@@ -46,7 +65,7 @@ public class RoomController {
     public ResponseEntity<Object> placeBid(
             @RequestParam String roomId,
             @RequestParam Double bidAmount,
-            @RequestHeader(value = "Authorization", required = false) String token
+            @RequestHeader(value = "Authorization") String token
     ) {
         if (token == null || !token.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
