@@ -2,28 +2,30 @@
 FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
 
-# Copy Maven wrapper and project descriptor first (to leverage Docker layer caching)
-COPY pom.xml mvnw ./
+# Copy Maven files first for dependency caching
+COPY pom.xml .
+COPY mvnw .
 COPY .mvn .mvn
 
-# Download dependencies (without sources/tests to keep it fast)
-RUN chmod +x mvnw && ./mvnw -B -q -DskipTests dependency:go-offline
-
-# Now copy the actual source
+# Copy source
 COPY src src
 
-# Build the jar
-RUN ./mvnw -B -q -DskipTests package
+# Set execution permission for Maven wrapper
+RUN chmod +x ./mvnw
+
+# Build the application (skip tests for speed)
+RUN ./mvnw clean package -DskipTests
 
 # ------------ Runtime stage ------------
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jdk
 WORKDIR /app
+VOLUME /tmp
 
-# Copy the built jar from the build stage
-COPY --from=build /app/target/*-SNAPSHOT.jar app.jar
+# Copy the JAR from the build stage
+COPY --from=build /app/target/*.jar app.jar
 
-# Expose port (Render sets $PORT automatically)
+# Expose port
 EXPOSE 8080
 
-# Run with the Render-injected port
-ENTRYPOINT ["sh", "-c", "java -jar app.jar --server.port=${PORT:-8080}"]
+# Run the application with memory limits
+ENTRYPOINT ["java", "-Xmx256m", "-Xms128m", "-jar", "/app.jar"]
