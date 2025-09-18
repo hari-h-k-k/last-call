@@ -13,8 +13,6 @@ COPY src src
 # Set executable permission for Maven wrapper
 RUN chmod +x ./mvnw
 
-RUN echo $PORT
-
 # Build the fat JAR (skip tests)
 RUN ./mvnw clean package -DskipTests
 
@@ -30,4 +28,4 @@ COPY --from=build /app/target/*SNAPSHOT.jar app.jar
 EXPOSE 8080
 
 # Run the application
-CMD ["sh", "-c", "echo $PORT && java -jar /app/app.jar --server.port=$PORT"]
+ENTRYPOINT ["sh", "-c", "echo Listening on $PORT && java -jar /app/app.jar --server.port=$PORT"]
