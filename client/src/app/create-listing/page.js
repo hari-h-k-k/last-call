@@ -16,9 +16,14 @@ export default function CreateListingPage() {
   const [loading, setLoading] = useState(false);
   const [initialData, setInitialData] = useState(null);
 
+  // Safer auth headers
   const getAuthHeaders = () => {
-    const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
-    return userInfo?.token ? { Authorization: `Bearer ${userInfo.token}` } : {};
+    try {
+      const userInfo = JSON.parse(sessionStorage.getItem("userInfo") || "{}");
+      return userInfo?.token ? { Authorization: `Bearer ${userInfo.token}` } : {};
+    } catch {
+      return {};
+    }
   };
 
   // Fetch categories
@@ -26,7 +31,7 @@ export default function CreateListingPage() {
     api
       .get("/categories", { headers: getAuthHeaders() })
       .then((res) => {
-        setCategories(Array.isArray(res.data?.info?.[0]) ? res.data.info[0] : []);
+        setCategories(res.data?.info || []);
       })
       .catch(() => setCategories([]));
   }, []);
@@ -34,36 +39,48 @@ export default function CreateListingPage() {
   // Fetch existing auction if editing
   useEffect(() => {
     if (!auctionId) return;
+
     api
       .get(`/items/${auctionId}`, { headers: getAuthHeaders() })
       .then((res) => {
-        const item = res.data?.info?.itemList[0].item || {};
+        const item = res.data?.info?.itemList?.[0]?.item || {};
         setInitialData({
-          title: item.title,
-          description: item.description,
-          startingPrice: item.startingPrice,
-          category: item.category,
-          tags: item.tags,
+          title: item.title || "",
+          description: item.description || "",
+          startingPrice: item.startingPrice || "",
+          category: item.category || "",
+          tags: item.tags || [],
           registrationClosingDate: item.registrationClosingDate
-              ? new Date(item.registrationClosingDate).toISOString().slice(0, 16)
-              : "",
+            ? new Date(item.registrationClosingDate).toISOString().slice(0, 16)
+            : "",
           auctionDate: item.auctionStartDate
-              ? new Date(item.auctionStartDate).toISOString().slice(0, 16)
-              : "",
-          location: item.location,
+            ? new Date(item.auctionStartDate).toISOString().slice(0, 16)
+            : "",
+          location: item.location || "",
         });
       })
       .catch(() => alert("Failed to fetch auction details."));
   }, [auctionId]);
 
-  const formatDate = (date) => new Date(date).toISOString();
+  // Format date to ISO string
+  const formatDate = (date) => {
+    try {
+      return new Date(date).toISOString();
+    } catch {
+      return null;
+    }
+  };
 
+  // Handle submit
   const handleSubmit = async (formData) => {
     setLoading(true);
     try {
-      const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
-      if (!userInfo?.id || !userInfo?.token)
-        return alert("Please login first."), setLoading(false);
+      const userInfo = JSON.parse(sessionStorage.getItem("userInfo") || "{}");
+      if (!userInfo?.id || !userInfo?.token) {
+        alert("Please login first.");
+        setLoading(false);
+        return;
+      }
 
       const payload = {
         sellerId: userInfo.id,
@@ -93,6 +110,7 @@ export default function CreateListingPage() {
     }
   };
 
+  // Handle delete
   const handleDelete = async () => {
     if (!confirm("Are you sure you want to delete this listing?")) return;
     try {
@@ -115,11 +133,11 @@ export default function CreateListingPage() {
         </h1>
 
         <ListingForm
-            initialData={initialData}
-            categories={categories}
-            onSubmit={handleSubmit}
-            onDelete={auctionId ? handleDelete : undefined}
-            loading={loading}
+          initialData={initialData}
+          categories={categories}
+          onSubmit={handleSubmit}
+          onDelete={auctionId ? handleDelete : undefined}
+          loading={loading}
         />
       </div>
       <Footer />
