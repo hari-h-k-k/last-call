@@ -28,4 +28,4 @@ COPY --from=build /app/target/*SNAPSHOT.jar app.jar
 EXPOSE 8080
 
 # Run the application
-ENTRYPOINT ["sh", "-c", "echo Listening on $PORT && java -jar /app/app.jar --server.port=$PORT"]
+CMD ["sh", "-c", "java -jar /app/app.jar --server.port=$PORT"]
