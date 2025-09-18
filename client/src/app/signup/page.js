@@ -8,8 +8,10 @@ export default function SignupPage() {
   const [formData, setFormData] = useState({
     username: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
   const { signup, loading, error } = useSignup();
 
@@ -44,24 +46,65 @@ export default function SignupPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {["username", "password", "confirmPassword"].map((field) => (
+          {/* Username */}
+          <input
+            type="text"
+            name="username"
+            placeholder="Username"
+            value={formData.username}
+            onChange={handleChange}
+            required
+            className="w-full p-3 rounded-lg bg-gray-900 border border-blue-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+
+          {/* Password */}
+          <div className="relative">
             <input
-              key={field}
-              type={field.includes("password") ? "password" : "text"}
-              name={field}
-              placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-              value={formData[field]}
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              value={formData.password}
               onChange={handleChange}
               required
               className="w-full p-3 rounded-lg bg-gray-900 border border-blue-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
-          ))}
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-200 text-sm"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>
+          </div>
 
+          {/* Confirm Password */}
+          <div className="relative">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              name="confirmPassword"
+              placeholder="Confirm Password"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              className="w-full p-3 rounded-lg bg-gray-900 border border-blue-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-3 text-gray-400 hover:text-gray-200 text-sm"
+            >
+              {showConfirmPassword ? "Hide" : "Show"}
+            </button>
+          </div>
+
+          {/* Submit */}
           <button
             type="submit"
             disabled={loading}
             className={`w-full py-3 rounded-lg text-white font-semibold transition duration-300 ${
-              loading ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+              loading
+                ? "bg-gray-500 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
             }`}
           >
             {loading ? "Signing Up..." : "Sign Up"}
