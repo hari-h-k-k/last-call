@@ -2,30 +2,30 @@
 FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
 
-# Copy Maven files first for dependency caching
+# Copy Maven wrapper and project files first (for caching)
 COPY pom.xml .
 COPY mvnw .
 COPY .mvn .mvn
 
-# Copy source
+# Copy source code
 COPY src src
 
-# Set execution permission for Maven wrapper
+# Set executable permission for Maven wrapper
 RUN chmod +x ./mvnw
 
-# Build the application (skip tests for speed)
+# Build the fat JAR (skip tests)
 RUN ./mvnw clean package -DskipTests
 
 # ------------ Runtime stage ------------
-FROM eclipse-temurin:17-jdk
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 VOLUME /tmp
 
-# Copy the JAR from the build stage
-COPY --from=build /app/target/*.jar app.jar
+# Copy the built Spring Boot fat JAR from the build stage
+COPY --from=build /app/target/backend-0.0.1-SNAPSHOT.jar app.jar
 
-# Expose port
+# Expose the port
 EXPOSE 8080
 
-# Run the application with memory limits
-ENTRYPOINT ["java", "-Xmx256m", "-Xms128m", "-jar", "/app.jar"]
+# Run the application
+ENTRYPOINT ["java", "-Xmx256m", "-Xms128m", "-jar", "/app/app.jar"]
