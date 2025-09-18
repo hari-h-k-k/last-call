@@ -47,8 +47,11 @@ export default function SearchResults({ query }) {
         <p className="text-center text-gray-300 text-lg">🔍 Searching...</p>
       ) : noResults ? (
         <p className="text-center text-gray-400 text-lg py-10">
-          ❌ No results found for "<span className="font-semibold">{query}</span>"
+          ❌ No results found for {"\""}
+          <span className="font-semibold">{query}</span>
+          {"\""}
         </p>
+
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           {results.map(({ item }) => (
