@@ -97,7 +97,8 @@ export default function BiddingRoom() {
       : null;
 
     const client = new Client({
-      brokerURL: "ws://localhost:8080/ws-auction",
+      brokerURL: "wss://last-call-auction.onrender.com/ws-auction",
+      // brokerURL: "ws://localhost:8080/ws-auction",
       connectHeaders: { Authorization: `Bearer ${token}` },
       debug: (str) => console.log(str),
       reconnectDelay: 5000,
