@@ -4,7 +4,7 @@ import { getAuthToken } from "./auth"; // helper to get token from context
 // Base Axios instance
 const api = axios.create({
 //  baseURL: "http://localhost:8080/", // development
-  baseURL: "https://last-call-nboa.onrender.com", //production
+  baseURL: "https://last-call-auction.onrender.com", //production
   headers: {
     "Content-Type": "application/json",
   },
