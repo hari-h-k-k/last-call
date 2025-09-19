@@ -1,4 +1,4 @@
-# ------------ Build stage ------------
+# ------------ Build stage -----------
 FROM eclipse-temurin:17-jdk AS build
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN chmod +x ./mvnw
 # Build the fat JAR (skip tests)
 RUN ./mvnw clean package -DskipTests
 
-# ------------ Runtime stage ------------
+# ------------ Runtime stage -----------
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 VOLUME /tmp
