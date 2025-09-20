@@ -65,5 +65,15 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/verify")
+    public ResponseEntity<ApiResponse<String>> verify(@RequestHeader("X-User-Id") String userId) {
+        try {
+            User user = authService.findById(Long.parseLong(userId));
+            return ResponseBuilder.success(user.getUsername(), "Token verified");
+        } catch (Exception e) {
+            return ResponseBuilder.unauthorized("User not found");
+        }
+    }
+
 }
 

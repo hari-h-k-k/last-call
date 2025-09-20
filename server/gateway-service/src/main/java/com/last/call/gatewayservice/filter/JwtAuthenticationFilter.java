@@ -38,7 +38,15 @@ public class JwtAuthenticationFilter implements WebFilter {
             return unauthorizedResponse(exchange, "Invalid or expired token");
         }
 
-        return chain.filter(exchange);
+        // Add user ID to request headers for downstream services
+        String userId = jwtUtil.extractUserId(token);
+        ServerWebExchange modifiedExchange = exchange.mutate()
+                .request(exchange.getRequest().mutate()
+                        .header("X-User-Id", userId)
+                        .build())
+                .build();
+
+        return chain.filter(modifiedExchange);
     }
 
     private Mono<Void> unauthorizedResponse(ServerWebExchange exchange, String message) {
