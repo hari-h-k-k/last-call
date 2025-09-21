@@ -1,0 +1,95 @@
+package com.last.call.roomservice.entity;
+
+import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
+
+import java.util.Date;
+import java.util.List;
+
+@Entity
+@Table(name = "rooms")
+public class Room {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotNull
+    @Column(nullable = false, name = "item_id")
+    @JoinColumn(name = "item_id", foreignKey = @ForeignKey(name = "fk_room_item"))
+    private Long itemId;
+
+    @NotNull
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false, name = "start_date")
+    private Date startDate;
+
+    @NotNull
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(nullable = false, name = "end_date")
+    private Date endDate;
+
+    @NotBlank
+    @Size(max = 50)
+    @Column(nullable = false, length = 50)
+    private String status;
+
+    @DecimalMin("0.0")
+    @Column(nullable = false, name = "current_price")
+    private double currentPrice;
+
+    @Column(name = "winner_id")
+    @JoinColumn(name = "winner_id", foreignKey = @ForeignKey(name = "fk_room_winner"))
+    private String winnerId;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_at")
+    private Date createdAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "updated_at")
+    private Date updatedAt;
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Bid> bids;
+
+    public Room() {}
+
+    public Room(Long itemId, Date startDate, Date endDate, String status, double currentPrice) {
+        this.itemId = itemId;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.status = status;
+        this.currentPrice = currentPrice;
+    }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public Long getItemId() { return itemId; }
+    public void setItemId(Long itemId) { this.itemId = itemId; }
+
+    public Date getStartDate() { return startDate; }
+    public void setStartDate(Date startDate) { this.startDate = startDate; }
+
+    public Date getEndDate() { return endDate; }
+    public void setEndDate(Date endDate) { this.endDate = endDate; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public double getCurrentPrice() { return currentPrice; }
+    public void setCurrentPrice(double currentPrice) { this.currentPrice = currentPrice; }
+
+    public String getWinnerId() { return winnerId; }
+    public void setWinnerId(String winnerId) { this.winnerId = winnerId; }
+
+    public Date getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+
+    public Date getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
+
+    public List<Bid> getBids() { return bids; }
+    public void setBids(List<Bid> bids) { this.bids = bids; }
+}
+
