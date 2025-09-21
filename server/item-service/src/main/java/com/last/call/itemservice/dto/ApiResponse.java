@@ -22,6 +22,16 @@ public class ApiResponse<T> {
     public T getData() { return data; }
     public int getStatusCode() { return statusCode; }
 
+    @Override
+    public String toString() {
+        return "ApiResponse{" +
+                "success=" + success +
+                ", message='" + message + '\'' +
+                ", data=" + data +
+                ", statusCode=" + statusCode +
+                '}';
+    }
+
     public static class Builder<T> {
         private boolean success = true;
         private String message;

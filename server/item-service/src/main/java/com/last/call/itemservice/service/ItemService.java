@@ -95,36 +95,7 @@ public class ItemService {
             return null;
         }
 
-        String searchTerm = input.toLowerCase().trim();
-        List<Item> allItems = itemRepository.findAll();
-        List<Item> results = new java.util.ArrayList<>();
-
-        // Priority 1: Title matches
-        allItems.stream()
-                .filter(item -> item.getTitle().toLowerCase().contains(searchTerm))
-                .forEach(results::add);
-
-        // Priority 2: Description matches (exclude already found)
-        allItems.stream()
-                .filter(item -> !results.contains(item))
-                .filter(item -> item.getDescription() != null &&
-                        item.getDescription().toLowerCase().contains(searchTerm))
-                .forEach(results::add);
-
-        // Priority 3: Category matches (exclude already found)
-        allItems.stream()
-                .filter(item -> !results.contains(item))
-                .filter(item -> item.getCategory().name().toLowerCase().contains(searchTerm))
-                .forEach(results::add);
-
-        // Priority 4: Tag matches (exclude already found)
-        allItems.stream()
-                .filter(item -> !results.contains(item))
-                .filter(item -> item.getTags() != null &&
-                        item.getTags().stream()
-                                .anyMatch(tag -> tag.getTag().toLowerCase().contains(searchTerm)))
-                .forEach(results::add);
-
+        List<Item> results = itemRepository.searchItems(input.trim());
         return results.stream()
                 .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserSubscribed(item, userId)))
                 .collect(java.util.stream.Collectors.toList());

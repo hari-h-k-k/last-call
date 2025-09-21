@@ -99,5 +99,19 @@ public class Item {
 
     public List<ItemSubscriber> getSubscribers() { return subscribers; }
     public void setSubscribers(List<ItemSubscriber> subscribers) { this.subscribers = subscribers; }
+
+    @Override
+    public String toString() {
+        return "Item{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", sellerId=" + sellerId +
+                ", startingPrice=" + startingPrice +
+                ", category=" + category +
+                ", registrationClosingDate=" + registrationClosingDate +
+                ", auctionStartDate=" + auctionStartDate +
+                '}';
+    }
 }
 

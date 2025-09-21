@@ -16,4 +16,12 @@ public class ItemWithSubscriptionDto {
 
     public boolean isRegistered() { return registered; }
     public void setRegistered(boolean registered) { this.registered = registered; }
+
+    @Override
+    public String toString() {
+        return "ItemWithSubscriptionDto{" +
+                "item=" + item +
+                ", registered=" + registered +
+                '}';
+    }
 }

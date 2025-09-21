@@ -5,6 +5,7 @@ import com.last.call.itemservice.entity.Item;
 import com.last.call.itemservice.entity.ItemSubscriber;
 import com.last.call.itemservice.exception.ItemNotFoundException;
 import com.last.call.itemservice.repository.ItemRepository;
+import com.last.call.itemservice.repository.ItemSubscriberRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,9 @@ public class ItemSubscriberService {
 
     @Autowired
     private ItemRepository itemRepository;
+
+    @Autowired
+    private ItemSubscriberRepository itemSubscriberRepository;
 
     @Autowired
     private ItemValidationService itemValidationService;
@@ -53,9 +57,7 @@ public class ItemSubscriberService {
     }
 
     public boolean isUserSubscribed(Item item, String userId) {
-        return item.getSubscribers() != null && 
-               item.getSubscribers().stream()
-                   .anyMatch(sub -> sub.getUserId().equals(userId));
+        return itemSubscriberRepository.existsByItemIdAndUserId(item.getId(), userId);
     }
 
     public List<ItemWithSubscriptionDto> getSubscribedItems(String userId) {
