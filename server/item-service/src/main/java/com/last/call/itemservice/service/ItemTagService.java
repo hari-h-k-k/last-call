@@ -6,6 +6,7 @@ import com.last.call.itemservice.exception.ItemNotFoundException;
 import com.last.call.itemservice.repository.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -19,6 +20,7 @@ public class ItemTagService {
     @Autowired
     private ItemValidationService itemValidationService;
 
+    @Transactional
     public void addTag(Long itemId, String tagName, Long userId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + itemId));
@@ -38,20 +40,18 @@ public class ItemTagService {
         }
         
         ItemTag newTag = new ItemTag(tagName.toLowerCase().trim(), item);
-        if (item.getTags() == null) {
-            item.setTags(new java.util.ArrayList<>());
-        }
         item.getTags().add(newTag);
         itemRepository.save(item);
     }
 
+    @Transactional
     public void removeTag(Long itemId, String tagName, Long userId) {
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + itemId));
         
         itemValidationService.validateItemOwnership(item, userId);
         
-        if (item.getTags() == null || item.getTags().isEmpty()) {
+        if (item.getTags().isEmpty()) {
             throw new IllegalArgumentException("No tags found for this item");
         }
         

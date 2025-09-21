@@ -10,6 +10,7 @@ import com.last.call.itemservice.service.ItemTagService;
 import com.last.call.itemservice.util.ResponseBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -50,14 +51,15 @@ public class ItemController {
             @PathVariable String itemId,
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
 
-        if (userId != null) {
-            ItemWithSubscriptionDto itemWithSubscriptionDto = itemService.getItemWithSubscription(Long.parseLong(itemId), userId);
-            return ResponseBuilder.success(itemWithSubscriptionDto, "Item retrieved successfully");
-        } else {
-            Item item = itemService.getItemById(Long.parseLong(itemId)).orElse(null);
+        if (userId == null) {
+            Item item = itemService.getItemById(Long.parseLong(itemId))
+                    .orElseThrow(() -> new RuntimeException("Item not found"));
             ItemWithSubscriptionDto itemWithSubscriptionDto = new ItemWithSubscriptionDto(item, false);
-            return ResponseBuilder.success(itemWithSubscriptionDto, "Items retrieved successfully");
+            return ResponseBuilder.success(itemWithSubscriptionDto, "Item retrieved successfully");
         }
+        
+        ItemWithSubscriptionDto itemWithSubscriptionDto = itemService.getItemWithSubscription(Long.parseLong(itemId), userId);
+        return ResponseBuilder.success(itemWithSubscriptionDto, "Item retrieved successfully");
     }
 
     @GetMapping("/my-items")
@@ -138,8 +140,7 @@ public class ItemController {
     public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> searchItems(
             @PathVariable String input,
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
-        
-        userId = userId != null ? userId : "1";
+
         List<ItemWithSubscriptionDto> items = itemService.searchItems(input, userId);
         return ResponseBuilder.success(items, "Search completed successfully");
     }
@@ -147,8 +148,7 @@ public class ItemController {
     @GetMapping("/subscribed-items")
     public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> getSubscribedItems(
             @RequestHeader(value = "X-User-Id") String userId) {
-        
-        userId = userId != null ? userId : "1";
+
         List<ItemWithSubscriptionDto> items = itemSubscriberService.getSubscribedItems(userId);
         return ResponseBuilder.success(items, "Subscribed items retrieved successfully");
     }

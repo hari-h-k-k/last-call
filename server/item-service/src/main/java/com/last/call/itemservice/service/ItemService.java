@@ -31,6 +31,10 @@ public class ItemService {
         return itemRepository.findById(id);
     }
 
+    public List<Item> getAllItems() {
+        return itemRepository.findAll();
+    }
+
     public ItemWithSubscriptionDto getItemWithSubscription(Long itemId, String userId) {
         Item item = getItemById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + itemId));

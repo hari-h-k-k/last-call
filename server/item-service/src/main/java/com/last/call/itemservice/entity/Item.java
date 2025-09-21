@@ -53,10 +53,14 @@ public class Item {
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ItemSubscriber> subscribers;
 
-    public Item() {}
+    public Item() {
+        this.tags = new java.util.ArrayList<>();
+        this.subscribers = new java.util.ArrayList<>();
+    }
 
     public Item(String title, String description, Long sellerId, double startingPrice, 
                 ItemCategory category, Date registrationClosingDate, Date auctionStartDate) {
+        this();
         this.title = title;
         this.description = description;
         this.sellerId = sellerId;

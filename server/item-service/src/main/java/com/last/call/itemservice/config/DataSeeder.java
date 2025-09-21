@@ -2,7 +2,9 @@ package com.last.call.itemservice.config;
 
 import com.last.call.itemservice.entity.Item;
 import com.last.call.itemservice.enums.ItemCategory;
-import com.last.call.itemservice.repository.ItemRepository;
+import com.last.call.itemservice.service.ItemService;
+import com.last.call.itemservice.service.ItemTagService;
+import com.last.call.itemservice.service.ItemSubscriberService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,53 +13,65 @@ import org.springframework.context.annotation.Profile;
 import java.util.Date;
 
 @Configuration
-@Profile("!prod")
 public class DataSeeder {
 
     @Bean
-    CommandLineRunner seedItemData(ItemRepository itemRepository) {
+    CommandLineRunner seedItemData(ItemService itemService,
+                                   ItemTagService itemTagService,
+                                   ItemSubscriberService itemSubscriberService) {
         return args -> {
-            if (itemRepository.count() > 0) return;
+            if (!itemService.getAllItems().isEmpty()) return;
 
             Date now = new Date();
-            
-            // Item ID: 1, Seller: Steve Rogers (User ID: 1)
-            Item shield = new Item("Captain America Shield", "Replica of Cap's shield", 
-                1L, 1200.0, ItemCategory.COLLECTIBLES,
-                new Date(now.getTime() + 3600000),  // reg closes in 1h
-                new Date(now.getTime() + 7200000)); // auction starts in 2h
-            
-            // Item ID: 2, Seller: Tony Stark (User ID: 2)
+
+            // Create items using service
+            Item shield = new Item("Captain America Shield", "Replica of Cap's shield",
+                    1L, 1200.0, ItemCategory.COLLECTIBLES,
+                    new Date(now.getTime() + 3600000),
+                    new Date(now.getTime() + 7200000));
+            Item savedShield = itemService.saveItem(shield);
+
             Item webShooter = new Item("Web Shooter", "Mechanical web-shooters replica",
-                2L, 450.0, ItemCategory.COLLECTIBLES,
-                new Date(now.getTime() + 900000),   // reg closes in 15min
-                new Date(now.getTime() + 1500000)); // auction starts in 25min
-            
-            // Item ID: 3, Seller: Peter Parker (User ID: 3)
+                    2L, 450.0, ItemCategory.COLLECTIBLES,
+                    new Date(now.getTime() + 900000),
+                    new Date(now.getTime() + 1500000));
+            Item savedWebShooter = itemService.saveItem(webShooter);
+
             Item batMobile = new Item("Batmobile", "High-tech armored vehicle",
-                3L, 500000.0, ItemCategory.AUTOMOBILES,
-                new Date(now.getTime() + 5000),     // reg closes in 5sec
-                new Date(now.getTime() + 10000));   // auction starts in 10sec
-            
-            // Item ID: 4, Seller: Bruce Wayne (User ID: 4)
+                    3L, 500000.0, ItemCategory.AUTOMOBILES,
+                    new Date(now.getTime() + 300000),
+                    new Date(now.getTime() + 420000));
+            Item savedBatMobile = itemService.saveItem(batMobile);
+
             Item kryptonite = new Item("Kryptonite Shard", "Green kryptonite piece",
-                4L, 500.0, ItemCategory.COLLECTIBLES,
-                new Date(now.getTime() + 600000),   // reg closes in 10min
-                new Date(now.getTime() + 1200000)); // auction starts in 20min
-            
-            // Item ID: 5, Seller: Clark Kent (User ID: 5)
+                    4L, 500.0, ItemCategory.COLLECTIBLES,
+                    new Date(now.getTime() + 600000),
+                    new Date(now.getTime() + 1200000));
+            Item savedKryptonite = itemService.saveItem(kryptonite);
+
             Item helmet = new Item("Iron Man Helmet", "Mark III helmet replica",
-                5L, 1000.0, ItemCategory.COLLECTIBLES,
-                new Date(now.getTime() - 3600000),  // reg closed 1h ago
-                new Date(now.getTime() - 1800000)); // auction started 30min ago
+                    5L, 1000.0, ItemCategory.COLLECTIBLES,
+                    new Date(now.getTime() + 1800000),
+                    new Date(now.getTime() + 3600000));
+            Item savedHelmet = itemService.saveItem(helmet);
 
-            itemRepository.save(shield);
-            itemRepository.save(webShooter);
-            itemRepository.save(batMobile);
-            itemRepository.save(kryptonite);
-            itemRepository.save(helmet);
+            // Add tags
+            itemTagService.addTag(savedShield.getId(), "marvel", 1L);
+            itemTagService.addTag(savedShield.getId(), "shield", 1L);
+            itemTagService.addTag(savedWebShooter.getId(), "spiderman", 2L);
+            itemTagService.addTag(savedBatMobile.getId(), "batman", 3L);
+            itemTagService.addTag(savedKryptonite.getId(), "superman", 4L);
+            itemTagService.addTag(savedHelmet.getId(), "iron-man", 5L);
 
-            System.out.println("✅ Item service data seeded! (5 items created)");
+            // Add subscribers (only to items with open registration)
+            itemSubscriberService.subscribe(savedShield, "2");     // reg closes in 1h
+            itemSubscriberService.subscribe(savedShield, "3");
+            itemSubscriberService.subscribe(savedWebShooter, "1");   // reg closes in 15min
+            itemSubscriberService.subscribe(savedBatMobile, "5");   // reg closes in 5min
+            itemSubscriberService.subscribe(savedKryptonite, "1");  // reg closes in 10min
+            // Note: helmet registration already closed - no subscribers added
+
+            System.out.println("✅ Item service data seeded! (5 items, 6 tags, 5 subscribers)");
         };
     }
 }

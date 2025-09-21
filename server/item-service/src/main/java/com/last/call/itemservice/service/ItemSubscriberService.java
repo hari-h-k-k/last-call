@@ -7,6 +7,7 @@ import com.last.call.itemservice.exception.ItemNotFoundException;
 import com.last.call.itemservice.repository.ItemRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.List;
@@ -20,6 +21,7 @@ public class ItemSubscriberService {
     @Autowired
     private ItemValidationService itemValidationService;
 
+    @Transactional
     public void subscribe(Item item, String userId) {
         itemValidationService.validateSubscriptionEligibility(item, userId);
         
@@ -31,15 +33,13 @@ public class ItemSubscriberService {
         }
         
         ItemSubscriber newSubscriber = new ItemSubscriber(userId, item);
-        if (item.getSubscribers() == null) {
-            item.setSubscribers(new java.util.ArrayList<>());
-        }
         item.getSubscribers().add(newSubscriber);
         itemRepository.save(item);
     }
 
+    @Transactional
     public void unsubscribe(Item item, String userId) {
-        if (item.getSubscribers() == null || item.getSubscribers().isEmpty()) {
+        if (item.getSubscribers().isEmpty()) {
             throw new IllegalArgumentException("User is not subscribed to this item");
         }
         
