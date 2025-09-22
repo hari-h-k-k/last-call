@@ -27,6 +27,9 @@ public class ItemService {
     @Autowired
     private ItemValidationService itemValidationService;
 
+    @Autowired
+    private ItemSchedulerService itemSchedulerService;
+
     public Optional<Item> getItemById(Long id) {
         return itemRepository.findById(id);
     }
@@ -44,7 +47,16 @@ public class ItemService {
     public Item saveItem(Item item) {
         itemValidationService.validateItemDates(item);
         itemValidationService.validateStartingPrice(item.getStartingPrice());
-        return itemRepository.save(item);
+        Item savedItem = itemRepository.save(item);
+        
+        try {
+            itemSchedulerService.scheduleItemJobs(savedItem);
+        } catch (Exception e) {
+            // Log error but don't fail the save operation
+            System.err.println("Failed to schedule jobs for item " + savedItem.getId() + ": " + e.getMessage());
+        }
+        
+        return savedItem;
     }
 
     public Item updateItem(Long id, Long userId, Item updatedItem) {
@@ -56,6 +68,9 @@ public class ItemService {
         itemValidationService.validateItemDates(updatedItem);
         itemValidationService.validateStartingPrice(updatedItem.getStartingPrice());
 
+        boolean datesChanged = !item.getRegistrationClosingDate().equals(updatedItem.getRegistrationClosingDate()) ||
+                              !item.getAuctionStartDate().equals(updatedItem.getAuctionStartDate());
+
         item.setTitle(updatedItem.getTitle());
         item.setDescription(updatedItem.getDescription());
         item.setStartingPrice(updatedItem.getStartingPrice());
@@ -63,7 +78,17 @@ public class ItemService {
         item.setRegistrationClosingDate(updatedItem.getRegistrationClosingDate());
         item.setAuctionStartDate(updatedItem.getAuctionStartDate());
 
-        return itemRepository.save(item);
+        Item savedItem = itemRepository.save(item);
+        
+        if (datesChanged) {
+            try {
+                itemSchedulerService.rescheduleItemJobs(savedItem);
+            } catch (Exception e) {
+                System.err.println("Failed to reschedule jobs for item " + savedItem.getId() + ": " + e.getMessage());
+            }
+        }
+        
+        return savedItem;
     }
 
     public void deleteItem(Long id, Long userId) {
@@ -73,6 +98,12 @@ public class ItemService {
         itemValidationService.validateItemOwnership(item, userId);
         itemValidationService.validateItemNotStarted(item);
 
+        try {
+            itemSchedulerService.deleteItemJobs(id);
+        } catch (Exception e) {
+            System.err.println("Failed to delete jobs for item " + id + ": " + e.getMessage());
+        }
+        
         itemRepository.deleteById(id);
     }
 
