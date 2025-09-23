@@ -1,16 +1,21 @@
 package com.last.call.itemservice.job;
 
+import com.last.call.itemservice.service.KafkaProducerService;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class RegistrationClosingJob implements Job {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistrationClosingJob.class);
+    
+    @Autowired
+    private KafkaProducerService kafkaProducerService;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -18,5 +23,8 @@ public class RegistrationClosingJob implements Job {
         String itemTitle = context.getJobDetail().getJobDataMap().getString("itemTitle");
         
         logger.info("Registration closed for item: {} (ID: {})", itemTitle, itemId);
+        
+        kafkaProducerService.sendRoomCreationMessage(itemId);
+        logger.info("Room creation message sent for item ID: {}", itemId);
     }
 }
