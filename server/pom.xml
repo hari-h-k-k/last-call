@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>3.5.0</version>
         <relativePath/>
     </parent>
 
@@ -25,6 +25,8 @@
 
     <!-- Declare all microservices here -->
     <modules>
+        <module>user-service</module>
+        <module>gateway-service</module>
         <module>item-service</module>
         <module>room-service</module>
     </modules>
