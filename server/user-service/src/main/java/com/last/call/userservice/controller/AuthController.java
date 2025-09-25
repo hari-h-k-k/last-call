@@ -11,7 +11,6 @@ import com.last.call.userservice.service.AuthService;
 import com.last.call.userservice.dto.ApiResponse;
 import com.last.call.userservice.dto.AuthResponse;
 import com.last.call.userservice.util.ResponseBuilder;
-import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,12 +18,15 @@ import jakarta.validation.Valid;
 
 
 @RestController
-@AllArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
-
     private final JwtUtil jwtUtil;
+
+    public AuthController(AuthService authService, JwtUtil jwtUtil) {
+        this.authService = authService;
+        this.jwtUtil = jwtUtil;
+    }
 
     // -------------------------
     // Register new user
