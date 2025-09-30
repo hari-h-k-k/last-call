@@ -133,9 +133,12 @@ services:
       dockerfile: Dockerfile
     container_name: gateway-service
     depends_on:
-      - user-service
-      - item-service
-      - room-service
+      user-service:
+        condition: service_started
+      item-service:
+        condition: service_started
+      room-service:
+        condition: service_started
     ports:
       - "8080:8080"
     environment:

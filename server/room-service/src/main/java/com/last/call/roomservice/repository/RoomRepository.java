@@ -8,11 +8,12 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long> {
     
-    Room findByItemId(Long itemId);
+    Optional<Room> findByItemId(Long itemId);
     
     List<Room> findByStatus(String status);
     

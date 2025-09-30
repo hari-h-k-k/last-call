@@ -13,6 +13,8 @@ public class KafkaProducerService {
     }
 
     public void sendRoomCreationMessage(Long itemId) {
+        System.out.println("📤 Sending Kafka message for item ID: " + itemId);
         kafkaTemplate.send("room-creation", itemId.toString());
+        System.out.println("✅ Kafka message sent for item ID: " + itemId);
     }
 }

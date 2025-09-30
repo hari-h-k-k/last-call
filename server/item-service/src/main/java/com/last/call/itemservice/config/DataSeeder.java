@@ -8,8 +8,6 @@ import com.last.call.itemservice.service.ItemSubscriberService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-
 import java.util.Date;
 
 @Configuration
@@ -20,7 +18,12 @@ public class DataSeeder {
                                    ItemTagService itemTagService,
                                    ItemSubscriberService itemSubscriberService) {
         return args -> {
-            if (!itemService.getAllItems().isEmpty()) return;
+            System.out.println("🚀 DataSeeder starting...");
+            if (!itemService.getAllItems().isEmpty()) {
+                System.out.println("⚠️ Items already exist, skipping data seeding");
+                return;
+            }
+            System.out.println("📦 Seeding item data...");
 
             Date now = new Date();
 
