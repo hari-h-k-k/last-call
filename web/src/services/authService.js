@@ -7,11 +7,13 @@ export const authService = {
       password
     });
     
-    if (response.data.success && response.data.data.token) {
-      localStorage.setItem('token', response.data.data.token);
+    if (response.data.success && response.data.subject.token) {
+        console.log(response);
+        localStorage.setItem('token', response.data.subject.token);
       localStorage.setItem('user', JSON.stringify({
-        id: response.data.data.userId,
-        username: response.data.data.username
+        id: response.data.subject.userId,
+        username: response.data.subject.username,
+        name: response.data.subject.name
       }));
     }
     
@@ -44,7 +46,7 @@ export const authService = {
     console.log(response)
     
     if (response.data.success) {
-      localStorage.setItem('user', JSON.stringify(response.data.data));
+      localStorage.setItem('user', JSON.stringify(response.data.subject));
     }
     
     return response.data;
@@ -54,7 +56,7 @@ export const authService = {
     const response = await api.put('/user/profile', profileData);
     
     if (response.data.success) {
-      localStorage.setItem('user', JSON.stringify(response.data.data));
+      localStorage.setItem('user', JSON.stringify(response.data.subject));
     }
     
     return response.data;

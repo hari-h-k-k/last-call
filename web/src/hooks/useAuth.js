@@ -11,6 +11,7 @@ export function useAuth() {
     const userData = authService.getUser();
     const authenticated = authService.isAuthenticated();
     
+    console.log('useAuth - userData from authService.getUser():', userData);
     setUser(userData);
     setIsAuthenticated(authenticated);
   }, []);

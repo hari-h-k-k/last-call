@@ -22,7 +22,7 @@ export default function Navbar({ show }) {
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <Link href="/profile" className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-medium">
-                    {user?.name || 'Profile'}
+                    {user?.name ? user.name.split(' ')[0] : 'Profile'}
                 </Link>
               </div>
             ) : (

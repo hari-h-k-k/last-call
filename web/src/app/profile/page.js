@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/services/authService';
+import { userService } from '@/services/userService';
+import Navbar from '@/components/layout/Navbar';
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
@@ -24,9 +26,9 @@ export default function ProfilePage() {
       
       try {
         // Fetch complete user profile from API
-        const response = await authService.getUserProfile();
+        const response = await userService.getUserProfile();
         if (response.success) {
-          const fullUserData = response.data;
+          const fullUserData = response.subject;
           setUser(fullUserData);
           setFormData({ 
             name: fullUserData.name || '', 
@@ -76,14 +78,20 @@ export default function ProfilePage() {
     setSuccess('');
     
     try {
-      const response = await authService.updateProfile(formData);
+      const response = await userService.updateProfile(formData);
       
       if (response.success) {
-        setUser(response.data);
+        setUser(response.subject);
         setSuccess('Profile updated successfully!');
         setIsEditing(false);
       } else {
-        setError(response.message || 'Update failed');
+        if (response.message === 'Username already exists') {
+          setError('This username is already taken. Please choose a different one.');
+        } else if (response.message === 'Email already exists') {
+          setError('This email is already registered. Please use a different email.');
+        } else {
+          setError(response.message || 'Update failed');
+        }
       }
     } catch (err) {
       // Fallback to localStorage update if API fails
@@ -100,8 +108,10 @@ export default function ProfilePage() {
   if (!user) return <div>Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-slate-800 py-16">
-      <div className="max-w-2xl mx-auto px-4">
+    <>
+      <Navbar show={true} />
+      <div className="min-h-screen bg-slate-800 pt-24 pb-16">
+      <div className="max-w-4xl mx-auto px-4">
         <div className="bg-slate-700 rounded-lg shadow-md p-8">
           <div className="text-center mb-8">
             <div className="relative inline-block">
@@ -119,7 +129,7 @@ export default function ProfilePage() {
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
             </div>
-            <h1 className="text-3xl font-bold text-amber-400">{user.name || "User"}</h1>
+            <h1 className="text-3xl font-bold text-amber-400">{user?.name ? user.name.split(' ')[0] : 'Profile'}</h1>
           </div>
 
           <div className="space-y-6">
@@ -188,7 +198,7 @@ export default function ProfilePage() {
                 Account Status
               </label>
               <p className="text-slate-300">
-                {user.isVerified ? '✅ Verified' : '⏳ Pending Verification'}
+                {user.verified ? '✅ Verified' : '⏳ Pending Verification'}
               </p>
             </div>
 
@@ -241,5 +251,6 @@ export default function ProfilePage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -4,9 +4,11 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/services/authService';
+import Navbar from '@/components/layout/Navbar';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
+    name: '',
     username: '',
     email: '',
     password: '',
@@ -31,6 +33,7 @@ export default function SignupPage() {
     
     try {
       const response = await authService.register(
+        formData.name,
         formData.username,
         formData.email,
         formData.password,
@@ -51,7 +54,9 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-800">
+    <>
+      <Navbar show={true} />
+      <div className="min-h-screen flex items-center justify-center bg-slate-800">
       <div className="max-w-md w-full bg-slate-700 rounded-lg shadow-md p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-amber-400">Create Account</h1>
@@ -142,5 +147,6 @@ export default function SignupPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

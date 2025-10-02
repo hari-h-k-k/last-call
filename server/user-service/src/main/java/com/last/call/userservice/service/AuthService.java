@@ -84,5 +84,17 @@ public class AuthService {
     public User updateUser(User user) {
         return userRepository.save(user);
     }
+
+    public boolean isUsernameExistsExcludingUser(String username, Long userId) {
+        return userRepository.findByUsername(username)
+                .map(user -> !user.getId().equals(userId))
+                .orElse(false);
+    }
+
+    public boolean isEmailExistsExcludingUser(String email, Long userId) {
+        return userRepository.findByEmail(email)
+                .map(user -> !user.getId().equals(userId))
+                .orElse(false);
+    }
 }
 

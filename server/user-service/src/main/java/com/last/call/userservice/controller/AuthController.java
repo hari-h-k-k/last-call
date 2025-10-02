@@ -41,7 +41,7 @@ public class AuthController {
             User user = authService.register(request.getUsername(),
                     request.getEmail(), request.getPassword(), request.getConfirmPassword());
             String token = jwtUtil.generateToken(user.getId().toString());
-            AuthResponse authResponse = new AuthResponse(token, user.getUsername(), user.getId());
+            AuthResponse authResponse = new AuthResponse(token, user.getName(), user.getUsername(), user.getId());
             
             return ResponseBuilder.success(authResponse, "User registered successfully");
         } catch (IllegalArgumentException | UserAlreadyExistsException e) {
@@ -62,7 +62,7 @@ public class AuthController {
         try {
             User user = authService.authenticate(request.getUsernameOrEmail(), request.getPassword());
             String token = jwtUtil.generateToken(user.getId().toString());
-            AuthResponse authResponse = new AuthResponse(token, user.getUsername(), user.getId());
+            AuthResponse authResponse = new AuthResponse(token, user.getName(), user.getUsername(), user.getId());
             
             return ResponseBuilder.success(authResponse, "Login successful");
         } catch (InvalidCredentialsException e) {

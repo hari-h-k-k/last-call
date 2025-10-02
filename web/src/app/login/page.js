@@ -4,9 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/services/authService';
+import Navbar from '@/components/layout/Navbar';
 
 export default function LoginPage() {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [formData, setFormData] = useState({ usernameOrEmail: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
@@ -17,7 +18,7 @@ export default function LoginPage() {
     setError('');
     
     try {
-      const response = await authService.login(formData.email, formData.password);
+      const response = await authService.login(formData.usernameOrEmail, formData.password);
       
       if (response.success) {
         router.push('/');
@@ -32,7 +33,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-800">
+    <>
+      <Navbar show={true} />
+      <div className="min-h-screen flex items-center justify-center bg-slate-800">
       <div className="max-w-md w-full bg-slate-700 rounded-lg shadow-md p-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-amber-400">Welcome Back</h1>
@@ -42,14 +45,15 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-slate-300 mb-1">
-              Email
+              Username or Email
             </label>
             <input
-              type="email"
+              type="text"
               required
               className="w-full px-3 py-2 bg-slate-600 border border-slate-500 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-              value={formData.email}
-              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              value={formData.usernameOrEmail}
+              onChange={(e) => setFormData({...formData, usernameOrEmail: e.target.value})}
+              placeholder="Enter username or email"
             />
           </div>
 
@@ -91,5 +95,6 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

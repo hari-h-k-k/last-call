@@ -25,7 +25,7 @@ public class UserController {
         this.authService = authService;
     }
 
-    @GetMapping("/test")
+    @GetMapping(value="/test")
     public ResponseEntity<ApiResponse<String>> test() {
         logger.info("Test endpoint called");
         return ResponseBuilder.success("UserController is working", "Test successful");
@@ -49,7 +49,15 @@ public class UserController {
             @RequestHeader("X-User-Id") String userId,
             @Valid @RequestBody UpdateUserRequest request) {
         try {
-            User user = authService.findById(Long.parseLong(userId));
+            Long userIdLong = Long.parseLong(userId);
+            User user = authService.findById(userIdLong);
+            
+            if (request.getUsername() != null && authService.isUsernameExistsExcludingUser(request.getUsername(), userIdLong)) {
+                return ResponseBuilder.validationError("Username already exists");
+            }
+            if (request.getEmail() != null && authService.isEmailExistsExcludingUser(request.getEmail(), userIdLong)) {
+                return ResponseBuilder.validationError("Email already exists");
+            }
             
             if (request.getName() != null) {
                 user.setName(request.getName());

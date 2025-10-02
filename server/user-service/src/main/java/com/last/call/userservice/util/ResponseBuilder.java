@@ -14,7 +14,7 @@ public class ResponseBuilder {
         return ResponseEntity.ok(ApiResponse.<T>builder()
                 .success(true)
                 .message(message)
-                .data(data)
+                .subject(data)
                 .statusCode(200)
                 .build());
     }

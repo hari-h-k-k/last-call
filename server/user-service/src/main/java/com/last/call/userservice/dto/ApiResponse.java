@@ -3,13 +3,13 @@ package com.last.call.userservice.dto;
 public class ApiResponse<T> {
     private boolean success;
     private String message;
-    private T data;
+    private T subject;
     private int statusCode;
 
     private ApiResponse(Builder<T> builder) {
         this.success = builder.success;
         this.message = builder.message;
-        this.data = builder.data;
+        this.subject = builder.subject;
         this.statusCode = builder.statusCode;
     }
 
@@ -19,13 +19,13 @@ public class ApiResponse<T> {
 
     public boolean isSuccess() { return success; }
     public String getMessage() { return message; }
-    public T getData() { return data; }
+    public T getSubject() { return subject; }
     public int getStatusCode() { return statusCode; }
 
     public static class Builder<T> {
         private boolean success = true;
         private String message;
-        private T data;
+        private T subject;
         private int statusCode = 200;
 
         public Builder<T> success(boolean success) {
@@ -38,8 +38,8 @@ public class ApiResponse<T> {
             return this;
         }
 
-        public Builder<T> data(T data) {
-            this.data = data;
+        public Builder<T> subject(T subject) {
+            this.subject = subject;
             return this;
         }
 
