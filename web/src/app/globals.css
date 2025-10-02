@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    font-family: system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  body {
+    background-color: #f9fafb;
+    color: #111827;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    background-color: #eab308;
+    color: white;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-primary:hover {
+    background-color: #ca8a04;
+  }
+  
+  .btn-secondary {
+    background-color: #e5e7eb;
+    color: #374151;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #d1d5db;
+  }
+}
