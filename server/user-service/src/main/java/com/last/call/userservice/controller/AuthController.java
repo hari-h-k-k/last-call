@@ -15,11 +15,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @RestController
 public class AuthController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final AuthService authService;
     private final JwtUtil jwtUtil;
 
@@ -41,10 +44,12 @@ public class AuthController {
             AuthResponse authResponse = new AuthResponse(token, user.getUsername(), user.getId());
             
             return ResponseBuilder.success(authResponse, "User registered successfully");
-        } catch (UserAlreadyExistsException e) {
+        } catch (IllegalArgumentException | UserAlreadyExistsException e) {
+            logger.warn("Registration validation error: {}", e.getMessage());
             return ResponseBuilder.validationError(e.getMessage());
         } catch (Exception e) {
-            return ResponseBuilder.serverError("Registration failed");
+            logger.error("Registration failed", e);
+            return ResponseBuilder.serverError("Registration failed: " + e.getMessage());
         }
     }
 
@@ -61,9 +66,11 @@ public class AuthController {
             
             return ResponseBuilder.success(authResponse, "Login successful");
         } catch (InvalidCredentialsException e) {
+            logger.warn("Login failed - invalid credentials: {}", e.getMessage());
             return ResponseBuilder.unauthorized(e.getMessage());
         } catch (Exception e) {
-            return ResponseBuilder.serverError("Login failed");
+            logger.error("Login failed", e);
+            return ResponseBuilder.serverError(e.getMessage());
         }
     }
 
@@ -73,6 +80,7 @@ public class AuthController {
             User user = authService.findById(Long.parseLong(userId));
             return ResponseBuilder.success(user.getUsername(), "Token verified");
         } catch (Exception e) {
+            logger.error("Token verification failed for userId: {}", userId, e);
             return ResponseBuilder.unauthorized("User not found");
         }
     }
