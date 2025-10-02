@@ -1,8 +1,5 @@
 package com.last.call.userservice.dto;
 
-import lombok.Data;
-
-@Data
 public class ApiResponse<T> {
     private boolean success;
     private String message;
@@ -19,6 +16,11 @@ public class ApiResponse<T> {
     public static <T> Builder<T> builder() {
         return new Builder<>();
     }
+
+    public boolean isSuccess() { return success; }
+    public String getMessage() { return message; }
+    public T getData() { return data; }
+    public int getStatusCode() { return statusCode; }
 
     public static class Builder<T> {
         private boolean success = true;

@@ -51,7 +51,7 @@ public class AuthController {
     // -------------------------
     // Login
     // -------------------------
-    @PostMapping("/login")
+    @PostMapping(value = "/login", produces = "application/json")
     public ResponseEntity<ApiResponse<AuthResponse>> login(@Valid @RequestBody LoginRequest request) {
         
         try {
