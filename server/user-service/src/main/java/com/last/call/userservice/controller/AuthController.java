@@ -7,6 +7,7 @@ import com.last.call.userservice.exception.InvalidCredentialsException;
 import com.last.call.userservice.exception.UserAlreadyExistsException;
 import com.last.call.userservice.security.JwtUtil;
 import com.last.call.userservice.service.AuthService;
+import com.last.call.userservice.service.UserService;
 
 import com.last.call.userservice.dto.ApiResponse;
 import com.last.call.userservice.dto.AuthResponse;
@@ -24,10 +25,12 @@ public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final AuthService authService;
+    private final UserService userService;
     private final JwtUtil jwtUtil;
 
-    public AuthController(AuthService authService, JwtUtil jwtUtil) {
+    public AuthController(AuthService authService, UserService userService, JwtUtil jwtUtil) {
         this.authService = authService;
+        this.userService = userService;
         this.jwtUtil = jwtUtil;
     }
 
@@ -38,8 +41,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthResponse>> register(@Valid @RequestBody RegisterRequest request) {
         
         try {
-            User user = authService.register(request.getUsername(),
-                    request.getEmail(), request.getPassword(), request.getConfirmPassword());
+            User user = authService.register(request.getUsername(), request.getEmail(), request.getPassword(), request.getConfirmPassword());
             String token = jwtUtil.generateToken(user.getId().toString());
             AuthResponse authResponse = new AuthResponse(token, user.getName(), user.getUsername(), user.getId());
             
@@ -77,7 +79,7 @@ public class AuthController {
     @PostMapping("/verify")
     public ResponseEntity<ApiResponse<String>> verify(@RequestHeader("X-User-Id") String userId) {
         try {
-            User user = authService.findById(Long.parseLong(userId));
+            User user = userService.findById(Long.parseLong(userId));
             return ResponseBuilder.success(user.getUsername(), "Token verified");
         } catch (Exception e) {
             logger.error("Token verification failed for userId: {}", userId, e);

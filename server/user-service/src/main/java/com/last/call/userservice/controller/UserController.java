@@ -6,6 +6,7 @@ import com.last.call.userservice.dto.UpdateUserRequest;
 import com.last.call.userservice.entity.User;
 import com.last.call.userservice.service.AuthService;
 
+import com.last.call.userservice.service.UserService;
 import com.last.call.userservice.util.ResponseBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +20,10 @@ import org.slf4j.LoggerFactory;
 public class UserController {
 
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
-    private final AuthService authService;
+    private final UserService userService;
 
-    public UserController(AuthService authService) {
-        this.authService = authService;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping(value="/test")
@@ -34,7 +35,7 @@ public class UserController {
     @GetMapping("/profile")
     public ResponseEntity<ApiResponse<UserResponse>> getUserProfile(@RequestHeader("X-User-Id") String userId) {
         try {
-            User user = authService.findById(Long.parseLong(userId));
+            User user = userService.findById(Long.parseLong(userId));
             UserResponse userResponse = new UserResponse(user);
             
             return ResponseBuilder.success(userResponse, "User profile retrieved successfully");
@@ -50,12 +51,12 @@ public class UserController {
             @Valid @RequestBody UpdateUserRequest request) {
         try {
             Long userIdLong = Long.parseLong(userId);
-            User user = authService.findById(userIdLong);
+            User user = userService.findById(userIdLong);
             
-            if (request.getUsername() != null && authService.isUsernameExistsExcludingUser(request.getUsername(), userIdLong)) {
+            if (request.getUsername() != null && userService.isUsernameExistsExcludingUser(request.getUsername(), userIdLong)) {
                 return ResponseBuilder.validationError("Username already exists");
             }
-            if (request.getEmail() != null && authService.isEmailExistsExcludingUser(request.getEmail(), userIdLong)) {
+            if (request.getEmail() != null && userService.isEmailExistsExcludingUser(request.getEmail(), userIdLong)) {
                 return ResponseBuilder.validationError("Email already exists");
             }
             
@@ -69,7 +70,7 @@ public class UserController {
                 user.setEmail(request.getEmail());
             }
             
-            User updatedUser = authService.updateUser(user);
+            User updatedUser = userService.updateUser(user);
             UserResponse userResponse = new UserResponse(updatedUser);
             
             return ResponseBuilder.success(userResponse, "User profile updated successfully");

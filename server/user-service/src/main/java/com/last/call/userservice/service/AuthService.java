@@ -46,6 +46,7 @@ public class AuthService {
         String hashedPassword = passwordEncoder.encode(password);
 
         User user = new User();
+        user.setName(name);
         user.setUsername(username);
         user.setEmail(email);
         user.setPassword(hashedPassword);
@@ -76,25 +77,6 @@ public class AuthService {
         return user;
     }
 
-    public User findById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new InvalidCredentialsException("User not found"));
-    }
 
-    public User updateUser(User user) {
-        return userRepository.save(user);
-    }
-
-    public boolean isUsernameExistsExcludingUser(String username, Long userId) {
-        return userRepository.findByUsername(username)
-                .map(user -> !user.getId().equals(userId))
-                .orElse(false);
-    }
-
-    public boolean isEmailExistsExcludingUser(String email, Long userId) {
-        return userRepository.findByEmail(email)
-                .map(user -> !user.getId().equals(userId))
-                .orElse(false);
-    }
 }
 
