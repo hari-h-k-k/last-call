@@ -39,6 +39,31 @@ export const authService = {
     localStorage.removeItem('user');
   },
 
+  async getUserProfile() {
+    const response = await api.get('/user/profile');
+    console.log(response)
+    
+    if (response.data.success) {
+      localStorage.setItem('user', JSON.stringify(response.data.data));
+    }
+    
+    return response.data;
+  },
+
+  async updateProfile(profileData) {
+    const response = await api.put('/user/profile', profileData);
+    
+    if (response.data.success) {
+      localStorage.setItem('user', JSON.stringify(response.data.data));
+    }
+    
+    return response.data;
+  },
+
+  updateUser(userData) {
+    localStorage.setItem('user', JSON.stringify(userData));
+  },
+
   getUser() {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;

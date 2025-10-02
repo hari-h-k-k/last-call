@@ -7,35 +7,38 @@
   }
   
   body {
-    background-color: #f9fafb;
-    color: #111827;
+    background-color: #f8fafc;
+    color: #0f172a;
   }
 }
 
 @layer components {
   .btn-primary {
-    background-color: #eab308;
+    background-color: #f59e0b;
+    color: white;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(245, 158, 11, 0.3);
+  }
+  
+  .btn-primary:hover {
+    background-color: #d97706;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+  }
+  
+  .btn-secondary {
+    background-color: #1e293b;
     color: white;
     font-weight: 500;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
-    transition: background-color 0.2s;
-  }
-  
-  .btn-primary:hover {
-    background-color: #ca8a04;
-  }
-  
-  .btn-secondary {
-    background-color: #e5e7eb;
-    color: #374151;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    transition: background-color 0.2s;
+    transition: all 0.2s;
   }
   
   .btn-secondary:hover {
-    background-color: #d1d5db;
+    background-color: #0f172a;
   }
 }

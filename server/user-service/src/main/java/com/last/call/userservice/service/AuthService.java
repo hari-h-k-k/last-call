@@ -80,5 +80,9 @@ public class AuthService {
         return userRepository.findById(id)
                 .orElseThrow(() -> new InvalidCredentialsException("User not found"));
     }
+
+    public User updateUser(User user) {
+        return userRepository.save(user);
+    }
 }
 
