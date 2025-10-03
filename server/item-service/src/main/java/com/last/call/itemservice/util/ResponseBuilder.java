@@ -10,11 +10,11 @@ public class ResponseBuilder {
         throw new IllegalStateException("");
     }
     
-    public static <T> ResponseEntity<ApiResponse<T>> success(T data, String message) {
+    public static <T> ResponseEntity<ApiResponse<T>> success(T subject, String message) {
         return ResponseEntity.ok(ApiResponse.<T>builder()
                 .success(true)
                 .message(message)
-                .data(data)
+                .subject(subject)
                 .statusCode(200)
                 .build());
     }

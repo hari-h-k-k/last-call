@@ -26,7 +26,7 @@ export default function SearchPage() {
     const fetchCategories = async () => {
       try {
         const response = await itemService.getCategories();
-        setCategories(response.data || []);
+        setCategories(response.subject || []);
       } catch (error) {
         console.error('Failed to fetch categories:', error);
       }
@@ -50,7 +50,8 @@ export default function SearchPage() {
     setHasSearched(true);
     try {
       const response = await itemService.searchItems(query);
-      setSearchResults(response.data || []);
+      console.log(response)
+      setSearchResults(response.subject || []);
     } catch (error) {
       console.error('Search failed:', error);
       setSearchResults([]);

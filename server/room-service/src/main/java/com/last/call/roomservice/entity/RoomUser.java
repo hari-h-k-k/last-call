@@ -1,5 +1,6 @@
 package com.last.call.roomservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -18,6 +19,7 @@ public class RoomUser {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false, foreignKey = @ForeignKey(name = "fk_user_room"))
+    @JsonIgnore
     private Room room;
 
     public RoomUser() {}

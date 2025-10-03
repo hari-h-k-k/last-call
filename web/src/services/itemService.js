@@ -23,6 +23,23 @@ export const itemService = {
   getUpcomingItems: async () => {
     const response = await axios.get(`${API_BASE_URL}/item/get-upcoming-items`);
     return response.data;
+  },
+  
+  getLastCallToRegister: async () => {
+    const response = await axios.get(`${API_BASE_URL}/item/last-call-to-register`);
+    return response.data;
+  }
+};
+
+export const roomService = {
+  getLiveAuctions: async () => {
+    const response = await axios.get(`${API_BASE_URL}/room/live-auctions`);
+    return response.data;
+  },
+  
+  getAuctionOfTheDay: async () => {
+    const response = await axios.get(`${API_BASE_URL}/room/auction-of-the-day`);
+    return response.data;
   }
 };
 

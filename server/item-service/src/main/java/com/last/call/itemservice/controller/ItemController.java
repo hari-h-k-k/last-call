@@ -75,7 +75,6 @@ public class ItemController {
     public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> getUpcomingItems(
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
         
-//        userId = userId != null ? userId : "1";
         List<ItemWithSubscriptionDto> items = itemService.getUpcomingItemsWithSubscription(userId);
         return ResponseBuilder.success(items, "Upcoming items retrieved successfully");
     }
@@ -155,5 +154,12 @@ public class ItemController {
         return ResponseBuilder.success(items, "Subscribed items retrieved successfully");
     }
 
+    @GetMapping("/last-call-to-register")
+    public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> getLastCallToRegister(
+            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+
+        List<ItemWithSubscriptionDto> items = itemService.getLastCallToRegister(userId);
+        return ResponseBuilder.success(items, "Last call to register items retrieved successfully");
+    }
 
 }

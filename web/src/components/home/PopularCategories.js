@@ -19,8 +19,8 @@ export default function PopularCategories() {
     const fetchCategories = async () => {
       try {
         const response = await itemService.getCategories();
-        console.log(response.data);
-        setCategories(response.data || []);
+        console.log(response.subject);
+        setCategories(response.subject || []);
       } catch (error) {
         console.error('Failed to fetch categories:', error);
       }

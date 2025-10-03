@@ -32,4 +32,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     
     @Query("SELECT i.category, COUNT(i) FROM Item i GROUP BY i.category")
     List<Object[]> countByCategory();
+    
+    @Query("SELECT i FROM Item i WHERE i.registrationClosingDate BETWEEN :startDate AND :endDate ORDER BY i.registrationClosingDate")
+    List<Item> findItemsWithRegistrationClosingBetween(@Param("startDate") Date startDate, @Param("endDate") Date endDate);
 }

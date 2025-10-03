@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import ItemCard from '../ui/ItemCard';
-import { itemService } from '../../services/itemService';
+import RoomCard from '../ui/RoomCard';
+import { roomService } from '../../services/roomService';
 
 export default function LiveAuctionsPreview() {
   const [liveAuctions, setLiveAuctions] = useState([]);
@@ -10,16 +10,8 @@ export default function LiveAuctionsPreview() {
   useEffect(() => {
     const fetchLiveAuctions = async () => {
       try {
-        const response = await itemService.getUpcomingItems();
-        const now = new Date();
-        
-        const liveItems = response.data?.filter(item => {
-          const auctionStart = new Date(item.item.auctionStartDate);
-          const regClosing = new Date(item.item.registrationClosingDate);
-          return auctionStart <= now && regClosing < now;
-        }) || [];
-        
-        setLiveAuctions(liveItems.slice(0, 6));
+        const response = await roomService.getLiveAuctions();
+        setLiveAuctions(response.subject || []);
       } catch (error) {
         console.error('Failed to fetch live auctions:', error);
       } finally {
@@ -57,15 +49,12 @@ export default function LiveAuctionsPreview() {
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {liveAuctions.map((auction) => (
-            <div key={auction.item.id} className="relative">
-              <ItemCard item={auction.item} />
-              <div className="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
-                LIVE
-              </div>
+          {liveAuctions.map((room) => (
+            <div key={room.id} className="relative">
+              <RoomCard room={room} />
               <div className="absolute bottom-4 left-4 right-4">
                 <button className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors">
-                  {auction.registered ? 'Join Auction' : 'Spectate'}
+                  Join Auction
                 </button>
               </div>
             </div>

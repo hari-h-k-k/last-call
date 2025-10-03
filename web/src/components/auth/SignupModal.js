@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Modal from '../ui/Modal';
-import { authService } from '../../services/itemService';
+import { authService } from '../../services/authService';
 
 export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
   const [formData, setFormData] = useState({ username: '', email: '', password: '', confirmPassword: '' });

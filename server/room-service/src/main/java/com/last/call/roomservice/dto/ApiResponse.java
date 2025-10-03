@@ -1,4 +1,4 @@
-package com.last.call.itemservice.dto;
+package com.last.call.roomservice.dto;
 
 public class ApiResponse<T> {
     private boolean success;

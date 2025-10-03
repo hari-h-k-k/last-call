@@ -23,4 +23,8 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     List<Room> findActiveRooms(@Param("currentDate") Date currentDate);
     
     List<Room> findByWinnerId(String winnerId);
+    
+    List<Room> findByStatusAndStartDateBefore(String status, Date date);
+    
+    List<Room> findByStatusAndStartDateBetween(String status, Date startDate, Date endDate);
 }

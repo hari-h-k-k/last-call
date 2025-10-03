@@ -1,5 +1,6 @@
 package com.last.call.roomservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -28,6 +29,7 @@ public class Bid {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false, foreignKey = @ForeignKey(name = "fk_bid_room"))
+    @JsonIgnore
     private Room room;
 
     public Bid() {}

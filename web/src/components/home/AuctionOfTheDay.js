@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import ItemCard from '../ui/ItemCard';
-import { itemService } from '../../services/itemService';
+import RoomCard from '../ui/RoomCard';
+import { roomService } from '../../services/roomService';
 
 export default function AuctionOfTheDay() {
   const [todaysAuctions, setTodaysAuctions] = useState([]);
@@ -10,12 +10,8 @@ export default function AuctionOfTheDay() {
   useEffect(() => {
     const fetchTodaysAuctions = async () => {
       try {
-        const response = await itemService.getTodaysAuctions();
-        const today = new Date().toDateString();
-        const todaysItems = response.data?.filter(item => 
-          new Date(item.item.auctionStartDate).toDateString() === today
-        ) || [];
-        setTodaysAuctions(todaysItems.slice(0, 6));
+        const response = await roomService.getAuctionOfTheDay();
+        setTodaysAuctions(response.subject || []);
       } catch (error) {
         console.error('Failed to fetch today\'s auctions:', error);
       } finally {
@@ -54,13 +50,8 @@ export default function AuctionOfTheDay() {
         </div>
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {todaysAuctions.map((auction) => (
-            <div key={auction.item.id} className="relative">
-              <ItemCard item={auction.item} />
-              <div className="absolute top-4 right-4 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
-                TODAY
-              </div>
-            </div>
+          {todaysAuctions.map((room) => (
+            <RoomCard key={room.id} room={room} />
           ))}
         </div>
         

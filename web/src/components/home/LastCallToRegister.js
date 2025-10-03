@@ -10,16 +10,8 @@ export default function LastCallToRegister() {
   useEffect(() => {
     const fetchLastCallItems = async () => {
       try {
-        const response = await itemService.getUpcomingItems();
-        const now = new Date();
-        const next48Hours = new Date(now.getTime() + 48 * 60 * 60 * 1000);
-        
-        const lastCallItems = response.data?.filter(item => {
-          const regClosingDate = new Date(item.item.registrationClosingDate);
-          return regClosingDate > now && regClosingDate <= next48Hours;
-        }) || [];
-        
-        setLastCallItems(lastCallItems.slice(0, 6));
+        const response = await itemService.getLastCallToRegister();
+        setLastCallItems(response.subject || []);
       } catch (error) {
         console.error('Failed to fetch last call items:', error);
       } finally {
@@ -59,12 +51,7 @@ export default function LastCallToRegister() {
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {lastCallItems.map((item) => (
-            <div key={item.item.id} className="relative">
-              <ItemCard item={item.item} />
-              <div className="absolute top-4 right-4 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
-                URGENT
-              </div>
-            </div>
+            <ItemCard key={item.item.id} item={item.item} />
           ))}
         </div>
       </div>

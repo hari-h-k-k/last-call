@@ -162,4 +162,14 @@ public class ItemService {
                 .map(result -> new CategoryWithCountDto((ItemCategory) result[0], (Long) result[1]))
                 .collect(java.util.stream.Collectors.toList());
     }
+
+    public List<ItemWithSubscriptionDto> getLastCallToRegister(String userId) {
+        Date now = new Date();
+        Date fortyEightHoursFromNow = new Date(now.getTime() + 48 * 60 * 60 * 1000);
+        
+        List<Item> items = itemRepository.findItemsWithRegistrationClosingBetween(now, fortyEightHoursFromNow);
+        return items.stream()
+                .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserSubscribed(item, userId)))
+                .collect(java.util.stream.Collectors.toList());
+    }
 }
