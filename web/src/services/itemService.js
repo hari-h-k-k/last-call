@@ -15,3 +15,23 @@ export const itemService = {
     return response.data;
   }
 };
+
+export const authService = {
+  login: async (usernameOrEmail, password) => {
+    const response = await axios.post(`${API_BASE_URL}/user/login`, {
+      usernameOrEmail,
+      password
+    });
+    return response.data;
+  },
+  
+  register: async (username, email, password, confirmPassword) => {
+    const response = await axios.post(`${API_BASE_URL}/user/register`, {
+      username,
+      email,
+      password,
+      confirmPassword
+    });
+    return response.data;
+  }
+};

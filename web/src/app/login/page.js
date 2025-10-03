@@ -19,7 +19,7 @@ export default function LoginPage() {
     
     try {
       const response = await authService.login(formData.usernameOrEmail, formData.password);
-      
+      console.log(response)
       if (response.success) {
         router.push('/');
       } else {

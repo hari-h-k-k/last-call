@@ -34,7 +34,7 @@ export default function PopularCategories() {
         <h2 className="text-3xl font-bold text-amber-400 text-center mb-12">
           Popular Categories
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg mx-auto">
           {categories.map((categoryData, index) => (
             <div key={index} className="bg-slate-800/70 rounded-xl p-6 text-center hover:bg-slate-700/70 hover:scale-105 hover:shadow-xl hover:shadow-amber-500/20 transition-all duration-300 cursor-pointer group">
               <div className="text-3xl mb-3 group-hover:animate-pulse">{categoryIcons[categoryData.category] || '📎'}</div>
