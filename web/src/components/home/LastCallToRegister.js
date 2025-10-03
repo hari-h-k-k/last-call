@@ -4,6 +4,7 @@ import ItemCard from '../ui/ItemCard';
 import { itemService } from '../../services/itemService';
 
 export default function LastCallToRegister() {
+  // const [registered, setRegistered] = useState([]);
   const [lastCallItems, setLastCallItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -12,6 +13,7 @@ export default function LastCallToRegister() {
       try {
         const response = await itemService.getLastCallToRegister();
         setLastCallItems(response.subject || []);
+        console.log(response.subject)
       } catch (error) {
         console.error('Failed to fetch last call items:', error);
       } finally {
@@ -51,7 +53,7 @@ export default function LastCallToRegister() {
         
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {lastCallItems.map((item) => (
-            <ItemCard key={item.item.id} item={item.item} />
+            <ItemCard key={item.item.id} item={item.item} registered={item.registered} />
           ))}
         </div>
       </div>

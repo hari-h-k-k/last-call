@@ -18,8 +18,12 @@ public class JwtAuthenticationFilter implements WebFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private static final Set<String> PUBLIC_PATHS = Set.of(
-        "/user/register", "/user/login", "/item/search-items", "/item/categories", "/item/last-call-to-register", "/room/live-auctions", "/room/auction-of-the-day"
+        "/user/register", "/user/login", "/item/categories", "/room/live-auctions", "/room/auction-of-the-day"
     );
+    private static final Set<String> PERMITTED_PATHS = Set.of(
+            "/item/search-items", "/item/last-call-to-register"
+    );
+
     private final JwtUtil jwtUtil;
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil) {
@@ -29,6 +33,7 @@ public class JwtAuthenticationFilter implements WebFilter {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().toString();
+        String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
         logger.info("Processing request: {}", path);
 
         if (PUBLIC_PATHS.stream().anyMatch(path::startsWith)) {
@@ -36,16 +41,25 @@ public class JwtAuthenticationFilter implements WebFilter {
             return chain.filter(exchange);
         }
 
-        String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
+        if (PERMITTED_PATHS.stream().anyMatch(path::startsWith) && (authHeader == null || !authHeader.startsWith("Bearer "))) {
+            logger.info("Bypassing JWT validation for path: {}", path);
+            return chain.filter(exchange);
+        }
+
+        boolean isPermittedPath = PERMITTED_PATHS.stream().anyMatch(path::startsWith);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            logger.warn("Missing or invalid Authorization header for path: {}", path);
-            return unauthorizedResponse(exchange, "Missing or invalid Authorization header");
+            if (!isPermittedPath) {
+                logger.warn("Missing or invalid Authorization header for path: {}", path);
+                return unauthorizedResponse(exchange, "Missing or invalid Authorization header");
+            }
         }
 
         String token = authHeader.substring(7);
         if (!jwtUtil.validateToken(token)) {
-            logger.warn("Invalid or expired token for path: {}", path);
-            return unauthorizedResponse(exchange, "Invalid or expired token");
+            if (!isPermittedPath) {
+                logger.warn("Invalid or expired token for path: {}", path);
+                return unauthorizedResponse(exchange, "Invalid or expired token");
+            }
         }
 
         // Add user ID to request headers for downstream services
