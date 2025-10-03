@@ -1,5 +1,6 @@
 package com.last.call.itemservice.service;
 
+import com.last.call.itemservice.dto.CategoryWithCountDto;
 import com.last.call.itemservice.dto.ItemWithSubscriptionDto;
 import com.last.call.itemservice.entity.Item;
 import com.last.call.itemservice.enums.ItemCategory;
@@ -153,5 +154,12 @@ public class ItemService {
 
     public ItemCategory[] getAllCategories() {
         return ItemCategory.values();
+    }
+
+    public List<CategoryWithCountDto> getCategoriesWithCount() {
+        List<Object[]> results = itemRepository.countByCategory();
+        return results.stream()
+                .map(result -> new CategoryWithCountDto((ItemCategory) result[0], (Long) result[1]))
+                .collect(java.util.stream.Collectors.toList());
     }
 }

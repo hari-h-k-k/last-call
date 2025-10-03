@@ -1,5 +1,6 @@
 package com.last.call.itemservice.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -18,6 +19,7 @@ public class ItemSubscriber {
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_id", nullable = false, foreignKey = @ForeignKey(name = "fk_item_subscriber_item"))
+    @JsonIgnore
     private Item item;
 
     public ItemSubscriber() {}

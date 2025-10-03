@@ -1,6 +1,7 @@
 package com.last.call.itemservice.controller;
 
 import com.last.call.itemservice.dto.ApiResponse;
+import com.last.call.itemservice.dto.CategoryWithCountDto;
 import com.last.call.itemservice.dto.ItemWithSubscriptionDto;
 import com.last.call.itemservice.entity.Item;
 import com.last.call.itemservice.enums.ItemCategory;
@@ -17,7 +18,6 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api")
 public class ItemController {
 
     @Autowired
@@ -131,8 +131,8 @@ public class ItemController {
     }
 
     @GetMapping("/categories")
-    public ResponseEntity<ApiResponse<ItemCategory[]>> getCategories() {
-        ItemCategory[] categories = itemService.getAllCategories();
+    public ResponseEntity<ApiResponse<List<CategoryWithCountDto>>> getCategories() {
+        List<CategoryWithCountDto> categories = itemService.getCategoriesWithCount();
         return ResponseBuilder.success(categories, "Categories retrieved successfully");
     }
 
@@ -140,6 +140,8 @@ public class ItemController {
     public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> searchItems(
             @PathVariable String input,
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
+
+        System.out.println("In here");
 
         List<ItemWithSubscriptionDto> items = itemService.searchItems(input, userId);
         return ResponseBuilder.success(items, "Search completed successfully");
