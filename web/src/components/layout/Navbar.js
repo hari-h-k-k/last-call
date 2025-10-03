@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import LoginModal from '../auth/LoginModal';
 import SignupModal from '../auth/SignupModal';
 
-export default function Navbar({ show }) {
+export default function Navbar({ show = true, variant = 'slide' }) {
   const { user, isAuthenticated } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
@@ -20,14 +20,26 @@ export default function Navbar({ show }) {
     setShowLogin(true);
   };
 
+  const getNavClasses = () => {
+    const baseClasses = "fixed top-0 left-0 right-0 shadow-lg border-b border-amber-500/30 z-50";
+    
+    if (variant === 'header') {
+      return `${baseClasses} bg-slate-900/95 backdrop-blur-sm shadow-xl border-slate-700/50`;
+    }
+    
+    return `${baseClasses} bg-slate-900 transition-transform duration-300 ${
+      show ? 'translate-y-0' : '-translate-y-full'
+    }`;
+  };
+
   return (
     <>
-      <nav className={`fixed top-0 left-0 right-0 bg-slate-900 shadow-lg border-b border-amber-500/30 z-50 transition-transform duration-300 ${
-        show ? 'translate-y-0' : '-translate-y-full'
-      }`}>
-        <div className="max-w-6xl mx-auto px-4">
+      <nav className={getNavClasses()}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link href="/" className="text-xl font-bold text-amber-400">
+            <Link href="/" className={`font-bold hover:text-amber-400 transition-colors ${
+              variant === 'header' ? 'text-2xl text-amber-500' : 'text-xl text-amber-400'
+            }`}>
               Last Call
             </Link>
 

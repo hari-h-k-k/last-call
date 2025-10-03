@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SearchBar from '../../components/ui/SearchBar';
 import ItemCard from '../../components/ui/ItemCard';
-import Header from '../../components/layout/Header';
+import LoadingSpinner from '../../components/ui/LoadingSpinner';
+import Navbar from '../../components/layout/Navbar';
 import { itemService } from '../../services/itemService';
 
 export default function SearchPage() {
@@ -12,6 +13,7 @@ export default function SearchPage() {
   const [searchResults, setSearchResults] = useState([]);
   const [filteredResults, setFilteredResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [filters, setFilters] = useState({
     registered: 'all',
     category: 'all',
@@ -45,6 +47,7 @@ export default function SearchPage() {
 
   const handleSearch = async (query) => {
     setIsSearching(true);
+    setHasSearched(true);
     try {
       const response = await itemService.searchItems(query);
       setSearchResults(response.data || []);
@@ -82,8 +85,8 @@ export default function SearchPage() {
 
   return (
     <>
-      <Header />
-      <div className="min-h-screen bg-slate-800 py-8">
+      <Navbar variant="header" />
+      <div className="min-h-screen bg-slate-800 pt-24 pb-8">
         <div className="max-w-7xl mx-auto px-4">
         <div className="mb-8">
           <SearchBar 
@@ -140,9 +143,7 @@ export default function SearchPage() {
 
           <div className="flex-1">
             {isSearching && (
-              <div className="text-center mb-8">
-                <div className="text-amber-400">Searching...</div>
-              </div>
+              <LoadingSpinner text="Searching..." />
             )}
 
             {filteredResults.length > 0 ? (
@@ -158,7 +159,7 @@ export default function SearchPage() {
                   ))}
                 </div>
               </>
-            ) : searchResults.length === 0 && !isSearching ? (
+            ) : hasSearched && searchResults.length === 0 && !isSearching ? (
               <div className="text-center text-slate-400 py-12">
                 <p>No search results found. Try a different search term.</p>
               </div>
