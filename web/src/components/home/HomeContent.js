@@ -11,6 +11,7 @@ import InteractiveSearchSuggestions from './InteractiveSearchSuggestions';
 import AuctionOfTheDay from './AuctionOfTheDay';
 import LastCallToRegister from './LastCallToRegister';
 import { itemService } from '../../services/itemService';
+import LastCallToRegisterHybrid from "@/components/home/LastCallToRegisterHybrid";
 
 export default function HomeContent() {
   const [searchResults, setSearchResults] = useState([]);
@@ -45,7 +46,8 @@ export default function HomeContent() {
         </div>
         
         <div className="space-y-20">
-          <LastCallToRegister />
+          {/*<LastCallToRegister />*/}
+          <LastCallToRegisterHybrid />
           <AuctionOfTheDay />
           <LiveAuctionsPreview />
           <PopularCategories />

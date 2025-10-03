@@ -1,12 +1,42 @@
+import { useState, useEffect } from 'react';
+import { THUMBNAIL_ARRAY } from '../../constants/images';
+
 export default function ItemCard({ item, registered }) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  
   const formatPrice = (price) => `$${price.toFixed(2)}`;
-  const formatDate = (date) => new Date(date).toLocaleDateString();
+  const formatTimeLeft = (registrationClosingDate) => {
+    const closingDate = new Date(registrationClosingDate);
+    const timeDiff = closingDate - currentTime;
+    
+    if (timeDiff <= 0) return 'Closed';
+    
+    const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+    
+    return `${hours}h ${minutes}m`;
+  };
+  
+  useEffect(() => {
+    const timeUpdateInterval = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60 * 1000);
+    return () => clearInterval(timeUpdateInterval);
+  }, []);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex(prev => (prev + 1) % THUMBNAIL_ARRAY.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
-    <div className={`relative backdrop-blur-sm rounded-xl p-6 transition-all duration-300 ${
+    <div className={`relative backdrop-blur-sm rounded-xl p-6 transition-all duration-300 overflow-visible ${
       registered 
-        ? 'bg-gradient-to-br from-green-900/20 via-slate-800/50 to-blue-900/20 border border-green-500/50 hover:shadow-xl hover:shadow-green-500/30'
-        : 'bg-slate-800/50 border border-slate-700/50 hover:shadow-xl hover:shadow-amber-500/10'
+        ? 'bg-gradient-to-br from-green-900/20 via-slate-800/50 to-blue-900/20 border border-green-500/50 hover:shadow-lg hover:shadow-green-500/25'
+        : 'bg-slate-800/50 border border-slate-700/50 hover:shadow-lg hover:shadow-amber-500/25'
     }`}>
       {/* Status Bar */}
       {registered && (
@@ -15,24 +45,44 @@ export default function ItemCard({ item, registered }) {
       
       {/* Ribbon Badge */}
       {registered && (
-        <div className="absolute -top-2 -right-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg transform rotate-12">
+        <div className="absolute -top-1 -right-1 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold shadow-lg transform rotate-12 z-10">
           ✓ REGISTERED
         </div>
       )}
       
-      <div className="flex justify-between items-start mb-4">
-        <h3 className={`text-xl font-semibold truncate ${
-          registered ? 'text-green-100' : 'text-white'
-        }`}>
-          {item.title}
-        </h3>
-        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-          registered 
-            ? 'bg-green-500/20 text-green-400'
-            : 'bg-amber-500/20 text-amber-400'
-        }`}>
-          {item.category}
-        </span>
+      <div className="mb-4">
+        <div className="relative group">
+          <img 
+            src={THUMBNAIL_ARRAY[currentImageIndex]} 
+            alt={item.title}
+            className="w-full h-48 object-cover rounded-lg mb-3 transition-opacity duration-300"
+          />
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {THUMBNAIL_ARRAY.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`w-2 h-2 rounded-full transition-colors ${
+                  index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="flex justify-between items-start">
+          <h3 className={`text-xl font-semibold truncate ${
+            registered ? 'text-green-100' : 'text-white'
+          }`}>
+            {item.title}
+          </h3>
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+            registered 
+              ? 'bg-green-500/20 text-green-400'
+              : 'bg-amber-500/20 text-amber-400'
+          }`}>
+            {item.category}
+          </span>
+        </div>
       </div>
       
       <p className={`text-sm mb-4 line-clamp-2 ${
@@ -54,18 +104,24 @@ export default function ItemCard({ item, registered }) {
         </div>
         <div className="flex justify-between">
           <span className={registered ? 'text-green-300' : 'text-slate-400'}>
-            Auction Start
+            Registration Closes
           </span>
-          <span className={registered ? 'text-green-200' : 'text-slate-300'}>
-            {formatDate(item.auctionStartDate)}
+          <span className={`font-medium ${
+            registered ? 'text-green-200' : 'text-red-400'
+          }`}>
+            {formatTimeLeft(item.registrationClosingDate)}
           </span>
         </div>
-        {registered && (
-          <div className="flex justify-between">
-            <span className="text-green-300">Status</span>
-            <span className="text-green-400 font-medium">Registered ✓</span>
-          </div>
-        )}
+        <div className="flex justify-between">
+          <span className={registered ? 'text-green-300' : 'text-slate-400'}>
+            Interested Users
+          </span>
+          <span className={`font-medium ${
+            registered ? 'text-green-400' : 'text-slate-300'
+          }`}>
+            {item.subscribers?.length || 0}
+          </span>
+        </div>
       </div>
       
       <button className={`w-full mt-4 py-2 rounded-lg font-medium transition-all duration-300 group relative overflow-hidden ${

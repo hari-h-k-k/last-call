@@ -167,6 +167,19 @@ public class DataSeeder {
                     new Date(now + 15 * 24 * 60 * 60 * 1000));
             Item savedOther1 = itemService.saveItem(other1);
 
+            // LAST CALL ITEMS (closing within 24 hours)
+            Item lastCall1 = new Item("Rolex Daytona Paul Newman", "Rare vintage chronograph, excellent condition",
+                    1L, 750000.0, ItemCategory.JEWELRY,
+                    new Date(now + 18 * 60 * 60 * 1000),
+                    new Date(now + 42 * 60 * 60 * 1000));
+            Item savedLastCall1 = itemService.saveItem(lastCall1);
+
+            Item lastCall2 = new Item("Tesla Roadster Prototype", "First production model, signed by Elon Musk",
+                    2L, 2500000.0, ItemCategory.CAR,
+                    new Date(now + 20 * 60 * 60 * 1000),
+                    new Date(now + 44 * 60 * 60 * 1000));
+            Item savedLastCall2 = itemService.saveItem(lastCall2);
+
             // Add tags
             itemTagService.addTag(savedArt1.getId(), "banksy", 1L);
             itemTagService.addTag(savedArt2.getId(), "picasso", 2L);
@@ -179,6 +192,8 @@ public class DataSeeder {
             itemTagService.addTag(savedHouse1.getId(), "beverly-hills", 3L);
             itemTagService.addTag(savedApt1.getId(), "manhattan", 1L);
             itemTagService.addTag(savedJewelry1.getId(), "patek", 1L);
+            itemTagService.addTag(savedLastCall1.getId(), "rolex", 1L);
+            itemTagService.addTag(savedLastCall2.getId(), "tesla", 2L);
 
             // Add subscribers
             itemSubscriberService.subscribe(savedArt1, "2");
@@ -188,8 +203,10 @@ public class DataSeeder {
             itemSubscriberService.subscribe(savedHouse1, "2");
             itemSubscriberService.subscribe(savedApt1, "3");
             itemSubscriberService.subscribe(savedJewelry1, "4");
+            itemSubscriberService.subscribe(savedLastCall1, "3");
+            itemSubscriberService.subscribe(savedLastCall2, "1");
 
-            System.out.println("✅ Items seeded for all categories! (20 items with varied timing)");
+            System.out.println("✅ Items seeded for all categories! (22 items with varied timing)");
         };
     }
 }
