@@ -13,6 +13,16 @@ export const itemService = {
   getCategories: async () => {
     const response = await axios.get(`${API_BASE_URL}/item/categories`);
     return response.data;
+  },
+  
+  getTodaysAuctions: async () => {
+    const response = await axios.get(`${API_BASE_URL}/item/get-upcoming-items`);
+    return response.data;
+  },
+  
+  getUpcomingItems: async () => {
+    const response = await axios.get(`${API_BASE_URL}/item/get-upcoming-items`);
+    return response.data;
   }
 };
 

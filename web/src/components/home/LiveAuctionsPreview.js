@@ -1,41 +1,73 @@
+'use client';
+import { useState, useEffect } from 'react';
+import ItemCard from '../ui/ItemCard';
+import { itemService } from '../../services/itemService';
+
 export default function LiveAuctionsPreview() {
-  const liveAuctions = [
-    { id: 1, title: 'Vintage Watch', currentBid: 850, timeLeft: '2h 15m', bidders: 12 },
-    { id: 2, title: 'Rare Painting', currentBid: 2400, timeLeft: '45m', bidders: 8 },
-    { id: 3, title: 'Classic Guitar', currentBid: 1200, timeLeft: '1h 30m', bidders: 15 }
-  ];
+  const [liveAuctions, setLiveAuctions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLiveAuctions = async () => {
+      try {
+        const response = await itemService.getUpcomingItems();
+        const now = new Date();
+        
+        const liveItems = response.data?.filter(item => {
+          const auctionStart = new Date(item.item.auctionStartDate);
+          const regClosing = new Date(item.item.registrationClosingDate);
+          return auctionStart <= now && regClosing < now;
+        }) || [];
+        
+        setLiveAuctions(liveItems.slice(0, 6));
+      } catch (error) {
+        console.error('Failed to fetch live auctions:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchLiveAuctions();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center">
+            <div className="text-green-400">Loading live auctions...</div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (liveAuctions.length === 0) {
+    return null;
+  }
 
   return (
-    <section className="py-16">
-      <div className="max-w-6xl mx-auto px-4">
+    <section className="py-16 bg-gradient-to-r from-green-500/10 to-emerald-500/10">
+      <div className="max-w-7xl mx-auto px-4">
         <div className="flex justify-between items-center mb-12">
-          <h2 className="text-3xl font-bold text-amber-400">Live Auctions</h2>
+          <h2 className="text-4xl font-bold text-green-400">🔴 Live Auctions</h2>
           <div className="flex items-center text-green-400">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse mr-2"></div>
+            <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse mr-2"></div>
             <span className="text-sm font-medium">LIVE NOW</span>
           </div>
         </div>
-        <div className="grid md:grid-cols-3 gap-6">
+        
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {liveAuctions.map((auction) => (
-            <div key={auction.id} className="bg-slate-800/50 rounded-xl p-6 border border-green-500/20">
-              <h3 className="text-white font-semibold mb-3">{auction.title}</h3>
-              <div className="space-y-2 mb-4">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Current Bid</span>
-                  <span className="text-green-400 font-bold">${auction.currentBid}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Time Left</span>
-                  <span className="text-amber-400">{auction.timeLeft}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Bidders</span>
-                  <span className="text-white">{auction.bidders}</span>
-                </div>
+            <div key={auction.item.id} className="relative">
+              <ItemCard item={auction.item} />
+              <div className="absolute top-4 right-4 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold animate-pulse">
+                LIVE
               </div>
-              <button className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors">
-                Join Auction
-              </button>
+              <div className="absolute bottom-4 left-4 right-4">
+                <button className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors">
+                  {auction.registered ? 'Join Auction' : 'Spectate'}
+                </button>
+              </div>
             </div>
           ))}
         </div>

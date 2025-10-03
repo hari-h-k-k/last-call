@@ -11,13 +11,13 @@ public class ItemValidationService {
     public void validateItemDates(Item item) {
         Date now = new Date();
         
-        if (item.getRegistrationClosingDate().before(now)) {
-            throw new IllegalArgumentException("Registration closing date cannot be in the past");
-        }
+//        if (item.getRegistrationClosingDate().before(now)) {
+//            throw new IllegalArgumentException("Registration closing date cannot be in the past");
+//        }
         
-        if (item.getAuctionStartDate().before(now)) {
-            throw new IllegalArgumentException("Auction start date cannot be in the past");
-        }
+//        if (item.getAuctionStartDate().before(now)) {
+//            throw new IllegalArgumentException("Auction start date cannot be in the past");
+//        }
         
         if (item.getRegistrationClosingDate().after(item.getAuctionStartDate())) {
             throw new IllegalArgumentException("Registration closing date cannot be after auction start date");
@@ -56,9 +56,9 @@ public class ItemValidationService {
     public void validateSubscriptionEligibility(Item item, String userId) {
         Date now = new Date();
         
-        if (item.getRegistrationClosingDate().before(now)) {
-            throw new IllegalArgumentException("Deadline exceeded to express interest on this item");
-        }
+//        if (item.getRegistrationClosingDate().before(now)) {
+//            throw new IllegalArgumentException("Deadline exceeded to express interest on this item");
+//        }
         
         if (item.getSellerId().equals(Long.parseLong(userId))) {
             throw new IllegalArgumentException("User cannot express interest on the item they listed");

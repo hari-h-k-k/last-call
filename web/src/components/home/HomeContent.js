@@ -8,6 +8,8 @@ import PopularCategories from './PopularCategories';
 import LiveAuctionsPreview from './LiveAuctionsPreview';
 import StatsSection from './StatsSection';
 import InteractiveSearchSuggestions from './InteractiveSearchSuggestions';
+import AuctionOfTheDay from './AuctionOfTheDay';
+import LastCallToRegister from './LastCallToRegister';
 import { itemService } from '../../services/itemService';
 
 export default function HomeContent() {
@@ -43,8 +45,10 @@ export default function HomeContent() {
         </div>
         
         <div className="space-y-20">
-          <PopularCategories />
+          <LastCallToRegister />
+          <AuctionOfTheDay />
           <LiveAuctionsPreview />
+          <PopularCategories />
           <StatsSection />
         </div>
       </div>
