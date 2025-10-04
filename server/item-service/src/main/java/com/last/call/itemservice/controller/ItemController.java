@@ -46,8 +46,8 @@ public class ItemController {
         return ResponseBuilder.success(updatedItem, "Item updated successfully");
     }
 
-    @GetMapping({"/items/{itemId}"})
-    public ResponseEntity<ApiResponse<ItemWithSubscriptionDto>> getItems(
+    @GetMapping({"/{itemId}"})
+    public ResponseEntity<ApiResponse<ItemWithSubscriptionDto>> getItem(
             @PathVariable String itemId,
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
 

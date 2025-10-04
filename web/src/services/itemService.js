@@ -31,6 +31,14 @@ export const itemService = {
     const token = localStorage.getItem('token');
     const headers = token ? { Authorization: `Bearer ${token}` } : {};
     const response = await axios.get(`${API_BASE_URL}/item/last-call-to-register`, { headers });
+    console.log(response)
+    return response.data;
+  },
+
+  getItemById: async (id) => {
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const response = await axios.get(`${API_BASE_URL}/item/${id}`, { headers });
     return response.data;
   }
 };

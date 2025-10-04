@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import ItemCard from '../ui/ItemCard';
+import LoadingSpinner from '../ui/LoadingSpinner';
 import { itemService } from '../../services/itemService';
 import { THUMBNAIL_ARRAY } from '../../constants/images';
 
@@ -42,6 +43,7 @@ export default function LastCallToRegisterHybrid() {
       }
     } catch (error) {
       console.error('Failed to fetch last call items:', error);
+      setLastCallItems([]);
     } finally {
       setIsLoading(false);
     }
@@ -106,9 +108,7 @@ export default function LastCallToRegisterHybrid() {
     return (
       <section className="py-16">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center">
-            <div className="text-amber-400">Loading registration deadlines...</div>
-          </div>
+          <LoadingSpinner text="Loading registration deadlines..." />
         </div>
       </section>
     );
@@ -138,7 +138,7 @@ export default function LastCallToRegisterHybrid() {
   const hasMoreItems = otherItems.length > maxOtherItems;
 
   return (
-    <section className="py-16 bg-gradient-to-r from-red-500/10 to-orange-500/10">
+    <section className="py-20 px-8 bg-gradient-to-r from-red-500/10 to-orange-500/10 rounded-3xl shadow-2xl shadow-red-500/10 mx-4 my-8">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold text-red-400 mb-4">
@@ -176,6 +176,11 @@ export default function LastCallToRegisterHybrid() {
                 <div className="flex justify-between items-start mb-4">
                   <h3 className="text-3xl font-bold text-white">{featuredItem.item.title}</h3>
                   <div className="flex flex-col items-end gap-2">
+                    {featuredItem.registered && (
+                      <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
+                        ✓ REGISTERED
+                      </span>
+                    )}
                     <span className={`px-3 py-1 rounded-full text-sm font-medium ${
                       featuredItem.registered 
                         ? 'bg-green-500/20 text-green-400'
@@ -183,11 +188,6 @@ export default function LastCallToRegisterHybrid() {
                     }`}>
                       {featuredItem.item.category}
                     </span>
-                    {featuredItem.registered && (
-                      <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                        ✓ REGISTERED
-                      </span>
-                    )}
                   </div>
                 </div>
                 <p className="text-slate-300 text-lg mb-6">{featuredItem.item.description}</p>
@@ -207,7 +207,9 @@ export default function LastCallToRegisterHybrid() {
                   </div>
                 </div>
                 
-                <button className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-bold text-lg transition-colors">
+                <button 
+                  onClick={() => window.location.href = `/item/${featuredItem.item.id}`}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-bold text-lg transition-colors">
                   {featuredItem.registered ? 'View Details' : 'Register Now'}
                 </button>
               </div>
@@ -228,7 +230,7 @@ export default function LastCallToRegisterHybrid() {
               </button>
             )}
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {displayedOtherItems.map((item) => (
               <ItemCard key={item.item.id} item={item.item} registered={item.registered} />
             ))}

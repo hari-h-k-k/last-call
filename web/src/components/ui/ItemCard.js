@@ -85,10 +85,10 @@ export default function ItemCard({ item, registered }) {
         </div>
       </div>
       
-      <p className={`text-sm mb-4 line-clamp-2 ${
+      <p className={`text-sm mb-4 line-clamp-2 h-10 ${
         registered ? 'text-green-200' : 'text-slate-300'
       }`}>
-        {item.description}
+        {item.description.length > 80 ? `${item.description.substring(0, 80)}...` : item.description}
       </p>
       
       <div className="space-y-2">
@@ -124,7 +124,9 @@ export default function ItemCard({ item, registered }) {
         </div>
       </div>
       
-      <button className={`w-full mt-4 py-2 rounded-lg font-medium transition-all duration-300 group relative overflow-hidden ${
+      <button 
+        onClick={() => window.location.href = `/item/${item.id}`}
+        className={`w-full mt-4 py-2 rounded-lg font-medium transition-all duration-300 group relative overflow-hidden ${
         registered 
           ? 'bg-green-500 hover:bg-green-600 text-white'
           : 'bg-amber-500 hover:bg-amber-600 text-slate-900'
