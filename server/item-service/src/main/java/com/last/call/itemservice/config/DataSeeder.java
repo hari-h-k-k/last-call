@@ -94,20 +94,20 @@ public class DataSeeder {
 
             // APARTMENTS
             Item apt1 = new Item("Manhattan Penthouse", "5BR/4BA penthouse with Central Park views",
-                    1L, 12500000.0, ItemCategory.APARTMENTS,
+                    1L, 12500000.0, ItemCategory.APARTMENT,
                     new Date(now - 24 * 60 * 60 * 1000),
                     new Date(now - 2 * 60 * 60 * 1000));
             Item savedApt1 = itemService.saveItem(apt1);
 
             Item apt2 = new Item("SoHo Loft", "3BR/2BA converted warehouse, 2500 sq ft",
-                    2L, 4200000.0, ItemCategory.APARTMENTS,
+                    2L, 4200000.0, ItemCategory.APARTMENT,
                     new Date(now + 6 * 24 * 60 * 60 * 1000),
                     new Date(now + 8 * 24 * 60 * 60 * 1000));
             Item savedApt2 = itemService.saveItem(apt2);
 
             // PLOTS
             Item plot1 = new Item("Malibu Oceanfront Lot", "2.5 acres with 200ft of beach frontage",
-                    3L, 8500000.0, ItemCategory.PLOTS,
+                    3L, 8500000.0, ItemCategory.PLOT,
                     new Date(now + 48 * 60 * 60 * 1000),
                     new Date(now + 72 * 60 * 60 * 1000));
             Item savedPlot1 = itemService.saveItem(plot1);

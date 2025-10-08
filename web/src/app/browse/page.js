@@ -45,11 +45,11 @@ export default function BrowsePage() {
     fetchData();
   }, []);
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+  const handleSearch = async (query) => {
+    if (!query || query.trim().length < 3) return;
     try {
       setIsLoading(true);
-      const response = await itemService.searchItems(searchQuery);
+      const response = await itemService.searchItems(query);
       setItems(response.subject || []);
     } catch (error) {
       console.error('Search failed:', error);
@@ -99,21 +99,30 @@ export default function BrowsePage() {
 
         {/* Search Bar */}
         <div className="mb-8">
-          <div className="flex max-w-2xl mx-auto">
+          <div className="max-w-2xl mx-auto">
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search for items..."
-              className="flex-1 px-6 py-3 bg-slate-800 text-white rounded-l-lg border border-slate-700 focus:outline-none focus:border-amber-500"
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (e.target.value.length >= 3) {
+                  handleSearch(e.target.value);
+                } else if (e.target.value.length === 0) {
+                  // Reset to default items when search is cleared
+                  const fetchData = async () => {
+                    try {
+                      const itemsResponse = await itemService.getLastCallToRegister();
+                      setItems(itemsResponse.subject || []);
+                    } catch (error) {
+                      console.error('Failed to fetch data:', error);
+                    }
+                  };
+                  fetchData();
+                }
+              }}
+              placeholder="Search for items... (min 3 characters)"
+              className="w-full px-6 py-3 bg-slate-800 text-white rounded-lg border border-slate-700 focus:outline-none focus:border-amber-500"
             />
-            <button
-              onClick={handleSearch}
-              className="px-8 py-3 bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold rounded-r-lg transition-colors"
-            >
-              Search
-            </button>
           </div>
         </div>
 

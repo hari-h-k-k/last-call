@@ -39,7 +39,7 @@ export default function HomeContent() {
           <div className="mb-8">
             <h3 className="text-lg font-semibold text-white mb-4">Popular:</h3>
             <div className="flex flex-wrap justify-center gap-3">
-              {['Art', 'House', 'Car', 'Bike', 'Apartment', 'Collectibles'].map((category) => (
+              {['Art', 'House', 'Car', 'Plot', 'Apartment', 'Collectibles'].map((category) => (
                 <button
                   key={category}
                   onClick={() => window.location.href = `/browse?category=${category.toUpperCase()}`}
