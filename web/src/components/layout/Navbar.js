@@ -44,6 +44,9 @@ export default function Navbar({ show = true, variant = 'slide' }) {
             </Link>
 
             <div className="flex items-center space-x-6">
+              <Link href="/browse" className="text-slate-300 hover:text-amber-400 font-medium">
+                Browse
+              </Link>
               <Link href="/auctions" className="text-slate-300 hover:text-amber-400 font-medium">
                 Auctions
               </Link>

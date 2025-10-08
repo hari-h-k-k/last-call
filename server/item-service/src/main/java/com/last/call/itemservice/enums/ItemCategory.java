@@ -5,7 +5,7 @@ public enum ItemCategory {
     CAR,
     MOTORCYCLE,
     COLLECTIBLES,
-    HOUSES,
+    HOUSE,
     APARTMENTS,
     PLOTS,
     ELECTRONICS,

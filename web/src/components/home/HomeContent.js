@@ -7,7 +7,6 @@ import ItemCard from '../ui/ItemCard';
 import PopularCategories from './PopularCategories';
 import LiveAuctionsPreview from './LiveAuctionsPreview';
 import StatsSection from './StatsSection';
-import InteractiveSearchSuggestions from './InteractiveSearchSuggestions';
 import AuctionOfTheDay from './AuctionOfTheDay';
 import LastCallToRegister from './LastCallToRegister';
 import { itemService } from '../../services/itemService';
@@ -37,19 +36,25 @@ export default function HomeContent() {
             Join thousands of users in exciting real-time auctions
           </p>
           
-          <SearchBar 
-            placeholder="Search for items, categories, or brands..." 
-            onSearch={handleSearch}
-            className="max-w-4xl mx-auto"
-          />
-          <InteractiveSearchSuggestions onSearch={handleSearch} />
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-white mb-4">Popular:</h3>
+            <div className="flex flex-wrap justify-center gap-3">
+              {['Art', 'House', 'Car', 'Bike', 'Apartment', 'Collectibles'].map((category) => (
+                <button
+                  key={category}
+                  onClick={() => window.location.href = `/browse?category=${category.toUpperCase()}`}
+                  className="px-4 py-2 bg-slate-800 hover:bg-amber-500 hover:text-slate-900 text-slate-300 rounded-lg font-medium transition-colors"
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
         
         <div className="space-y-20">
           {/*<LastCallToRegister />*/}
           <LastCallToRegisterHybrid />
-          <AuctionOfTheDay />
-          <LiveAuctionsPreview />
           <PopularCategories />
           <StatsSection />
         </div>

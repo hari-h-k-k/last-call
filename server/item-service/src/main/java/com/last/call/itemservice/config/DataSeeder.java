@@ -81,13 +81,13 @@ public class DataSeeder {
 
             // HOUSES
             Item house1 = new Item("Beverly Hills Mansion", "8BR/12BA estate, 15,000 sq ft, pool, tennis court",
-                    3L, 25000000.0, ItemCategory.HOUSES,
+                    3L, 25000000.0, ItemCategory.HOUSE,
                     new Date(now + 24 * 60 * 60 * 1000),
                     new Date(now + 48 * 60 * 60 * 1000));
             Item savedHouse1 = itemService.saveItem(house1);
 
             Item house2 = new Item("Hamptons Oceanfront Estate", "6BR/8BA, private beach, 3 acres",
-                    4L, 18500000.0, ItemCategory.HOUSES,
+                    4L, 18500000.0, ItemCategory.HOUSE,
                     new Date(now + 3 * 24 * 60 * 60 * 1000),
                     new Date(now + 5 * 24 * 60 * 60 * 1000));
             Item savedHouse2 = itemService.saveItem(house2);
