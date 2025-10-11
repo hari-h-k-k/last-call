@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { THUMBNAIL_ARRAY } from '../../constants/images';
 import { useAuth } from '../../hooks/useAuth';
-import LoginModal from '../auth/LoginModal';
-import SignupModal from '../auth/SignupModal';
+import LoginModal from '../modals/LoginModal';
+import SignupModal from '../modals/SignupModal';
 
 export default function ItemCard({ item, registered }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);

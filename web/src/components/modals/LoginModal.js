@@ -22,11 +22,10 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignup, onSucces
           username: response.subject.username,
           userId: response.subject.userId
         }));
+        window.dispatchEvent(new Event('auth-change'));
         onClose();
         if (onSuccess) {
           onSuccess();
-        } else {
-          window.location.reload();
         }
       } else {
         setError(response.message || 'Login failed');

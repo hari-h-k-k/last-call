@@ -1,7 +1,7 @@
 'use client';
 import Navbar from '../../components/layout/Navbar';
-import AuctionOfTheDay from '../../components/home/AuctionOfTheDay';
-import LiveAuctionsPreview from '../../components/home/LiveAuctionsPreview';
+import AuctionOfTheDay from '../../components/auctions/AuctionOfTheDay';
+import LiveAuctionsPreview from '../../components/auctions/LiveAuctionsPreview';
 
 export default function AuctionsPage() {
   return (

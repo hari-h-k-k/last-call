@@ -7,13 +7,27 @@ export function useAuth() {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  useEffect(() => {
+  const updateAuthState = () => {
     const userData = authService.getUser();
     const authenticated = authService.isAuthenticated();
-    
-    console.log('useAuth - userData from authService.getUser():', userData);
     setUser(userData);
     setIsAuthenticated(authenticated);
+  };
+
+  useEffect(() => {
+    updateAuthState();
+    
+    const handleStorageChange = () => {
+      updateAuthState();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('auth-change', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('auth-change', handleStorageChange);
+    };
   }, []);
 
   return { user, isAuthenticated };

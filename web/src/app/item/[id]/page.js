@@ -5,8 +5,8 @@ import { itemService } from '../../../services/itemService';
 import { authService } from '../../../services/authService';
 import { THUMBNAIL_ARRAY } from '../../../constants/images';
 import Navbar from '../../../components/layout/Navbar';
-import LoginModal from '../../../components/auth/LoginModal';
-import SignupModal from '../../../components/auth/SignupModal';
+import LoginModal from '../../../components/modals/LoginModal';
+import SignupModal from '../../../components/modals/SignupModal';
 
 export default function ItemDetailsPage() {
   const { id } = useParams();

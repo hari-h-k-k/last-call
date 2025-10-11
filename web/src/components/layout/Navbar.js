@@ -2,8 +2,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import LoginModal from '../auth/LoginModal';
-import SignupModal from '../auth/SignupModal';
+import LoginModal from '../modals/LoginModal';
+import SignupModal from '../modals/SignupModal';
 
 export default function Navbar({ show = true, variant = 'slide' }) {
   const { user, isAuthenticated } = useAuth();

@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import ItemCard from '../ui/ItemCard';
 import LoadingSpinner from '../ui/LoadingSpinner';
-import LoginModal from '../auth/LoginModal';
-import SignupModal from '../auth/SignupModal';
+import LoginModal from '../modals/LoginModal';
+import SignupModal from '../modals/SignupModal';
 import { itemService } from '../../services/itemService';
 import { useAuth } from '../../hooks/useAuth';
 import { THUMBNAIL_ARRAY } from '../../constants/images';
