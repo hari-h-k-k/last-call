@@ -1,9 +1,12 @@
-import { api } from '@/lib/api';
+import axios from 'axios';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export const userService = {
   async getUserProfile() {
-    const response = await api.get('/user/profile');
-    console.log('getUserProfile response:', response.data);
+    const token = localStorage.getItem('token');
+    const headers = token ? { Authorization: `Bearer ${token}` } : {};
+    const response = await axios.get(`${API_BASE_URL}/user/profile`, { headers });
     
     if (response.data.success) {
       localStorage.setItem('user', JSON.stringify(response.data.subject));
@@ -14,9 +17,9 @@ export const userService = {
 
   async updateProfile(profileData) {
     try {
-      console.log('Sending profile data:', profileData);
-      const response = await api.put('/user/profile', profileData);
-      console.log('updateProfile response:', response.data);
+      const token = localStorage.getItem('token');
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const response = await axios.put(`${API_BASE_URL}/user/profile`, profileData, { headers });
       
       if (response.data.success) {
         localStorage.setItem('user', JSON.stringify(response.data.subject));

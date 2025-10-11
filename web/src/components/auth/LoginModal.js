@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Modal from '../ui/Modal';
 import { authService } from '../../services/authService';
 
-export default function LoginModal({ isOpen, onClose, onSwitchToSignup }) {
+export default function LoginModal({ isOpen, onClose, onSwitchToSignup, onSuccess }) {
   const [formData, setFormData] = useState({ usernameOrEmail: '', password: '' });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -23,7 +23,11 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignup }) {
           userId: response.subject.userId
         }));
         onClose();
-        window.location.reload();
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          window.location.reload();
+        }
       } else {
         setError(response.message || 'Login failed');
       }

@@ -1,32 +1,14 @@
 'use client';
 
-import { useState } from 'react';
-import FeatureCard from './FeatureCard';
-import SearchBar from '../ui/SearchBar';
-import ItemCard from '../ui/ItemCard';
-import PopularCategories from './PopularCategories';
-import LiveAuctionsPreview from './LiveAuctionsPreview';
 import StatsSection from './StatsSection';
-import AuctionOfTheDay from './AuctionOfTheDay';
-import LastCallToRegister from './LastCallToRegister';
-import { itemService } from '../../services/itemService';
 import LastCallToRegisterHybrid from "@/components/home/LastCallToRegisterHybrid";
 
 export default function HomeContent() {
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-
-  const handleSearch = async (query) => {
-    if (!query.trim()) {
-      return;
-    }
-    window.location.href = `/search?q=${encodeURIComponent(query)}`;
-  };
 
 
 
   return (
-    <main id="home-section" className="min-h-screen bg-slate-800 py-16">
+    <main id="home-section" className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-amber-900/20 py-16">
       <div className="max-w-7xl mx-auto px-4">
         <div className="text-center mb-20">
           <h2 className="text-5xl md:text-6xl font-bold text-amber-400 mb-6">
@@ -53,9 +35,7 @@ export default function HomeContent() {
         </div>
         
         <div className="space-y-20">
-          {/*<LastCallToRegister />*/}
           <LastCallToRegisterHybrid />
-          <PopularCategories />
           <StatsSection />
         </div>
       </div>

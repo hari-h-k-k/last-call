@@ -2,7 +2,10 @@
 import { useState, useEffect } from 'react';
 import ItemCard from '../ui/ItemCard';
 import LoadingSpinner from '../ui/LoadingSpinner';
+import LoginModal from '../auth/LoginModal';
+import SignupModal from '../auth/SignupModal';
 import { itemService } from '../../services/itemService';
+import { useAuth } from '../../hooks/useAuth';
 import { THUMBNAIL_ARRAY } from '../../constants/images';
 
 export default function LastCallToRegisterHybrid() {
@@ -11,6 +14,9 @@ export default function LastCallToRegisterHybrid() {
   const [featuredIndex, setFeaturedIndex] = useState(0);
   const [featuredImageIndex, setFeaturedImageIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSignupModal, setShowSignupModal] = useState(false);
+  const { isAuthenticated } = useAuth();
   
   const formatTimeLeft = (registrationClosingDate) => {
     const closingDate = new Date(registrationClosingDate);
@@ -208,7 +214,13 @@ export default function LastCallToRegisterHybrid() {
                 </div>
                 
                 <button 
-                  onClick={() => window.location.href = `/item/${featuredItem.item.id}`}
+                  onClick={() => {
+                    if (isAuthenticated) {
+                      window.location.href = `/item/${featuredItem.item.id}`;
+                    } else {
+                      setShowLoginModal(true);
+                    }
+                  }}
                   className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-bold text-lg transition-colors">
                   {featuredItem.registered ? 'View Details' : 'Register Now'}
                 </button>
@@ -237,6 +249,27 @@ export default function LastCallToRegisterHybrid() {
           </div>
         </div>
       </div>
+      
+      <LoginModal 
+        isOpen={showLoginModal} 
+        onClose={() => setShowLoginModal(false)}
+        onSwitchToSignup={() => {
+          setShowLoginModal(false);
+          setShowSignupModal(true);
+        }}
+        onSuccess={() => {
+          window.location.href = `/item/${featuredItem.item.id}`;
+        }}
+      />
+      
+      <SignupModal 
+        isOpen={showSignupModal} 
+        onClose={() => setShowSignupModal(false)}
+        onSwitchToLogin={() => {
+          setShowSignupModal(false);
+          setShowLoginModal(true);
+        }}
+      />
     </section>
   );
 }
