@@ -67,5 +67,7 @@ public class ItemSubscriberService {
                 .map(item -> new ItemWithSubscriptionDto(item, true)).toList();
     }
 
-
+    public void deleteAll() {
+        itemSubscriberRepository.deleteAll();
+    }
 }

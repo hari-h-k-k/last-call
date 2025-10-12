@@ -19,18 +19,20 @@ public class DataSeeder {
                                    ItemSubscriberService itemSubscriberService) {
         return args -> {
             System.out.println("🚀 DataSeeder starting...");
-            if (!itemService.getAllItems().isEmpty()) {
-                System.out.println("⚠️ Items already exist, skipping data seeding");
-                return;
-            }
+            System.out.println("🗑️ Clearing existing data...");
+            itemSubscriberService.deleteAll();
+            itemTagService.deleteAll();
+            itemService.deleteAll();
             System.out.println("📦 Seeding item data...");
 
             long now = System.currentTimeMillis();
 
             Item art = new Item("Mona Lisa", "Original painting by Leonardo da Vinci, 1503-1506",
                     1L, 1000, ItemCategory.ART,
-                    new Date(now + 5 * 60 * 1000),
-                    new Date(now + 2 * 60 * 60 * 1000));
+                    new Date(now + 2 * 60 * 1000),
+                    new Date(now + 3 * 60 * 1000));
+
+            itemService.saveItem(art);
 
             itemSubscriberService.register(art, "2");
             itemSubscriberService.register(art, "3");

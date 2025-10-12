@@ -64,5 +64,7 @@ public class ItemTagService {
         itemRepository.save(item);
     }
 
-
+    public void deleteAll() {
+        // Tags are deleted automatically when items are deleted due to cascade
+    }
 }

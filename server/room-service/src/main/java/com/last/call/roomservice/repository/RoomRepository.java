@@ -22,7 +22,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Query("SELECT r FROM Room r WHERE r.endDate > :currentDate AND r.status = 'ACTIVE'")
     List<Room> findActiveRooms(@Param("currentDate") Date currentDate);
     
-    List<Room> findByWinnerId(String winnerId);
+    List<Room> findByWinnerId(Long winnerId);
     
     List<Room> findByStatusAndStartDateBefore(String status, Date date);
     

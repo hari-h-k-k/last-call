@@ -29,7 +29,7 @@ public class ItemService {
     private ItemValidationService itemValidationService;
 
     @Autowired
-    private ItemSchedulerService itemSchedulerService;
+    private SchedulerServiceClient schedulerServiceClient;
 
     public Optional<Item> getItemById(Long id) {
         return itemRepository.findById(id);
@@ -51,7 +51,7 @@ public class ItemService {
         Item savedItem = itemRepository.save(item);
         
         try {
-            itemSchedulerService.scheduleItemJobs(savedItem);
+            schedulerServiceClient.scheduleItemJobs(savedItem);
         } catch (Exception e) {
             // Log error but don't fail the save operation
             System.err.println("Failed to schedule jobs for item " + savedItem.getId() + ": " + e.getMessage());
@@ -83,29 +83,13 @@ public class ItemService {
         
         if (datesChanged) {
             try {
-                itemSchedulerService.rescheduleItemJobs(savedItem);
+                schedulerServiceClient.rescheduleItemJobs(savedItem);
             } catch (Exception e) {
                 System.err.println("Failed to reschedule jobs for item " + savedItem.getId() + ": " + e.getMessage());
             }
         }
         
         return savedItem;
-    }
-
-    public void deleteItem(Long id, Long userId) {
-        Item item = itemRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + id));
-
-        itemValidationService.validateItemOwnership(item, userId);
-        itemValidationService.validateItemNotStarted(item);
-
-        try {
-            itemSchedulerService.deleteItemJobs(id);
-        } catch (Exception e) {
-            System.err.println("Failed to delete jobs for item " + id + ": " + e.getMessage());
-        }
-        
-        itemRepository.deleteById(id);
     }
 
     public void register(Long itemId, String userId) {
@@ -152,5 +136,9 @@ public class ItemService {
         return items.stream()
                 .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, userId)))
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    public void deleteAll() {
+        itemRepository.deleteAll();
     }
 }
