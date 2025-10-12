@@ -202,6 +202,7 @@ public class DataSeeder {
             itemSubscriberService.subscribe(savedCollect1, "5");
             itemSubscriberService.subscribe(savedHouse1, "2");
             itemSubscriberService.subscribe(savedApt1, "3");
+            itemSubscriberService.subscribe(savedJewelry1, "2");
             itemSubscriberService.subscribe(savedJewelry1, "4");
             itemSubscriberService.subscribe(savedLastCall1, "3");
             itemSubscriberService.subscribe(savedLastCall2, "1");

@@ -7,12 +7,17 @@ import { THUMBNAIL_ARRAY } from '../../../constants/images';
 import Navbar from '../../../components/layout/Navbar';
 import LoginModal from '../../../components/modals/LoginModal';
 import SignupModal from '../../../components/modals/SignupModal';
+import ConfirmModal from '../../../components/modals/ConfirmModal';
 
 export default function ItemDetailsPage() {
   const { id } = useParams();
   const [item, setItem] = useState(null);
   const [registered, setRegistered] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [showUnregisterModal, setShowUnregisterModal] = useState(false);
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [isWatchlisting, setIsWatchlisting] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -83,6 +88,67 @@ export default function ItemDetailsPage() {
   }
 
   const registrationClosed = new Date(item.registrationClosingDate) <= new Date();
+  const auctionStarted = new Date(item.auctionStartDate) <= new Date();
+  console.log("registrationClosed: " + registrationClosed)
+  console.log("auctionStarted: " + auctionStarted)
+  console.log("Registered: " + registered)
+
+  const handleRegister = async () => {
+    setIsRegistering(true);
+    try {
+      await itemService.registerForAuction(id);
+      setRegistered(true);
+    } catch (error) {
+      console.error('Failed to register:', error);
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  const handleUnregister = async () => {
+    setIsRegistering(true);
+    try {
+      await itemService.unregisterFromAuction(id);
+      setRegistered(false);
+      setShowUnregisterModal(false);
+    } catch (error) {
+      console.error('Failed to unregister:', error);
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  const handleExitAuction = async () => {
+    setIsRegistering(true);
+    try {
+      await itemService.exitAuction(id);
+      setRegistered(false);
+      setShowExitModal(false);
+    } catch (error) {
+      console.error('Failed to exit auction:', error);
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  const handleWatchlist = async () => {
+    setIsWatchlisting(true);
+    try {
+      await itemService.addToWatchlist(id);
+    } catch (error) {
+      console.error('Failed to add to watchlist:', error);
+    } finally {
+      setIsWatchlisting(false);
+    }
+  };
+
+  const handleSpectate = () => {
+    window.location.href = `/room/${id}?spectate=true`;
+  };
+
+  const handleViewAuction = () => {
+    window.location.href = `/room/${id}`;
+  };
 
   return (
     <div className="min-h-screen bg-slate-900">
@@ -171,32 +237,91 @@ export default function ItemDetailsPage() {
 
             <div className="space-y-3">
               {!registrationClosed && !registered && (
-                <button className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 py-3 rounded-lg font-bold text-lg transition-colors">
-                  Register for Auction
-                </button>
+                <>
+                  <button 
+                    onClick={handleRegister}
+                    disabled={isRegistering}
+                    className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 py-3 rounded-lg font-bold text-lg transition-colors disabled:opacity-50"
+                  >
+                    {isRegistering ? 'Registering...' : 'Register for Auction'}
+                  </button>
+                </>
               )}
-              {registered && !registrationClosed && (
-                <button className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold text-lg transition-colors">
-                  Waiting for Auction
-                </button>
+              {!auctionStarted && registered && (
+                <>
+                  <button className="w-full bg-green-500 text-white py-3 rounded-lg font-bold text-lg">
+                    Waiting for Auction
+                  </button>
+                  <button 
+                    onClick={() => setShowUnregisterModal(true)}
+                    disabled={isRegistering}
+                    className="w-full border border-red-500 hover:border-red-400 text-red-400 py-3 rounded-lg font-medium text-lg transition-colors disabled:opacity-50"
+                  >
+                    Unregister
+                  </button>
+                </>
               )}
-              {registered && registrationClosed && (
-                <button className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold text-lg transition-colors">
-                  View Auction Room
-                </button>
+              {auctionStarted && registered && (
+                <>
+                  <button 
+                    onClick={handleViewAuction}
+                    className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold text-lg transition-colors"
+                  >
+                    View Auction Room
+                  </button>
+                  <button 
+                    onClick={() => setShowExitModal(true)}
+                    disabled={isRegistering}
+                    className="w-full border border-red-500 hover:border-red-400 text-red-400 py-3 rounded-lg font-medium text-lg transition-colors disabled:opacity-50"
+                  >
+                    Exit Auction
+                  </button>
+                </>
               )}
-              {registrationClosed && !registered && (
-                <button className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-lg font-bold text-lg transition-colors">
+              {auctionStarted && !registered && (
+                <button 
+                  onClick={handleSpectate}
+                  className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-lg font-bold text-lg transition-colors"
+                >
                   Spectate Auction
                 </button>
               )}
-              <button className="w-full border border-slate-600 hover:border-slate-500 text-slate-300 py-3 rounded-lg font-medium text-lg transition-colors">
-                Add to Watchlist
+              {!auctionStarted && registrationClosed && !registered && (
+                <button className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-lg font-bold text-lg transition-colors">
+                  Waiting for Auction
+                </button>
+              )}
+              <button 
+                onClick={handleWatchlist}
+                disabled={isWatchlisting}
+                className="w-full border border-slate-600 hover:border-slate-500 text-slate-300 py-3 rounded-lg font-medium text-lg transition-colors disabled:opacity-50"
+              >
+                {isWatchlisting ? 'Adding...' : 'Add to Watchlist'}
               </button>
             </div>
           </div>
         </div>
       </div>
+      
+      <ConfirmModal
+        isOpen={showUnregisterModal}
+        onClose={() => setShowUnregisterModal(false)}
+        onConfirm={handleUnregister}
+        title="Unregister from Auction"
+        message="Are you sure you want to unregister from this auction? You will lose your spot and may not be able to register again if registration closes."
+        confirmText="Unregister"
+        isLoading={isRegistering}
+      />
+      
+      <ConfirmModal
+        isOpen={showExitModal}
+        onClose={() => setShowExitModal(false)}
+        onConfirm={handleExitAuction}
+        title="Exit Auction"
+        message="Are you sure you want to exit this auction? You will no longer be able to participate in the bidding."
+        confirmText="Exit Auction"
+        isLoading={isRegistering}
+      />
     </div>
   );
 }
