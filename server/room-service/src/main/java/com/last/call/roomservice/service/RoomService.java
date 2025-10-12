@@ -1,0 +1,76 @@
+package com.last.call.roomservice.service;
+
+import com.last.call.roomservice.dto.BidUpdateMessage;
+import com.last.call.roomservice.entity.Bid;
+import com.last.call.roomservice.entity.Room;
+import com.last.call.roomservice.repository.BidRepository;
+import com.last.call.roomservice.repository.RoomRepository;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@Service
+public class RoomService {
+    
+    private final RoomRepository roomRepository;
+    private final BidService bidservice;
+    private final SimpMessagingTemplate messagingTemplate;
+    
+    public RoomService(RoomRepository roomRepository, BidService bidservice, SimpMessagingTemplate messagingTemplate) {
+        this.roomRepository = roomRepository;
+        this.bidservice = bidservice;
+        this.messagingTemplate = messagingTemplate;
+    }
+    
+    public Room getRoomById(Long id) {
+        return roomRepository.findById(id).orElse(null);
+    }
+    
+    public List<Room> getLiveAuctions() {
+        Date now = new Date();
+        return roomRepository.findByStatusAndStartDateBefore("ACTIVE", now);
+    }
+    
+    public List<Room> getAuctionOfTheDay() {
+        Date now = new Date();
+        Date endOfDay = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+        return roomRepository.findByStatusAndStartDateBetween("PENDING", now, endOfDay);
+    }
+
+    @Transactional
+    public Bid placeBid(Long roomId, Long userId, Double bidAmount) {
+        Room room = roomRepository.findById(roomId).orElseThrow(() -> new RuntimeException("Room not found"));
+
+        if (bidAmount <= room.getCurrentPrice()) {
+            throw new RuntimeException("Bid must be higher than current price");
+        }
+
+        Date date = new Date();
+        room.setWinnerId(userId);
+        room.setCurrentPrice(bidAmount);
+        room.setUpdatedAt(date);
+        roomRepository.save(room);
+
+        Bid bid = new Bid(userId, bidAmount, room, date);
+        bid = bidservice.saveBid(bid);
+
+        // Send WebSocket update
+        BidUpdateMessage message = new BidUpdateMessage();
+        message.setCurrentPrice(bidAmount);
+        message.setBid(bid);
+        message.setRoomId(roomId);
+        message.setLeaderboard(bidservice.getLeaderboard(roomId));
+        message.setRoomStatus(room.getStatus());
+        message.setWinnerId(userId);
+        message.setMyBid(bidAmount);
+
+        messagingTemplate.convertAndSend("/topic/currentBid/" + roomId, message);
+
+        return bid;
+    }
+}

@@ -39,7 +39,7 @@ public class Room {
 
     @Column(name = "winner_id")
     @JoinColumn(name = "winner_id", foreignKey = @ForeignKey(name = "fk_room_winner"))
-    private String winnerId;
+    private Long winnerId;
 
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
@@ -80,8 +80,8 @@ public class Room {
     public double getCurrentPrice() { return currentPrice; }
     public void setCurrentPrice(double currentPrice) { this.currentPrice = currentPrice; }
 
-    public String getWinnerId() { return winnerId; }
-    public void setWinnerId(String winnerId) { this.winnerId = winnerId; }
+    public Long getWinnerId() { return winnerId; }
+    public void setWinnerId(Long winnerId) { this.winnerId = winnerId; }
 
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }

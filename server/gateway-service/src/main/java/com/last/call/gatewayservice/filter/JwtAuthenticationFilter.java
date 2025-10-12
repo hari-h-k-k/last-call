@@ -35,6 +35,12 @@ public class JwtAuthenticationFilter implements WebFilter {
         String path = exchange.getRequest().getPath().toString();
         String authHeader = exchange.getRequest().getHeaders().getFirst("Authorization");
         logger.info("Processing request: {}", path);
+//        logger.info("Processing authHeader: {}", authHeader);
+        
+        // Handle WebSocket upgrade requests
+        if (path.startsWith("/ws-auction") && isWebSocketUpgrade(exchange)) {
+            return handleWebSocketAuth(exchange, chain, authHeader);
+        }
 
         if (PUBLIC_PATHS.stream().anyMatch(path::startsWith)) {
             logger.info("Bypassing JWT validation for path: {}", path);
@@ -71,6 +77,47 @@ public class JwtAuthenticationFilter implements WebFilter {
                         .build())
                 .build();
 
+        return chain.filter(modifiedExchange);
+    }
+    
+    private boolean isWebSocketUpgrade(ServerWebExchange exchange) {
+        return "websocket".equalsIgnoreCase(
+            exchange.getRequest().getHeaders().getFirst("Upgrade"));
+    }
+    
+    private Mono<Void> handleWebSocketAuth(ServerWebExchange exchange, WebFilterChain chain, String authHeader) {
+        String token = null;
+        
+        // Debug logging
+        logger.info("Query params: {}", exchange.getRequest().getQueryParams());
+        logger.info("URI: {}", exchange.getRequest().getURI());
+        
+        // Try header first, then query parameter
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+        } else {
+            token = exchange.getRequest().getQueryParams().getFirst("token");
+        }
+        
+        logger.info("Extracted token: {}", token != null ? "[PRESENT]" : "[MISSING]");
+        
+        if (token == null) {
+            logger.warn("WebSocket connection denied: Missing token");
+            return unauthorizedResponse(exchange, "Missing token");
+        }
+        if (!jwtUtil.validateToken(token)) {
+            logger.warn("WebSocket connection denied: Invalid token");
+            return unauthorizedResponse(exchange, "Invalid token");
+        }
+        
+        String userId = jwtUtil.extractUserId(token);
+        ServerWebExchange modifiedExchange = exchange.mutate()
+                .request(exchange.getRequest().mutate()
+                        .header("X-User-Id", userId)
+                        .build())
+                .build();
+        
+        logger.info("WebSocket connection authorized for user: {}", userId);
         return chain.filter(modifiedExchange);
     }
 

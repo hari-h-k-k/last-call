@@ -16,7 +16,7 @@ public class Bid {
     @NotNull
     @Column(nullable = false, name = "user_id")
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_bid_user"))
-    private String userId;
+    private Long userId;
 
     @DecimalMin("0.0")
     @Column(nullable = false)
@@ -34,17 +34,18 @@ public class Bid {
 
     public Bid() {}
 
-    public Bid(String userId, double amount, Room room) {
+    public Bid(Long userId, double amount, Room room, Date createdAt) {
         this.userId = userId;
         this.amount = amount;
         this.room = room;
+        this.createdAt = createdAt;
     }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public double getAmount() { return amount; }
     public void setAmount(double amount) { this.amount = amount; }

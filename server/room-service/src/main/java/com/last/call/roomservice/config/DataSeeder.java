@@ -58,16 +58,8 @@ public class DataSeeder {
             roomRepository.save(todayRoom2);
 
             // Room participants for live auctions
-            roomUserRepository.save(new RoomUser("steve", liveRoom1));
-            roomUserRepository.save(new RoomUser("tony", liveRoom1));
-            roomUserRepository.save(new RoomUser("peter", liveRoom2));
-            roomUserRepository.save(new RoomUser("bruce", liveRoom2));
-
-            // Sample bids for active auctions
-            bidRepository.save(new Bid("steve", 13000000.0, liveRoom1));
-            bidRepository.save(new Bid("tony", 13500000.0, liveRoom1));
-            bidRepository.save(new Bid("peter", 50000000.0, liveRoom2));
-            bidRepository.save(new Bid("bruce", 52000000.0, liveRoom2));
+            roomUserRepository.save(new RoomUser(2L, liveRoom2));
+            roomUserRepository.save(new RoomUser(3L, liveRoom2));
 
             System.out.println("✅ Room service data seeded! (2 active, 2 pending rooms)");
         };
