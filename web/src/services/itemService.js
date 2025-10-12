@@ -20,6 +20,7 @@ export const itemService = {
     const response = await axios.get(
       `${API_BASE_URL}/item/search-items/${encodeURIComponent(query)}`, {headers}
     );
+    console.log(response)
     return response.data;
   },
 

@@ -20,6 +20,7 @@ export default function BrowsePage() {
     sortBy: 'date',
     auctionStatus: 'all'
   });
+  const [resetKey, setResetKey] = useState(0);
 
   useEffect(() => {
     const categoryParam = searchParams.get('category');
@@ -68,7 +69,7 @@ export default function BrowsePage() {
     
     // Price filter
     if (filters.priceMin && item.item.startingPrice < parseFloat(filters.priceMin)) return false;
-    if (filters.priceMax && item.item.startingPrice > parseFloat(filters.priceMax)) return false;
+    if (filters.priceMax && parseFloat(filters.priceMax) < 10000000 && item.item.startingPrice > parseFloat(filters.priceMax)) return false;
     
     // Auction status filter
     const now = new Date();
@@ -106,6 +107,7 @@ export default function BrowsePage() {
               onChange={(e) => {
                 setSearchQuery(e.target.value);
                 if (e.target.value.length >= 3) {
+                  console.log("Searching for:", e.target.value);
                   handleSearch(e.target.value);
                 } else if (e.target.value.length === 0) {
                   // Reset to default items when search is cleared
@@ -168,11 +170,12 @@ export default function BrowsePage() {
               <div className="px-2 py-4">
                 <div className="mb-6">
                   <DualRangeSlider
+                    key={resetKey}
                     min={0}
                     max={10000000}
                     step={1000}
-                    minValue={parseInt(filters.priceMin) || 0}
-                    maxValue={parseInt(filters.priceMax) || 10000000}
+                    minValue={filters.priceMin ? parseInt(filters.priceMin) : undefined}
+                    maxValue={filters.priceMax ? parseInt(filters.priceMax) : undefined}
                     onChange={useCallback(({ min, max }) => {
                       setFilters(prev => ({...prev, priceMin: min.toString(), priceMax: max.toString()}));
                     }, [])}
@@ -180,7 +183,7 @@ export default function BrowsePage() {
                 </div>
                 <div className="flex justify-between text-xs text-slate-400">
                   <span>${(parseInt(filters.priceMin) || 0).toLocaleString()}</span>
-                  <span>${(parseInt(filters.priceMax) || 10000000).toLocaleString()}</span>
+                  <span>{(parseInt(filters.priceMax) || 10000000) >= 10000000 ? 'Max' : `$${(parseInt(filters.priceMax)).toLocaleString()}`}</span>
                 </div>
               </div>
             </div>
@@ -201,18 +204,36 @@ export default function BrowsePage() {
             </div>
             
             {/* Sort By */}
-            <div className="mb-4">
+            <div className="mb-6">
               <h3 className="text-sm font-semibold text-white mb-2">Sort By</h3>
               <select 
                 value={filters.sortBy}
                 onChange={(e) => setFilters({...filters, sortBy: e.target.value})}
                 className="w-full bg-slate-700 text-white rounded-md p-2 text-sm border border-slate-600 focus:border-amber-500 focus:outline-none"
               >
-                <option value="date">Auction Date</option>
+                <option value="date">Date</option>
                 <option value="price-low">Price: Low to High</option>
                 <option value="price-high">Price: High to Low</option>
               </select>
             </div>
+            
+            {/* Reset Filters */}
+            <button
+              onClick={() => {
+                setSelectedCategory('ALL');
+                setFilters({
+                  registered: 'all',
+                  priceMin: '',
+                  priceMax: '',
+                  sortBy: 'date',
+                  auctionStatus: 'all'
+                });
+                setResetKey(prev => prev + 1);
+              }}
+              className="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+            >
+              Reset All Filters
+            </button>
           </div>
 
           {/* Items Grid */}

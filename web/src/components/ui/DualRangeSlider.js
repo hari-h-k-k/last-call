@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 
 export default function DualRangeSlider({ min = 0, max = 10000000, step = 1000, minValue, maxValue, onChange }) {
-  const [minVal, setMinVal] = useState(minValue || min);
-  const [maxVal, setMaxVal] = useState(maxValue || max);
-  const minValRef = useRef(minValue || min);
-  const maxValRef = useRef(maxValue || max);
+  const [minVal, setMinVal] = useState(minValue ?? min);
+  const [maxVal, setMaxVal] = useState(maxValue ?? max);
+  const minValRef = useRef(minValue ?? min);
+  const maxValRef = useRef(maxValue ?? max);
   const range = useRef(null);
 
   const getPercent = (value) => Math.round(((value - min) / (max - min)) * 100);
