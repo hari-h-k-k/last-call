@@ -19,8 +19,12 @@ export default function ItemCard({ item, registered }) {
     if (timeDiff <= 0) return 'Closed';
     
     const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
     
+    if (hours > 48) {
+      return closingDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+    }
+    
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
   };
   

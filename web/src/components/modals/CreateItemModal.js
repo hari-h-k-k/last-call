@@ -1,19 +1,20 @@
 'use client';
-import { useState } from 'react';
+import {useState} from 'react';
 import Modal from '../ui/Modal';
 import LoginModal from './LoginModal';
 import SignupModal from './SignupModal';
-import { useAuth } from '../../hooks/useAuth';
+import {useAuth} from '../../hooks/useAuth';
+import {itemService} from '../../services/itemService';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const CATEGORIES = [
-  'ART', 'CAR', 'MOTORCYCLE', 'COLLECTIBLES', 'HOUSE', 'APARTMENT', 
+  'ART', 'CAR', 'MOTORCYCLE', 'COLLECTIBLES', 'HOUSE', 'APARTMENT',
   'PLOT', 'ELECTRONICS', 'JEWELRY', 'ANTIQUES', 'BOOKS', 'SPORTS', 'FASHION', 'OTHER'
 ];
 
-export default function CreateItemModal({ isOpen, onClose }) {
-  const { isAuthenticated } = useAuth();
+export default function CreateItemModal({isOpen, onClose}) {
+  const {isAuthenticated} = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
   const [formData, setFormData] = useState({
@@ -29,7 +30,7 @@ export default function CreateItemModal({ isOpen, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!isAuthenticated) {
       setShowLoginModal(true);
       return;
@@ -37,13 +38,21 @@ export default function CreateItemModal({ isOpen, onClose }) {
 
     setIsLoading(true);
     setError('');
-    
+
     try {
-      // TODO: Implement item creation API call
-      console.log('Creating item:', formData);
-      onClose();
+      const itemData = {
+        title: formData.title,
+        description: formData.description,
+        startingPrice: parseFloat(formData.startingPrice),
+        category: formData.category,
+        registrationClosingDate: formData.registrationClosingDate,
+        auctionStartDate: formData.auctionStartDate
+      };
+
+      await itemService.createItem(itemData);
+      handleClose();
     } catch (error) {
-      setError(error.message || 'Failed to create item');
+      setError(error.response?.data?.message || error.message || 'Failed to create item');
     } finally {
       setIsLoading(false);
     }
@@ -65,16 +74,16 @@ export default function CreateItemModal({ isOpen, onClose }) {
   if (!isAuthenticated && (showLoginModal || showSignupModal)) {
     return (
       <>
-        <LoginModal 
-          isOpen={showLoginModal} 
+        <LoginModal
+          isOpen={showLoginModal}
           onClose={() => setShowLoginModal(false)}
           onSwitchToSignup={() => {
             setShowLoginModal(false);
             setShowSignupModal(true);
           }}
         />
-        <SignupModal 
-          isOpen={showSignupModal} 
+        <SignupModal
+          isOpen={showSignupModal}
           onClose={() => setShowSignupModal(false)}
           onSwitchToLogin={() => {
             setShowSignupModal(false);
@@ -98,7 +107,7 @@ export default function CreateItemModal({ isOpen, onClose }) {
             {error}
           </div>
         )}
-        
+
         <div>
           <input
             type="text"
@@ -109,7 +118,7 @@ export default function CreateItemModal({ isOpen, onClose }) {
             required
           />
         </div>
-        
+
         <div>
           <textarea
             placeholder="Description"
@@ -119,7 +128,7 @@ export default function CreateItemModal({ isOpen, onClose }) {
             required
           />
         </div>
-        
+
         <div>
           <input
             type="number"
@@ -132,7 +141,7 @@ export default function CreateItemModal({ isOpen, onClose }) {
             required
           />
         </div>
-        
+
         <div>
           <select
             value={formData.category}
@@ -177,7 +186,7 @@ export default function CreateItemModal({ isOpen, onClose }) {
             />
           </div>
         </div>
-        
+
         <button
           type="submit"
           disabled={isLoading}

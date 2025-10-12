@@ -10,7 +10,7 @@ export const authService = {
     });
     return response.data;
   },
-  
+
   register: async (username, email, password, confirmPassword) => {
     const response = await axios.post(`${API_BASE_URL}/user/register`, {
       username,
@@ -20,16 +20,16 @@ export const authService = {
     });
     return response.data;
   },
-  
+
   getUser: () => {
     const user = localStorage.getItem('user');
     return user ? JSON.parse(user) : null;
   },
-  
+
   isAuthenticated: () => {
     return !!localStorage.getItem('token');
   },
-  
+
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');

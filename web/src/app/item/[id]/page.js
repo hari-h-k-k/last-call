@@ -24,8 +24,12 @@ export default function ItemDetailsPage() {
     if (timeDiff <= 0) return 'Closed';
     
     const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
     
+    if (hours > 48) {
+      return closingDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+    }
+    
+    const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
     return `${hours}h ${minutes}m`;
   };
 
@@ -148,8 +152,8 @@ export default function ItemDetailsPage() {
                 <span className="text-amber-400 font-bold text-xl">{formatPrice(item.startingPrice)}</span>
               </div>
               <div className="flex justify-between text-lg">
-                <span className="text-slate-400">Registration Status</span>
-                <span className={`font-medium ${registrationClosed ? 'text-red-400' : 'text-green-400'}`}>
+                <span className="text-slate-400">Registration Closes</span>
+                <span className="font-medium text-red-400">
                   {registrationClosed ? 'Closed' : formatTimeLeft(item.registrationClosingDate)}
                 </span>
               </div>
@@ -171,7 +175,12 @@ export default function ItemDetailsPage() {
                   Register for Auction
                 </button>
               )}
-              {registered && (
+              {registered && !registrationClosed && (
+                <button className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold text-lg transition-colors">
+                  Waiting for Auction
+                </button>
+              )}
+              {registered && registrationClosed && (
                 <button className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold text-lg transition-colors">
                   View Auction Room
                 </button>

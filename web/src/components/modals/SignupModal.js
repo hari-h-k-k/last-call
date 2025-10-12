@@ -1,10 +1,10 @@
 'use client';
-import { useState } from 'react';
+import {useState} from 'react';
 import Modal from '../ui/Modal';
-import { authService } from '../../services/authService';
+import {authService} from '../../services/authService';
 
-export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
-  const [formData, setFormData] = useState({ username: '', email: '', password: '', confirmPassword: '' });
+export default function SignupModal({isOpen, onClose, onSwitchToLogin}) {
+  const [formData, setFormData] = useState({username: '', email: '', password: '', confirmPassword: ''});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -14,10 +14,10 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
       setError('Passwords do not match');
       return;
     }
-    
+
     setIsLoading(true);
     setError('');
-    
+
     try {
       const response = await authService.register(
         formData.username,
@@ -27,7 +27,7 @@ export default function SignupModal({ isOpen, onClose, onSwitchToLogin }) {
       );
       if (response.success) {
         onSwitchToLogin();
-        setFormData({ username: '', email: '', password: '', confirmPassword: '' });
+        setFormData({username: '', email: '', password: '', confirmPassword: ''});
       } else {
         setError(response.message || 'Registration failed');
       }

@@ -2,6 +2,7 @@ package com.last.call.itemservice.controller;
 
 import com.last.call.itemservice.dto.ApiResponse;
 import com.last.call.itemservice.dto.CategoryWithCountDto;
+import com.last.call.itemservice.dto.CreateItemRequestDto;
 import com.last.call.itemservice.dto.ItemWithSubscriptionDto;
 import com.last.call.itemservice.entity.Item;
 import com.last.call.itemservice.enums.ItemCategory;
@@ -29,22 +30,35 @@ public class ItemController {
     @Autowired
     private ItemSubscriberService itemSubscriberService;
 
-    @PostMapping("/place-item")
-    public ResponseEntity<ApiResponse<Item>> placeItem(@RequestBody Item item) {
+    @PostMapping("/create-item")
+    public ResponseEntity<ApiResponse<Item>> placeItem(
+            @RequestBody CreateItemRequestDto request,
+            @RequestHeader(value = "X-User-Id") String userId) {
+        
+        Item item = new Item(
+            request.getTitle(),
+            request.getDescription(),
+            Long.parseLong(userId),
+            request.getStartingPrice(),
+            request.getCategory(),
+            request.getRegistrationClosingDate(),
+            request.getAuctionStartDate()
+        );
+        
         Item savedItem = itemService.saveItem(item);
         return ResponseBuilder.success(savedItem, "Item created successfully");
     }
 
-    @PutMapping("/update-item/{itemId}")
-    public ResponseEntity<ApiResponse<Item>> updateItem(
-            @PathVariable String itemId,
-            @RequestBody Item item,
-            @RequestHeader(value = "X-User-Id") String userId) {
-
-        Long userIdLong = Long.parseLong(userId);
-        Item updatedItem = itemService.updateItem(Long.parseLong(itemId), userIdLong, item);
-        return ResponseBuilder.success(updatedItem, "Item updated successfully");
-    }
+//    @PutMapping("/update-item/{itemId}")
+//    public ResponseEntity<ApiResponse<Item>> updateItem(
+//            @PathVariable String itemId,
+//            @RequestBody Item item,
+//            @RequestHeader(value = "X-User-Id") String userId) {
+//
+//        Long userIdLong = Long.parseLong(userId);
+//        Item updatedItem = itemService.updateItem(Long.parseLong(itemId), userIdLong, item);
+//        return ResponseBuilder.success(updatedItem, "Item updated successfully");
+//    }
 
     @GetMapping({"/{itemId}"})
     public ResponseEntity<ApiResponse<ItemWithSubscriptionDto>> getItem(
@@ -62,22 +76,14 @@ public class ItemController {
         return ResponseBuilder.success(itemWithSubscriptionDto, "Item retrieved successfully");
     }
 
-    @GetMapping("/my-items")
-    public ResponseEntity<ApiResponse<List<Item>>> getMyItems(
-            @RequestHeader(value = "X-User-Id") String userId) {
-        
-        Long userIdLong = Long.parseLong(userId);
-        List<Item> items = itemService.getItemsBySellerId(userIdLong);
-        return ResponseBuilder.success(items, "User items retrieved successfully");
-    }
-
-    @GetMapping("/get-upcoming-items")
-    public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> getUpcomingItems(
-            @RequestHeader(value = "X-User-Id", required = false) String userId) {
-        
-        List<ItemWithSubscriptionDto> items = itemService.getUpcomingItemsWithSubscription(userId);
-        return ResponseBuilder.success(items, "Upcoming items retrieved successfully");
-    }
+//    @GetMapping("/my-items")
+//    public ResponseEntity<ApiResponse<List<Item>>> getMyItems(
+//            @RequestHeader(value = "X-User-Id") String userId) {
+//
+//        Long userIdLong = Long.parseLong(userId);
+//        List<Item> items = itemService.getItemsBySellerId(userIdLong);
+//        return ResponseBuilder.success(items, "User items retrieved successfully");
+//    }
 
     @PutMapping("/item-subscribe")
     public ResponseEntity<ApiResponse<Void>> itemSubscribe(
@@ -92,42 +98,42 @@ public class ItemController {
     public ResponseEntity<ApiResponse<Void>> itemUnsubscribe(
             @RequestParam String itemId,
             @RequestHeader(value = "X-User-Id") String userId) {
-        
+
         itemService.unsubscribe(Long.parseLong(itemId), userId);
         return ResponseBuilder.success(null, "Successfully unsubscribed from item");
     }
 
-    @PostMapping("/add-tag")
-    public ResponseEntity<ApiResponse<Void>> addTag(
-            @RequestParam String itemId,
-            @RequestParam String tagName,
-            @RequestHeader(value = "X-User-Id", required = false) String userId) {
-        
-        Long userIdLong = Long.parseLong(userId != null ? userId : "1");
-        itemTagService.addTag(Long.parseLong(itemId), tagName, userIdLong);
-        return ResponseBuilder.success(null, "Tag added successfully");
-    }
+//    @PostMapping("/add-tag")
+//    public ResponseEntity<ApiResponse<Void>> addTag(
+//            @RequestParam String itemId,
+//            @RequestParam String tagName,
+//            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+//
+//        Long userIdLong = Long.parseLong(userId != null ? userId : "1");
+//        itemTagService.addTag(Long.parseLong(itemId), tagName, userIdLong);
+//        return ResponseBuilder.success(null, "Tag added successfully");
+//    }
+//
+//    @DeleteMapping("/remove-tag")
+//    public ResponseEntity<ApiResponse<Void>> removeTag(
+//            @RequestParam String itemId,
+//            @RequestParam String tagName,
+//            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+//
+//        Long userIdLong = Long.parseLong(userId != null ? userId : "1");
+//        itemTagService.removeTag(Long.parseLong(itemId), tagName, userIdLong);
+//        return ResponseBuilder.success(null, "Tag removed successfully");
+//    }
 
-    @DeleteMapping("/remove-tag")
-    public ResponseEntity<ApiResponse<Void>> removeTag(
-            @RequestParam String itemId,
-            @RequestParam String tagName,
-            @RequestHeader(value = "X-User-Id", required = false) String userId) {
-        
-        Long userIdLong = Long.parseLong(userId != null ? userId : "1");
-        itemTagService.removeTag(Long.parseLong(itemId), tagName, userIdLong);
-        return ResponseBuilder.success(null, "Tag removed successfully");
-    }
-
-    @DeleteMapping("/remove-item/{itemId}")
-    public ResponseEntity<ApiResponse<Void>> removeItem(
-            @PathVariable String itemId,
-            @RequestHeader(value = "X-User-Id") String userId) {
-        
-        Long userIdLong = Long.parseLong(userId);
-        itemService.deleteItem(Long.parseLong(itemId), userIdLong);
-        return ResponseBuilder.success(null, "Item removed successfully");
-    }
+//    @DeleteMapping("/remove-item/{itemId}")
+//    public ResponseEntity<ApiResponse<Void>> removeItem(
+//            @PathVariable String itemId,
+//            @RequestHeader(value = "X-User-Id") String userId) {
+//
+//        Long userIdLong = Long.parseLong(userId);
+//        itemService.deleteItem(Long.parseLong(itemId), userIdLong);
+//        return ResponseBuilder.success(null, "Item removed successfully");
+//    }
 
     @GetMapping("/categories")
     public ResponseEntity<ApiResponse<List<CategoryWithCountDto>>> getCategories() {
@@ -146,13 +152,13 @@ public class ItemController {
         return ResponseBuilder.success(items, "Search completed successfully");
     }
 
-    @GetMapping("/subscribed-items")
-    public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> getSubscribedItems(
-            @RequestHeader(value = "X-User-Id") String userId) {
-
-        List<ItemWithSubscriptionDto> items = itemSubscriberService.getSubscribedItems(userId);
-        return ResponseBuilder.success(items, "Subscribed items retrieved successfully");
-    }
+//    @GetMapping("/subscribed-items")
+//    public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> getSubscribedItems(
+//            @RequestHeader(value = "X-User-Id") String userId) {
+//
+//        List<ItemWithSubscriptionDto> items = itemSubscriberService.getSubscribedItems(userId);
+//        return ResponseBuilder.success(items, "Subscribed items retrieved successfully");
+//    }
 
     @GetMapping("/last-call-to-register")
     public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> getLastCallToRegister(

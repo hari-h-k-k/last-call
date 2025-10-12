@@ -22,12 +22,18 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     @Query("SELECT i FROM Item i WHERE i.registrationClosingDate > :currentDate")
     List<Item> findActiveItems(@Param("currentDate") Date currentDate);
     
-    @Query("SELECT i FROM Item i LEFT JOIN i.tags t WHERE " +
+    @Query("SELECT DISTINCT i FROM Item i LEFT JOIN i.tags t WHERE " +
            "LOWER(i.title) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(i.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(i.category) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(t.tag) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
-           "ORDER BY i.title")
+           "ORDER BY " +
+           "CASE " +
+           "WHEN LOWER(i.title) LIKE LOWER(CONCAT('%', :searchTerm, '%')) THEN 1 " +
+           "WHEN LOWER(i.description) LIKE LOWER(CONCAT('%', :searchTerm, '%')) THEN 2 " +
+           "WHEN LOWER(i.category) LIKE LOWER(CONCAT('%', :searchTerm, '%')) THEN 3 " +
+           "WHEN LOWER(t.tag) LIKE LOWER(CONCAT('%', :searchTerm, '%')) THEN 4 " +
+           "ELSE 5 END, i.title")
     List<Item> searchItems(@Param("searchTerm") String searchTerm);
     
     @Query("SELECT i.category, COUNT(i) FROM Item i GROUP BY i.category")

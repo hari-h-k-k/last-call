@@ -1,10 +1,10 @@
 'use client';
-import { useState } from 'react';
+import {useState} from 'react';
 import Modal from '../ui/Modal';
-import { authService } from '../../services/authService';
+import {authService} from '../../services/authService';
 
-export default function LoginModal({ isOpen, onClose, onSwitchToSignup, onSuccess }) {
-  const [formData, setFormData] = useState({ usernameOrEmail: '', password: '' });
+export default function LoginModal({isOpen, onClose, onSwitchToSignup, onSuccess}) {
+  const [formData, setFormData] = useState({usernameOrEmail: '', password: ''});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -12,7 +12,7 @@ export default function LoginModal({ isOpen, onClose, onSwitchToSignup, onSucces
     e.preventDefault();
     setIsLoading(true);
     setError('');
-    
+
     try {
       const response = await authService.login(formData.usernameOrEmail, formData.password);
       if (response.success && response.subject.token) {
