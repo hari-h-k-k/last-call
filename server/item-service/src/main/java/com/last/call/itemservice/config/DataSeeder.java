@@ -202,6 +202,7 @@ public class DataSeeder {
             itemSubscriberService.register(savedCollect1, "5");
             itemSubscriberService.register(savedHouse1, "2");
             itemSubscriberService.register(savedApt1, "3");
+            itemSubscriberService.register(savedApt1, "2");
             itemSubscriberService.register(savedJewelry1, "2");
             itemSubscriberService.register(savedJewelry1, "4");
             itemSubscriberService.register(savedLastCall1, "3");

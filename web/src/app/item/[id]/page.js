@@ -250,7 +250,7 @@ export default function ItemDetailsPage() {
                     onClick={handleViewAuction}
                     className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold text-lg transition-colors"
                   >
-                    View Auction Room
+                    Join Auction
                   </button>
                   <button
                     onClick={() => setShowExitModal(true)}
@@ -297,17 +297,17 @@ export default function ItemDetailsPage() {
           </div>
         </div>
       </div>
-      
+
       <ConfirmModal
         isOpen={showUnregisterModal}
         onClose={() => setShowUnregisterModal(false)}
         onConfirm={handleUnregister}
         title="Unregister from Auction"
-        message="Are you sure you want to unregister from this auction? You can re-register before the registration closes."
+        message="Are you sure you want to unregister from this auction? You won't be able to participate in the bidding."
         confirmText="Unregister"
         confirmButtonClass="bg-red-500 hover:bg-red-600"
       />
-      
+
       <ConfirmModal
         isOpen={showExitModal}
         onClose={() => setShowExitModal(false)}

@@ -30,6 +30,10 @@ spring:
                 - Path=/room/**
               filters:
                 - StripPrefix=1
+            - id: room-websocket
+              uri: ${ROOM_SERVICE_URL:ws://localhost:8083}
+              predicates:
+                - Path=/ws-auction/**
 
 
 jwt:
