@@ -42,7 +42,6 @@ export default function ItemDetailsPage() {
     const fetchItem = async () => {
       try {
         const response = await itemService.getItemById(id);
-        console.log(response)
         setItem(response.subject.item);
         setRegistered(response.subject.registered || false);
       } catch (error) {
@@ -89,9 +88,6 @@ export default function ItemDetailsPage() {
 
   const registrationClosed = new Date(item.registrationClosingDate) <= new Date();
   const auctionStarted = new Date(item.auctionStartDate) <= new Date();
-  console.log("registrationClosed: " + registrationClosed)
-  console.log("auctionStarted: " + auctionStarted)
-  console.log("Registered: " + registered)
 
   const handleRegister = async () => {
     setIsRegistering(true);
@@ -155,7 +151,6 @@ export default function ItemDetailsPage() {
       <Navbar />
       <div className="max-w-7xl mx-auto px-4 py-8 pt-24">
         <div className="grid lg:grid-cols-2 gap-12">
-          {/* Image Gallery */}
           <div className="space-y-4">
             <div className="relative">
               <img 
@@ -190,7 +185,6 @@ export default function ItemDetailsPage() {
             </div>
           </div>
 
-          {/* Item Details */}
           <div className="space-y-6">
             <div className="flex justify-between items-start">
               <h1 className="text-4xl font-bold text-white">{item.title}</h1>
@@ -236,23 +230,12 @@ export default function ItemDetailsPage() {
             </div>
 
             <div className="space-y-3">
-              {!registrationClosed && !registered && (
-                <>
-                  <button 
-                    onClick={handleRegister}
-                    disabled={isRegistering}
-                    className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 py-3 rounded-lg font-bold text-lg transition-colors disabled:opacity-50"
-                  >
-                    {isRegistering ? 'Registering...' : 'Register for Auction'}
-                  </button>
-                </>
-              )}
-              {!auctionStarted && registered && (
+              {registered && !auctionStarted && (
                 <>
                   <button className="w-full bg-green-500 text-white py-3 rounded-lg font-bold text-lg">
                     Waiting for Auction
                   </button>
-                  <button 
+                  <button
                     onClick={() => setShowUnregisterModal(true)}
                     disabled={isRegistering}
                     className="w-full border border-red-500 hover:border-red-400 text-red-400 py-3 rounded-lg font-medium text-lg transition-colors disabled:opacity-50"
@@ -261,15 +244,15 @@ export default function ItemDetailsPage() {
                   </button>
                 </>
               )}
-              {auctionStarted && registered && (
+              {registered && auctionStarted && (
                 <>
-                  <button 
+                  <button
                     onClick={handleViewAuction}
                     className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold text-lg transition-colors"
                   >
                     View Auction Room
                   </button>
-                  <button 
+                  <button
                     onClick={() => setShowExitModal(true)}
                     disabled={isRegistering}
                     className="w-full border border-red-500 hover:border-red-400 text-red-400 py-3 rounded-lg font-medium text-lg transition-colors disabled:opacity-50"
@@ -278,20 +261,32 @@ export default function ItemDetailsPage() {
                   </button>
                 </>
               )}
-              {auctionStarted && !registered && (
-                <button 
-                  onClick={handleSpectate}
-                  className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-lg font-bold text-lg transition-colors"
-                >
-                  Spectate Auction
-                </button>
+
+              {!registered && !registrationClosed && (
+                <>
+                  <button
+                    onClick={handleRegister}
+                    disabled={isRegistering}
+                    className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 py-3 rounded-lg font-bold text-lg transition-colors disabled:opacity-50"
+                  >
+                    {isRegistering ? 'Registering...' : 'Register for Auction'}
+                  </button>
+                </>
               )}
-              {!auctionStarted && registrationClosed && !registered && (
+              {!registered && registrationClosed && !auctionStarted && (
                 <button className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-lg font-bold text-lg transition-colors">
                   Waiting for Auction
                 </button>
               )}
-              <button 
+              {!registered && auctionStarted && (
+                <button
+                  onClick={handleSpectate}
+                  className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-bold text-lg transition-colors"
+                >
+                  Spectate Auction
+                </button>
+              )}
+              <button
                 onClick={handleWatchlist}
                 disabled={isWatchlisting}
                 className="w-full border border-slate-600 hover:border-slate-500 text-slate-300 py-3 rounded-lg font-medium text-lg transition-colors disabled:opacity-50"
@@ -308,9 +303,9 @@ export default function ItemDetailsPage() {
         onClose={() => setShowUnregisterModal(false)}
         onConfirm={handleUnregister}
         title="Unregister from Auction"
-        message="Are you sure you want to unregister from this auction? You will lose your spot and may not be able to register again if registration closes."
+        message="Are you sure you want to unregister from this auction? You can re-register before the registration closes."
         confirmText="Unregister"
-        isLoading={isRegistering}
+        confirmButtonClass="bg-red-500 hover:bg-red-600"
       />
       
       <ConfirmModal
@@ -318,9 +313,9 @@ export default function ItemDetailsPage() {
         onClose={() => setShowExitModal(false)}
         onConfirm={handleExitAuction}
         title="Exit Auction"
-        message="Are you sure you want to exit this auction? You will no longer be able to participate in the bidding."
+        message="Are you sure you want to exit this auction? This action cannot be undone and you will not be able to participate."
         confirmText="Exit Auction"
-        isLoading={isRegistering}
+        confirmButtonClass="bg-red-500 hover:bg-red-600"
       />
     </div>
   );

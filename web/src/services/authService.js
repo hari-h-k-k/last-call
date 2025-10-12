@@ -1,10 +1,8 @@
-import axios from 'axios';
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+import apiClient from '../lib/axios';
 
 export const authService = {
   login: async (usernameOrEmail, password) => {
-    const response = await axios.post(`${API_BASE_URL}/user/login`, {
+    const response = await apiClient.post('/user/login', {
       usernameOrEmail,
       password
     });
@@ -12,7 +10,7 @@ export const authService = {
   },
 
   register: async (username, email, password, confirmPassword) => {
-    const response = await axios.post(`${API_BASE_URL}/user/register`, {
+    const response = await apiClient.post('/user/register', {
       username,
       email,
       password,

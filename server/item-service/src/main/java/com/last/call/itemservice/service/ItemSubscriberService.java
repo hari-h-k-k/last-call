@@ -26,44 +26,44 @@ public class ItemSubscriberService {
     private ItemValidationService itemValidationService;
 
     @Transactional
-    public void subscribe(Item item, String userId) {
-        itemValidationService.validateSubscriptionEligibility(item, userId);
-        
-        boolean alreadySubscribed = item.getSubscribers() != null && 
-            item.getSubscribers().stream().anyMatch(sub -> sub.getUserId().equals(userId));
-        
-        if (alreadySubscribed) {
-            throw new IllegalArgumentException("User is already subscribed to this item");
+    public void register(Item item, String userId) {
+        itemValidationService.validateRegistrationEligibility(item, userId);
+
+        boolean alreadyRegistered = item.getSubscribers() != null &&
+                item.getSubscribers().stream().anyMatch(sub -> sub.getUserId().equals(userId));
+
+        if (alreadyRegistered) {
+            throw new IllegalArgumentException("User is already registered to this item");
         }
-        
+
         ItemSubscriber newSubscriber = new ItemSubscriber(userId, item);
         item.getSubscribers().add(newSubscriber);
         itemRepository.save(item);
     }
 
     @Transactional
-    public void unsubscribe(Item item, String userId) {
+    public void unregister(Item item, String userId) {
         if (item.getSubscribers().isEmpty()) {
-            throw new IllegalArgumentException("User is not subscribed to this item");
+            throw new IllegalArgumentException("User is not registered to this item");
         }
-        
-        boolean wasSubscribed = item.getSubscribers().removeIf(sub -> sub.getUserId().equals(userId));
-        
-        if (!wasSubscribed) {
-            throw new IllegalArgumentException("User is not subscribed to this item");
+
+        boolean wasRegistered = item.getSubscribers().removeIf(sub -> sub.getUserId().equals(userId));
+
+        if (!wasRegistered) {
+            throw new IllegalArgumentException("User is not registered to this item");
         }
-        
+
         itemRepository.save(item);
     }
 
-    public boolean isUserSubscribed(Item item, String userId) {
+    public boolean isUserRegistered(Item item, String userId) {
         return itemSubscriberRepository.existsByItemIdAndUserId(item.getId(), userId);
     }
 
-    public List<ItemWithSubscriptionDto> getSubscribedItems(String userId) {
+    public List<ItemWithSubscriptionDto> getRegisteredItems(String userId) {
         List<Item> allItems = itemRepository.findAll();
         return allItems.stream()
-                .filter(item -> isUserSubscribed(item, userId))
+                .filter(item -> isUserRegistered(item, userId))
                 .map(item -> new ItemWithSubscriptionDto(item, true)).toList();
     }
 

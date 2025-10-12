@@ -1,6 +1,6 @@
 import Modal from '../ui/Modal';
 
-export default function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', cancelText = 'Cancel', isLoading = false }) {
+export default function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmText = 'Confirm', cancelText = 'Cancel', isLoading = false, confirmButtonClass = 'bg-red-500 hover:bg-red-600' }) {
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="sm">
       <div className="text-center">
@@ -17,7 +17,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
           <button
             onClick={onConfirm}
             disabled={isLoading}
-            className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded-lg transition-colors disabled:opacity-50"
+            className={`flex-1 ${confirmButtonClass} text-white py-2 rounded-lg transition-colors disabled:opacity-50`}
           >
             {isLoading ? 'Processing...' : confirmText}
           </button>

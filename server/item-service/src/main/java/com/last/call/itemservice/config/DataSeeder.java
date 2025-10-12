@@ -196,16 +196,16 @@ public class DataSeeder {
             itemTagService.addTag(savedLastCall2.getId(), "tesla", 2L);
 
             // Add subscribers
-            itemSubscriberService.subscribe(savedArt1, "2");
-            itemSubscriberService.subscribe(savedCar1, "3");
-            itemSubscriberService.subscribe(savedMoto1, "4");
-            itemSubscriberService.subscribe(savedCollect1, "5");
-            itemSubscriberService.subscribe(savedHouse1, "2");
-            itemSubscriberService.subscribe(savedApt1, "3");
-            itemSubscriberService.subscribe(savedJewelry1, "2");
-            itemSubscriberService.subscribe(savedJewelry1, "4");
-            itemSubscriberService.subscribe(savedLastCall1, "3");
-            itemSubscriberService.subscribe(savedLastCall2, "1");
+            itemSubscriberService.register(savedArt1, "2");
+            itemSubscriberService.register(savedCar1, "3");
+            itemSubscriberService.register(savedMoto1, "4");
+            itemSubscriberService.register(savedCollect1, "5");
+            itemSubscriberService.register(savedHouse1, "2");
+            itemSubscriberService.register(savedApt1, "3");
+            itemSubscriberService.register(savedJewelry1, "2");
+            itemSubscriberService.register(savedJewelry1, "4");
+            itemSubscriberService.register(savedLastCall1, "3");
+            itemSubscriberService.register(savedLastCall2, "1");
 
             System.out.println("✅ Items seeded for all categories! (22 items with varied timing)");
         };

@@ -85,22 +85,22 @@ public class ItemController {
 //        return ResponseBuilder.success(items, "User items retrieved successfully");
 //    }
 
-    @PutMapping("/item-subscribe")
-    public ResponseEntity<ApiResponse<Void>> itemSubscribe(
-            @RequestParam String itemId,
+    @PostMapping("/{itemId}/register")
+    public ResponseEntity<ApiResponse<Void>> registerForAuction(
+            @PathVariable String itemId,
             @RequestHeader(value = "X-User-Id") String userId) {
 
-        itemService.subscribe(Long.parseLong(itemId), userId);
-        return ResponseBuilder.success(null, "Successfully subscribed to item");
+        itemService.register(Long.parseLong(itemId), userId);
+        return ResponseBuilder.success(null, "Successfully registered for auction");
     }
 
-    @PutMapping("/item-unsubscribe")
-    public ResponseEntity<ApiResponse<Void>> itemUnsubscribe(
-            @RequestParam String itemId,
+    @DeleteMapping("/{itemId}/unregister")
+    public ResponseEntity<ApiResponse<Void>> unregisterFromAuction(
+            @PathVariable String itemId,
             @RequestHeader(value = "X-User-Id") String userId) {
 
-        itemService.unsubscribe(Long.parseLong(itemId), userId);
-        return ResponseBuilder.success(null, "Successfully unsubscribed from item");
+        itemService.unregister(Long.parseLong(itemId), userId);
+        return ResponseBuilder.success(null, "Successfully unregistered from auction");
     }
 
 //    @PostMapping("/add-tag")

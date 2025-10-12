@@ -42,7 +42,7 @@ public class ItemService {
     public ItemWithSubscriptionDto getItemWithSubscription(Long itemId, String userId) {
         Item item = getItemById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + itemId));
-        return new ItemWithSubscriptionDto(item, itemSubscriberService.isUserSubscribed(item, userId));
+        return new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, userId));
     }
 
     public Item saveItem(Item item) {
@@ -108,18 +108,18 @@ public class ItemService {
         itemRepository.deleteById(id);
     }
 
-    public void subscribe(Long itemId, String userId) {
+    public void register(Long itemId, String userId) {
         Item item = getItemById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + itemId));
 
-        itemSubscriberService.subscribe(item, userId);
+        itemSubscriberService.register(item, userId);
     }
 
-    public void unsubscribe(Long itemId, String userId) {
+    public void unregister(Long itemId, String userId) {
         Item item = getItemById(itemId)
                 .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + itemId));
 
-        itemSubscriberService.unsubscribe(item, userId);
+        itemSubscriberService.unregister(item, userId);
     }
 
     public List<ItemWithSubscriptionDto> searchItems(String input, String userId) {
@@ -129,31 +129,12 @@ public class ItemService {
 
         List<Item> results = itemRepository.searchItems(input.trim());
         return results.stream()
-                .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserSubscribed(item, userId)))
+                .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, userId)))
                 .collect(java.util.stream.Collectors.toList());
     }
 
     public List<Item> getItemsBySellerId(Long sellerId) {
         return itemRepository.findBySellerId(sellerId);
-    }
-
-    public List<Item> getUpcomingItems() {
-        Date now = new Date();
-        return itemRepository.findActiveItems(now)
-                .stream()
-                .sorted((a, b) -> a.getRegistrationClosingDate().compareTo(b.getRegistrationClosingDate()))
-                .collect(java.util.stream.Collectors.toList());
-    }
-
-    public List<ItemWithSubscriptionDto> getUpcomingItemsWithSubscription(String userId) {
-        List<Item> items = getUpcomingItems();
-        return items.stream()
-                .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserSubscribed(item, userId)))
-                .collect(java.util.stream.Collectors.toList());
-    }
-
-    public ItemCategory[] getAllCategories() {
-        return ItemCategory.values();
     }
 
     public List<CategoryWithCountDto> getCategoriesWithCount() {
@@ -169,7 +150,7 @@ public class ItemService {
         
         List<Item> items = itemRepository.findItemsWithRegistrationClosingBetween(now, fortyEightHoursFromNow);
         return items.stream()
-                .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserSubscribed(item, userId)))
+                .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, userId)))
                 .collect(java.util.stream.Collectors.toList());
     }
 }
