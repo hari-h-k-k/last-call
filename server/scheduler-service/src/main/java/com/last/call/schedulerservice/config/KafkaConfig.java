@@ -1,1 +1,0 @@
-// Removed - using KafkaConsumerConfig instead
