@@ -25,12 +25,12 @@ public class ItemSchedulingListener {
         System.out.println("✅ Scheduled jobs for item ID: " + item.getId());
     }
 
-    @KafkaListener(topics = "reschedule-item-jobs")
-    public void handleRescheduleItemJobs(ItemScheduleDto item) throws SchedulerException {
-        System.out.println("📥 Received reschedule-item-jobs message for item ID: " + item.getId());
-        schedulerService.rescheduleRoomCreationJob(item);
-        System.out.println("✅ Rescheduled jobs for item ID: " + item.getId());
-    }
+//    @KafkaListener(topics = "reschedule-item-jobs")
+//    public void handleRescheduleItemJobs(ItemScheduleDto item) throws SchedulerException {
+//        System.out.println("📥 Received reschedule-item-jobs message for item ID: " + item.getId());
+//        schedulerService.rescheduleRoomCreationJob(item);
+//        System.out.println("✅ Rescheduled jobs for item ID: " + item.getId());
+//    }
 
     @KafkaListener(topics = "item-details-response")
     public void handleItemDetailsResponse(ItemDetailsDto itemDetails) {

@@ -7,12 +7,21 @@ public class ItemDetailsDto {
     private String title;
     private String description;
     private Long sellerId;
-    private Integer startingPrice;
+    private double startingPrice;
     private String category;
     private Date registrationClosingDate;
     private Date auctionStartDate;
 
-    public ItemDetailsDto() {}
+    public ItemDetailsDto(Long id, String title, String description, Long sellerId, Integer startingPrice, String category, Date registrationClosingDate, Date auctionStartDate) {
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.sellerId = sellerId;
+        this.startingPrice = startingPrice;
+        this.category = category;
+        this.registrationClosingDate = registrationClosingDate;
+        this.auctionStartDate = auctionStartDate;
+    }
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -26,8 +35,8 @@ public class ItemDetailsDto {
     public Long getSellerId() { return sellerId; }
     public void setSellerId(Long sellerId) { this.sellerId = sellerId; }
     
-    public Integer getStartingPrice() { return startingPrice; }
-    public void setStartingPrice(Integer startingPrice) { this.startingPrice = startingPrice; }
+    public double getStartingPrice() { return startingPrice; }
+    public void setStartingPrice(double startingPrice) { this.startingPrice = startingPrice; }
     
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }

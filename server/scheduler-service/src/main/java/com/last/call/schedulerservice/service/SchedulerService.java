@@ -3,7 +3,7 @@ package com.last.call.schedulerservice.service;
 import com.last.call.schedulerservice.dto.ScheduleJobRequest;
 import com.last.call.schedulerservice.dto.ItemScheduleDto;
 import com.last.call.schedulerservice.job.KafkaPublisherJob;
-import com.last.call.schedulerservice.job.RegistrationClosingJob;
+//import com.last.call.schedulerservice.job.RegistrationClosingJob;
 import com.last.call.schedulerservice.job.RoomCreationJob;
 import org.quartz.*;
 import org.slf4j.Logger;
