@@ -29,10 +29,9 @@ public class DataSeeder {
 
             Item art = new Item("Mona Lisa", "Original painting by Leonardo da Vinci, 1503-1506",
                     1L, 1000, ItemCategory.ART,
-                    new Date(now + 2 * 60 * 1000),
-                    new Date(now + 3 * 60 * 1000));
+                    new Date(now + 2 * 60 * 1000));
 
-            itemService.saveItem(art);
+            itemService.saveItem(art, new Date(now + 3 * 60 * 1000));
 
             itemSubscriberService.register(art, "2");
             itemSubscriberService.register(art, "3");

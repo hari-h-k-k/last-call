@@ -1,5 +1,6 @@
 package com.last.call.roomservice.entity;
 
+import com.last.call.roomservice.enums.RoomStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
@@ -20,18 +21,17 @@ public class Room {
 
     @NotNull
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(nullable = false, name = "start_date")
-    private Date startDate;
+    @Column(nullable = false, name = "auction_start_date")
+    private Date auctionStartDate;
 
     @NotNull
     @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false, name = "end_date")
     private Date endDate;
 
-    @NotBlank
-    @Size(max = 50)
-    @Column(nullable = false, length = 50)
-    private String status;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private RoomStatus status = RoomStatus.PENDING;
 
     @DecimalMin("0.0")
     @Column(nullable = false, name = "current_price")
@@ -54,12 +54,14 @@ public class Room {
 
     public Room() {}
 
-    public Room(Long itemId, Date startDate, Date endDate, String status, double currentPrice) {
+    public Room(Long itemId, Date auctionStartDate, Date endDate, RoomStatus status, double currentPrice) {
         this.itemId = itemId;
-        this.startDate = startDate;
+        this.auctionStartDate = auctionStartDate;
         this.endDate = endDate;
         this.status = status;
         this.currentPrice = currentPrice;
+        this.createdAt = new Date();
+        this.updatedAt = new Date();
     }
 
     public Long getId() { return id; }
@@ -68,14 +70,17 @@ public class Room {
     public Long getItemId() { return itemId; }
     public void setItemId(Long itemId) { this.itemId = itemId; }
 
-    public Date getStartDate() { return startDate; }
-    public void setStartDate(Date startDate) { this.startDate = startDate; }
+    public Date getAuctionStartDate() { return auctionStartDate; }
+    public void setAuctionStartDate(Date startDate) { this.auctionStartDate = startDate; }
 
     public Date getEndDate() { return endDate; }
     public void setEndDate(Date endDate) { this.endDate = endDate; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public RoomStatus getStatus() { return status; }
+    public void setStatus(RoomStatus status) { 
+        this.status = status;
+        this.updatedAt = new Date();
+    }
 
     public double getCurrentPrice() { return currentPrice; }
     public void setCurrentPrice(double currentPrice) { this.currentPrice = currentPrice; }

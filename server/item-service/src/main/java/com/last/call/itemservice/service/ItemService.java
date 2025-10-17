@@ -1,5 +1,6 @@
 package com.last.call.itemservice.service;
 
+import com.last.call.itemservice.client.KafkaClient;
 import com.last.call.itemservice.dto.CategoryWithCountDto;
 import com.last.call.itemservice.dto.ItemWithSubscriptionDto;
 import com.last.call.itemservice.entity.Item;
@@ -20,19 +21,16 @@ public class ItemService {
     private ItemRepository itemRepository;
 
     @Autowired
-    private ItemTagService itemTagService;
-
-    @Autowired
     private ItemSubscriberService itemSubscriberService;
 
     @Autowired
     private ItemValidationService itemValidationService;
 
     @Autowired
-    private SchedulerServiceClient schedulerServiceClient;
+    private KafkaClient schedulerServiceClient;
 
-    public Optional<Item> getItemById(Long id) {
-        return itemRepository.findById(id);
+    public Item getItemById(Long id) {
+        return itemRepository.findById(id).orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + id));
     }
 
     public List<Item> getAllItems() {
@@ -40,18 +38,17 @@ public class ItemService {
     }
 
     public ItemWithSubscriptionDto getItemWithSubscription(Long itemId, String userId) {
-        Item item = getItemById(itemId)
-                .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + itemId));
+        Item item = getItemById(itemId);
         return new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, userId));
     }
 
-    public Item saveItem(Item item) {
-        itemValidationService.validateItemDates(item);
+    public Item saveItem(Item item, Date auctionStartDate) {
+        itemValidationService.validateItemDates(item, auctionStartDate);
         itemValidationService.validateStartingPrice(item.getStartingPrice());
         Item savedItem = itemRepository.save(item);
         
         try {
-            schedulerServiceClient.scheduleItemJobs(savedItem);
+            schedulerServiceClient.scheduleItemJobs(savedItem, auctionStartDate);
         } catch (Exception e) {
             // Log error but don't fail the save operation
             System.err.println("Failed to schedule jobs for item " + savedItem.getId() + ": " + e.getMessage());
@@ -60,48 +57,14 @@ public class ItemService {
         return savedItem;
     }
 
-    public Item updateItem(Long id, Long userId, Item updatedItem) {
-        Item item = itemRepository.findById(id)
-                .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + id));
-
-        itemValidationService.validateItemOwnership(item, userId);
-        itemValidationService.validateItemNotStarted(item);
-        itemValidationService.validateItemDates(updatedItem);
-        itemValidationService.validateStartingPrice(updatedItem.getStartingPrice());
-
-        boolean datesChanged = !item.getRegistrationClosingDate().equals(updatedItem.getRegistrationClosingDate()) ||
-                              !item.getAuctionStartDate().equals(updatedItem.getAuctionStartDate());
-
-        item.setTitle(updatedItem.getTitle());
-        item.setDescription(updatedItem.getDescription());
-        item.setStartingPrice(updatedItem.getStartingPrice());
-        item.setCategory(updatedItem.getCategory());
-        item.setRegistrationClosingDate(updatedItem.getRegistrationClosingDate());
-        item.setAuctionStartDate(updatedItem.getAuctionStartDate());
-
-        Item savedItem = itemRepository.save(item);
-        
-        if (datesChanged) {
-            try {
-                schedulerServiceClient.rescheduleItemJobs(savedItem);
-            } catch (Exception e) {
-                System.err.println("Failed to reschedule jobs for item " + savedItem.getId() + ": " + e.getMessage());
-            }
-        }
-        
-        return savedItem;
-    }
-
     public void register(Long itemId, String userId) {
-        Item item = getItemById(itemId)
-                .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + itemId));
+        Item item = getItemById(itemId);
 
         itemSubscriberService.register(item, userId);
     }
 
     public void unregister(Long itemId, String userId) {
-        Item item = getItemById(itemId)
-                .orElseThrow(() -> new ItemNotFoundException("Item not found with id: " + itemId));
+        Item item = getItemById(itemId);
 
         itemSubscriberService.unregister(item, userId);
     }

@@ -3,6 +3,7 @@ package com.last.call.roomservice.service;
 import com.last.call.roomservice.dto.BidUpdateMessage;
 import com.last.call.roomservice.entity.Bid;
 import com.last.call.roomservice.entity.Room;
+import com.last.call.roomservice.enums.RoomStatus;
 import com.last.call.roomservice.repository.BidRepository;
 import com.last.call.roomservice.repository.RoomRepository;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -33,13 +34,13 @@ public class RoomService {
     
     public List<Room> getLiveAuctions() {
         Date now = new Date();
-        return roomRepository.findByStatusAndStartDateBefore("ACTIVE", now);
+        return roomRepository.findByStatusAndAuctionStartDateBefore(RoomStatus.ACTIVE, now);
     }
     
     public List<Room> getAuctionOfTheDay() {
         Date now = new Date();
         Date endOfDay = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-        return roomRepository.findByStatusAndStartDateBetween("PENDING", now, endOfDay);
+        return roomRepository.findByStatusAndAuctionStartDateBetween(RoomStatus.PENDING, now, endOfDay);
     }
 
     @Transactional
@@ -72,5 +73,16 @@ public class RoomService {
         messagingTemplate.convertAndSend("/topic/currentBid/" + roomId, message);
 
         return bid;
+    }
+
+    public Room createRoom(Long itemId, Double startingPrice, Date auctionStartDate) {
+        Room room = new Room();
+        room.setItemId(itemId);
+        room.setCurrentPrice(startingPrice);
+        room.setAuctionStartDate(auctionStartDate);
+        room.setStatus(RoomStatus.PENDING);
+        room.setCreatedAt(new java.util.Date());
+        room.setUpdatedAt(new java.util.Date());
+        return roomRepository.save(room);
     }
 }

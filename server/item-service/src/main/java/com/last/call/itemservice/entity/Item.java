@@ -42,10 +42,10 @@ public class Item {
     @Column(nullable = false, name = "registration_closing_date")
     private Date registrationClosingDate;
 
-    @NotNull
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(nullable = false, name = "auction_start_date")
-    private Date auctionStartDate;
+//    @NotNull
+//    @Temporal(TemporalType.TIMESTAMP)
+//    @Column(nullable = false, name = "auction_start_date")
+//    private Date auctionStartDate;
 
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<ItemTag> tags;
@@ -59,7 +59,7 @@ public class Item {
     }
 
     public Item(String title, String description, Long sellerId, double startingPrice, 
-                ItemCategory category, Date registrationClosingDate, Date auctionStartDate) {
+                ItemCategory category, Date registrationClosingDate) {
         this();
         this.title = title;
         this.description = description;
@@ -67,7 +67,7 @@ public class Item {
         this.startingPrice = startingPrice;
         this.category = category;
         this.registrationClosingDate = registrationClosingDate;
-        this.auctionStartDate = auctionStartDate;
+//        this.auctionStartDate = auctionStartDate;
     }
 
     public Long getId() { return id; }
@@ -91,8 +91,8 @@ public class Item {
     public Date getRegistrationClosingDate() { return registrationClosingDate; }
     public void setRegistrationClosingDate(Date registrationClosingDate) { this.registrationClosingDate = registrationClosingDate; }
 
-    public Date getAuctionStartDate() { return auctionStartDate; }
-    public void setAuctionStartDate(Date auctionStartDate) { this.auctionStartDate = auctionStartDate; }
+//    public Date getAuctionStartDate() { return auctionStartDate; }
+//    public void setAuctionStartDate(Date auctionStartDate) { this.auctionStartDate = auctionStartDate; }
 
     public List<ItemTag> getTags() { return tags; }
     public void setTags(List<ItemTag> tags) { this.tags = tags; }
@@ -110,7 +110,6 @@ public class Item {
                 ", startingPrice=" + startingPrice +
                 ", category=" + category +
                 ", registrationClosingDate=" + registrationClosingDate +
-                ", auctionStartDate=" + auctionStartDate +
                 '}';
     }
 }

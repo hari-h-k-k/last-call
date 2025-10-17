@@ -1,9 +1,6 @@
 package com.last.call.schedulerservice.service;
 
-import com.last.call.schedulerservice.dto.ScheduleJobRequest;
-import com.last.call.schedulerservice.dto.ItemScheduleDto;
-import com.last.call.schedulerservice.job.KafkaPublisherJob;
-import com.last.call.schedulerservice.job.RegistrationClosingJob;
+import com.last.call.schedulerservice.dto.ItemRoomCreationDto;
 import com.last.call.schedulerservice.job.RoomCreationJob;
 import org.quartz.*;
 import org.slf4j.Logger;
@@ -21,18 +18,19 @@ public class SchedulerService {
         this.scheduler = scheduler;
     }
     
-    public void scheduleRoomCreationJob(ItemScheduleDto item) throws SchedulerException {
-        logger.info("Scheduling room creation job for item ID: {} at {}", item.getId(), item.getRegistrationClosingDate());
+    public void scheduleRoomCreationJob(ItemRoomCreationDto itemRoomCreationDto) throws SchedulerException {
+        logger.info("Scheduling room creation job for item ID: {} at {}", itemRoomCreationDto.getId(), itemRoomCreationDto.getRegistrationClosingDate());
 
         JobDetail job = JobBuilder.newJob(RoomCreationJob.class)
-                .withIdentity("roomCreation_" + item.getId(), "itemJobs")
-                .usingJobData("itemId", item.getId())
-                .usingJobData("itemTitle", item.getTitle())
+                .withIdentity("roomCreation_" + itemRoomCreationDto.getId(), "itemJobs")
+                .usingJobData("itemId", itemRoomCreationDto.getId())
+                .usingJobData("startingPrice", itemRoomCreationDto.getStartingPrice())
+                .usingJobData("auctionStartDate", itemRoomCreationDto.getAuctionStartDate().getTime())
                 .build();
 
         Trigger trigger = TriggerBuilder.newTrigger()
-                .withIdentity("roomCreationTrigger_" + item.getId(), "itemTriggers")
-                .startAt(item.getRegistrationClosingDate())
+                .withIdentity("roomCreationTrigger_" + itemRoomCreationDto.getId(), "itemTriggers")
+                .startAt(itemRoomCreationDto.getRegistrationClosingDate())
                 .build();
 
         scheduler.scheduleJob(job, trigger);

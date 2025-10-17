@@ -1,22 +1,22 @@
-package com.last.call.itemservice.dto;
+package com.last.call.roomservice.dto;
 
 import java.util.Date;
 
-public class ItemScheduleDto {
+public class ItemRoomCreationDto {
     private Long id;
-    private String title;
+    private Double startingPrice;
     private Date registrationClosingDate;
     private Date auctionStartDate;
 
-    public ItemScheduleDto(Long id, String title, Date registrationClosingDate, Date auctionStartDate) {
+    public ItemRoomCreationDto(Long id, Double startingPrice, Date registrationClosingDate, Date auctionStartDate) {
         this.id = id;
-        this.title = title;
+        this.startingPrice = startingPrice;
         this.registrationClosingDate = registrationClosingDate;
         this.auctionStartDate = auctionStartDate;
     }
 
     public Long getId() { return id; }
-    public String getTitle() { return title; }
+    public Double getStartingPrice() { return startingPrice; }
     public Date getRegistrationClosingDate() { return registrationClosingDate; }
     public Date getAuctionStartDate() { return auctionStartDate; }
 }

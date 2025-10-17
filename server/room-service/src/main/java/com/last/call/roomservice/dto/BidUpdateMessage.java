@@ -1,6 +1,9 @@
 package com.last.call.roomservice.dto;
 
 import com.last.call.roomservice.entity.Bid;
+import com.last.call.roomservice.entity.Room;
+import com.last.call.roomservice.enums.RoomStatus;
+
 import java.util.Date;
 import java.util.List;
 
@@ -12,7 +15,7 @@ public class BidUpdateMessage {
     private Date newEndDate;
     private Double myBid;
     private Long winnerId;
-    private String roomStatus;
+    private RoomStatus roomStatus;
 
     public BidUpdateMessage() {}
 
@@ -37,6 +40,6 @@ public class BidUpdateMessage {
     public Long getWinnerId() { return winnerId; }
     public void setWinnerId(Long winnerId) { this.winnerId = winnerId; }
 
-    public String getRoomStatus() { return roomStatus; }
-    public void setRoomStatus(String roomStatus) { this.roomStatus = roomStatus; }
+    public RoomStatus getRoomStatus() { return roomStatus; }
+    public void setRoomStatus(RoomStatus roomStatus) { this.roomStatus = roomStatus; }
 }

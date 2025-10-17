@@ -1,6 +1,7 @@
 package com.last.call.roomservice.repository;
 
 import com.last.call.roomservice.entity.Room;
+import com.last.call.roomservice.enums.RoomStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,7 +16,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     
     Optional<Room> findByItemId(Long itemId);
     
-    List<Room> findByStatus(String status);
+    List<Room> findByStatus(RoomStatus status);
     
     List<Room> findByStartDateBetween(Date startDate, Date endDate);
     
@@ -24,7 +25,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     
     List<Room> findByWinnerId(Long winnerId);
     
-    List<Room> findByStatusAndStartDateBefore(String status, Date date);
+    List<Room> findByStatusAndAuctionStartDateBefore(RoomStatus status, Date date);
     
-    List<Room> findByStatusAndStartDateBetween(String status, Date startDate, Date endDate);
+    List<Room> findByStatusAndAuctionStartDateBetween(RoomStatus status, Date startDate, Date endDate);
 }

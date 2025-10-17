@@ -16,9 +16,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
     List<Item> findBySellerId(Long sellerId);
     
     List<Item> findByCategory(ItemCategory category);
-    
-    List<Item> findByAuctionStartDateBetween(Date startDate, Date endDate);
-    
+
     @Query("SELECT i FROM Item i WHERE i.registrationClosingDate > :currentDate")
     List<Item> findActiveItems(@Param("currentDate") Date currentDate);
 

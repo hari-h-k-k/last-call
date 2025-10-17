@@ -8,7 +8,7 @@ import java.util.Date;
 @Service
 public class ItemValidationService {
 
-    public void validateItemDates(Item item) {
+    public void validateItemDates(Item item, Date auctionStartDate) {
         Date now = new Date();
         
 //        if (item.getRegistrationClosingDate().before(now)) {
@@ -19,7 +19,7 @@ public class ItemValidationService {
 //            throw new IllegalArgumentException("Auction start date cannot be in the past");
 //        }
         
-        if (item.getRegistrationClosingDate().after(item.getAuctionStartDate())) {
+        if (item.getRegistrationClosingDate().after(auctionStartDate)) {
             throw new IllegalArgumentException("Registration closing date cannot be after auction start date");
         }
     }
