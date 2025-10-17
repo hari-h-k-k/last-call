@@ -24,9 +24,8 @@ public class Room {
     @Column(nullable = false, name = "auction_start_date")
     private Date auctionStartDate;
 
-    @NotNull
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(nullable = false, name = "end_date")
+    @Column(name = "end_date")
     private Date endDate;
 
     @Enumerated(EnumType.STRING)

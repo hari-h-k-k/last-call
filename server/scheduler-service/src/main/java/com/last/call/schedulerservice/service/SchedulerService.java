@@ -1,7 +1,7 @@
 package com.last.call.schedulerservice.service;
 
-import com.last.call.schedulerservice.dto.ItemRoomCreationDto;
 import com.last.call.schedulerservice.job.RoomCreationJob;
+import com.last.call.shared.dto.ItemRoomCreationDto;
 import org.quartz.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,17 +19,17 @@ public class SchedulerService {
     }
     
     public void scheduleRoomCreationJob(ItemRoomCreationDto itemRoomCreationDto) throws SchedulerException {
-        logger.info("Scheduling room creation job for item ID: {} at {}", itemRoomCreationDto.getId(), itemRoomCreationDto.getRegistrationClosingDate());
+        logger.info("Scheduling room creation job for item ID: {} at {}", itemRoomCreationDto.getItemId(), itemRoomCreationDto.getRegistrationClosingDate());
 
         JobDetail job = JobBuilder.newJob(RoomCreationJob.class)
-                .withIdentity("roomCreation_" + itemRoomCreationDto.getId(), "itemJobs")
-                .usingJobData("itemId", itemRoomCreationDto.getId())
+                .withIdentity("roomCreation_" + itemRoomCreationDto.getItemId(), "itemJobs")
+                .usingJobData("itemId", itemRoomCreationDto.getItemId())
                 .usingJobData("startingPrice", itemRoomCreationDto.getStartingPrice())
                 .usingJobData("auctionStartDate", itemRoomCreationDto.getAuctionStartDate().getTime())
                 .build();
 
         Trigger trigger = TriggerBuilder.newTrigger()
-                .withIdentity("roomCreationTrigger_" + itemRoomCreationDto.getId(), "itemTriggers")
+                .withIdentity("roomCreationTrigger_" + itemRoomCreationDto.getItemId(), "itemTriggers")
                 .startAt(itemRoomCreationDto.getRegistrationClosingDate())
                 .build();
 

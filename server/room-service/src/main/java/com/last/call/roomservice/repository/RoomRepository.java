@@ -18,7 +18,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     
     List<Room> findByStatus(RoomStatus status);
     
-    List<Room> findByStartDateBetween(Date startDate, Date endDate);
+    List<Room> findByAuctionStartDateBetween(Date startDate, Date endDate);
     
     @Query("SELECT r FROM Room r WHERE r.endDate > :currentDate AND r.status = 'ACTIVE'")
     List<Room> findActiveRooms(@Param("currentDate") Date currentDate);
