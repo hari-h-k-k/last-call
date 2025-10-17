@@ -22,7 +22,7 @@ public class RoomCreationJob implements Job {
         try {
             ApplicationContext applicationContext = (ApplicationContext) context.getScheduler().getContext().get("applicationContext");
             KafkaTemplate<String, Object> kafkaTemplate = applicationContext.getBean(KafkaTemplate.class);
-        
+
             Long itemId = context.getJobDetail().getJobDataMap().getLong("itemId");
             Double startingPrice = context.getJobDetail().getJobDataMap().getDouble("startingPrice");
             Long auctionStartDateLong = context.getJobDetail().getJobDataMap().getLong("auctionStartDate");
@@ -34,7 +34,7 @@ public class RoomCreationJob implements Job {
             ItemRoomCreationDto itemRoomCreationDto = new ItemRoomCreationDto(
                 itemId, startingPrice, null, auctionStartDate
             );
-        
+
             kafkaTemplate.send("room-creation-with-item", itemId.toString(), itemRoomCreationDto);
 
             System.out.println("✅ Room creation request with data sent for item ID: " + itemId);
