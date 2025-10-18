@@ -33,7 +33,7 @@ export default function RoomPage() {
   const searchParams = useSearchParams();
   const isSpectating = searchParams.get('spectate') === 'true';
   const { isAuthenticated } = useAuth();
-  
+
   const [item, setItem] = useState(null);
   const [bidAmount, setBidAmount] = useState('');
   const [bidHistory, setBidHistory] = useState([]);
@@ -57,7 +57,7 @@ export default function RoomPage() {
           roomService.getBidHistory(id),
           roomService.getLeaderboard(id)
         ]);
-        
+
         setItem(itemResponse.subject.item);
         setBidHistory(bidHistoryResponse.subject || []);
         setLeaderboard(leaderboardResponse.subject || []);
@@ -119,7 +119,7 @@ export default function RoomPage() {
 
   const handleBid = async () => {
     if (!bidAmount || parseFloat(bidAmount) <= currentBid) return;
-    
+
     setIsBidding(true);
     try {
       await roomService.placeBid(id, parseFloat(bidAmount));
@@ -132,56 +132,22 @@ export default function RoomPage() {
     }
   };
 
+  const reversedHistory = [...bidHistory].reverse();
   const chartData = {
-    labels: bidHistory.slice().reverse().map((bid, index) => `Bid ${index + 1}`),
+    labels: reversedHistory.map((_, i) => `Bid ${i + 1}`),
     datasets: [
       {
-        label: 'Bid Amount',
-        data: bidHistory.slice().reverse().map(bid => bid.bidAmount),
-        borderColor: 'rgb(245, 158, 11)',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        tension: 0.1,
+        label: "Bid Amount",
+        data: reversedHistory.map((b) => b.bidAmount || b.amount),
+        borderColor: "#3B82F6",
+        backgroundColor: "rgba(59, 130, 246, 0.2)",
+        tension: 0.4,
+        fill: true,
       },
     ],
   };
 
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          color: 'rgb(203, 213, 225)'
-        }
-      },
-      title: {
-        display: true,
-        text: 'Bid History',
-        color: 'rgb(203, 213, 225)'
-      },
-    },
-    scales: {
-      y: {
-        ticks: {
-          color: 'rgb(148, 163, 184)',
-          callback: function(value) {
-            return '$' + value.toFixed(2);
-          }
-        },
-        grid: {
-          color: 'rgba(148, 163, 184, 0.1)'
-        }
-      },
-      x: {
-        ticks: {
-          color: 'rgb(148, 163, 184)'
-        },
-        grid: {
-          color: 'rgba(148, 163, 184, 0.1)'
-        }
-      }
-    }
-  };
+
 
   if (isLoading) {
     return (
@@ -199,133 +165,166 @@ export default function RoomPage() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-slate-900">
-      <Navbar />
-      <div className="max-w-7xl mx-auto px-4 py-8 pt-24">
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Main Auction Area */}
-          <div className="lg:col-span-2 space-y-6">
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h1 className="text-3xl font-bold text-white mb-4">{item.title}</h1>
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <p className="text-slate-400">Current Bid</p>
-                  <p className="text-4xl font-bold text-amber-400">{formatPrice(currentBid)}</p>
-                </div>
-                {isSpectating && (
-                  <span className="bg-blue-500/20 text-blue-400 px-4 py-2 rounded-full font-medium">
-                    SPECTATING
-                  </span>
-                )}
-              </div>
+  const formatTime = (seconds) => {
+    if (seconds <= 0) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
 
-              {/* Bidding Section */}
-              {!isSpectating && isAuthenticated && (
-                <div className="bg-slate-700/50 rounded-lg p-4 mb-6">
-                  <h3 className="text-lg font-semibold text-white mb-3">Place Your Bid</h3>
-                  <div className="flex gap-3">
+  const handleQuickBid = (increment) => {
+    setBidAmount((currentBid + increment).toString());
+  };
+
+  return (
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gray-900 text-white p-6 pt-24">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">
+            🏆 {item?.title || "Live Bidding Room"}
+          </h1>
+          <div className="bg-gray-800 px-4 py-2 rounded-lg shadow-md">
+            ⏳ Time Left:{" "}
+            <span className="font-bold text-yellow-400">{formatTime(timeLeft)}</span>
+          </div>
+        </div>
+
+        {/* Auction Closed Banner */}
+        {roomStatus === "CLOSED" && (
+          <div className="bg-red-600 text-white p-6 rounded-lg shadow-lg text-center mb-6">
+            <h2 className="text-2xl font-bold">🚨 Auction Closed</h2>
+            <p className="mt-2">
+              Item sold to <span className="font-bold">{winnerId}</span> for{" "}
+              <span className="font-bold text-yellow-300">₹{currentBid}</span>
+            </p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Section */}
+          <div className="lg:col-span-2 bg-gray-800 rounded-xl shadow-lg p-5">
+            <h2 className="text-2xl font-semibold mb-4">💰 Place Your Bids</h2>
+            <p className="text-gray-300 mb-4">
+              Current Highest Bid:{" "}
+              <span className="font-bold text-green-400">₹{currentBid}</span>
+              {winnerId && myBid?.username === winnerId && (
+                <span className="ml-2 text-sm text-yellow-400">(You are winning 🎉)</span>
+              )}
+            </p>
+
+            {/* Show bidding components only if not closed */}
+            {roomStatus !== "CLOSED" ? (
+              !isSpectating && isAuthenticated ? (
+                <>
+                  <div className="flex gap-3 mb-3">
                     <input
                       type="number"
+                      placeholder="Enter your bid"
+                      className="flex-1 px-4 py-2 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       value={bidAmount}
                       onChange={(e) => setBidAmount(e.target.value)}
-                      placeholder={`Min: ${formatPrice(currentBid + 1)}`}
-                      min={currentBid + 1}
-                      step="0.01"
-                      className="flex-1 bg-slate-600 text-white px-4 py-3 rounded-lg border border-slate-500 focus:border-amber-400 focus:outline-none"
                     />
                     <button
                       onClick={handleBid}
                       disabled={isBidding || !bidAmount || parseFloat(bidAmount) <= currentBid}
-                      className="bg-amber-500 hover:bg-amber-600 disabled:bg-slate-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors"
+                      className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed px-5 py-2 rounded-lg font-semibold transition-all shadow-md"
                     >
-                      {isBidding ? 'Bidding...' : 'Bid'}
+                      {isBidding ? 'Bidding...' : 'Place Bid'}
                     </button>
                   </div>
-                </div>
-              )}
 
-              {/* Bid History Chart */}
-              <div className="bg-slate-700/30 rounded-lg p-4">
-                <h3 className="text-lg font-semibold text-white mb-4">Bid History</h3>
-                {bidHistory.length > 0 ? (
-                  <div className="h-64">
-                    <Line data={chartData} options={chartOptions} />
+                  <div className="flex gap-3 mb-5">
+                    {[500, 1000, 1500].map((increment) => (
+                      <button
+                        key={increment}
+                        onClick={() => handleQuickBid(increment)}
+                        className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg shadow-md border border-gray-600 transition-all"
+                      >
+                        +₹{increment}
+                      </button>
+                    ))}
                   </div>
+                </>
+              ) : (
+                <p className="text-red-400 mt-3">
+                  ⚠️ {isSpectating ? 'You are in spectator mode. Subscribe to place bids.' : 'Please log in to place bids.'}
+                </p>
+              )
+            ) : (
+              <p className="text-yellow-400 font-semibold">Bidding has ended.</p>
+            )}
+
+            {/* Bid History */}
+            <div className="mt-6">
+              <h3 className="text-xl font-semibold mb-3">📜 Live Bid History</h3>
+              <div className="max-h-48 overflow-y-auto bg-gray-700 rounded-lg p-3">
+                {bidHistory.length > 0 ? (
+                  bidHistory.map((bid, idx) => (
+                    <p
+                      key={idx}
+                      className={`text-gray-300 ${
+                        myBid && myBid.id === bid.id ? "text-yellow-400 font-semibold" : ""
+                      }`}
+                    >
+                      <span className="font-semibold">{bid.username || bid.bidderName}</span> bid ₹{bid.bidAmount || bid.amount}
+                    </p>
+                  ))
                 ) : (
-                  <p className="text-slate-400 text-center py-8">No bids yet</p>
+                  <p className="text-gray-400">No bids yet</p>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Leaderboard */}
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h3 className="text-xl font-bold text-white mb-4">Leaderboard</h3>
+          {/* Leaderboard */}
+          <div className="bg-gray-800 rounded-xl shadow-lg p-5">
+            <h2 className="text-2xl font-semibold mb-4">🏅 Leaderboard</h2>
+            <div className="space-y-3">
               {leaderboard.length > 0 ? (
-                <div className="space-y-3">
-                  {leaderboard.slice(0, 10).map((bidder, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-slate-700/50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-bold ${
-                          index === 0 ? 'bg-amber-500 text-slate-900' :
-                          index === 1 ? 'bg-slate-400 text-slate-900' :
-                          index === 2 ? 'bg-amber-600 text-white' :
-                          'bg-slate-600 text-slate-300'
-                        }`}>
-                          {index + 1}
-                        </span>
-                        <span className="text-white font-medium">{bidder.bidderName || 'Anonymous'}</span>
-                      </div>
-                      <span className="text-amber-400 font-bold">{formatPrice(bidder.bidAmount)}</span>
-                    </div>
-                  ))}
-                </div>
+                leaderboard.slice(0, 5).map((entry, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex justify-between bg-gray-700 px-4 py-2 rounded-lg shadow-md ${
+                      myBid && entry.userId === myBid.userId
+                        ? "border border-yellow-400"
+                        : ""
+                    }`}
+                  >
+                    <span className="font-medium">
+                      {idx + 1}. {entry.username || entry.bidderName}
+                    </span>
+                    <span className="font-bold text-green-400">₹{entry.amount || entry.bidAmount}</span>
+                  </div>
+                ))
               ) : (
-                <p className="text-slate-400 text-center py-4">No bids yet</p>
+                <p className="text-gray-400">No leaderboard data yet</p>
               )}
-            </div>
-
-            {/* Recent Bids */}
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h3 className="text-xl font-bold text-white mb-4">Recent Bids</h3>
-              {bidHistory.length > 0 ? (
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {bidHistory.slice(0, 10).map((bid, index) => (
-                    <div key={index} className="flex justify-between items-center p-2 bg-slate-700/30 rounded">
-                      <span className="text-slate-300 text-sm">{bid.bidderName || 'Anonymous'}</span>
-                      <span className="text-amber-400 font-semibold">{formatPrice(bid.bidAmount)}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-slate-400 text-center py-4">No bids yet</p>
-              )}
-            </div>
-
-            {/* Item Details */}
-            <div className="bg-slate-800 rounded-xl p-6">
-              <h3 className="text-xl font-bold text-white mb-4">Item Details</h3>
-              <div className="space-y-3">
-                <div>
-                  <p className="text-slate-400 text-sm">Starting Price</p>
-                  <p className="text-white font-semibold">{formatPrice(item.startingPrice)}</p>
-                </div>
-                <div>
-                  <p className="text-slate-400 text-sm">Category</p>
-                  <p className="text-white font-semibold">{item.category}</p>
-                </div>
-                <div>
-                  <p className="text-slate-400 text-sm">Description</p>
-                  <p className="text-slate-300 text-sm">{item.description}</p>
-                </div>
-              </div>
             </div>
           </div>
         </div>
+
+        {/* Chart */}
+        <div className="mt-8 bg-gray-800 rounded-xl shadow-lg p-5">
+          <h2 className="text-2xl font-semibold mb-4">📈 Bidding Trends</h2>
+          {bidHistory.length > 0 ? (
+            <Line
+              data={chartData}
+              options={{
+                responsive: true,
+                plugins: { legend: { labels: { color: "white" } } },
+                scales: {
+                  x: { ticks: { color: "white" } },
+                  y: { ticks: { color: "white" } },
+                },
+              }}
+            />
+          ) : (
+            <p className="text-gray-400 text-center py-8">No bid data to display</p>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
