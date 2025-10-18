@@ -1,5 +1,6 @@
 package com.last.call.roomservice.service;
 
+import com.last.call.roomservice.client.KafkaClient;
 import com.last.call.roomservice.dto.BidUpdateMessage;
 import com.last.call.roomservice.entity.Bid;
 import com.last.call.roomservice.entity.Room;
@@ -21,15 +22,48 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final BidService bidservice;
     private final SimpMessagingTemplate messagingTemplate;
+    private final KafkaClient kafkaClient;
     
-    public RoomService(RoomRepository roomRepository, BidService bidservice, SimpMessagingTemplate messagingTemplate) {
+    public RoomService(RoomRepository roomRepository, BidService bidservice, SimpMessagingTemplate messagingTemplate, KafkaClient kafkaClient) {
         this.roomRepository = roomRepository;
         this.bidservice = bidservice;
         this.messagingTemplate = messagingTemplate;
+        this.kafkaClient = kafkaClient;
     }
     
     public Room getRoomById(Long id) {
         return roomRepository.findById(id).orElse(null);
+    }
+
+    public Room createRoom(Long itemId, Double startingPrice, Date auctionStartDate) {
+        Room room = new Room();
+        room.setItemId(itemId);
+        room.setCurrentPrice(startingPrice);
+        room.setAuctionStartDate(auctionStartDate);
+        room.setStatus(RoomStatus.PENDING);
+        room.setCreatedAt(new java.util.Date());
+        room.setUpdatedAt(new java.util.Date());
+        return roomRepository.save(room);
+    }
+
+    @Transactional
+    public void activateRoom(Long itemId) {
+        Room room = roomRepository.findByItemId(itemId).orElseThrow(() -> new RuntimeException("Room not found"));
+        room.setStatus(RoomStatus.ACTIVE);
+        Date now = new Date();
+        room.setEndDate(new Date(now.getTime() + 10 * 60 * 1000));
+        room.setUpdatedAt(now);
+        roomRepository.save(room);
+
+        kafkaClient.scheduleRoomClose(itemId, room.getEndDate());
+    }
+
+    @Transactional
+    public void closeRoom(Long roomId) {
+        Room room = getRoomById(roomId);
+        room.setStatus(RoomStatus.COMPLETED);
+        room.setUpdatedAt(new Date());
+        roomRepository.save(room);
     }
     
     public List<Room> getLiveAuctions() {
@@ -73,26 +107,5 @@ public class RoomService {
         messagingTemplate.convertAndSend("/topic/currentBid/" + roomId, message);
 
         return bid;
-    }
-
-    public Room createRoom(Long itemId, Double startingPrice, Date auctionStartDate) {
-        Room room = new Room();
-        room.setItemId(itemId);
-        room.setCurrentPrice(startingPrice);
-        room.setAuctionStartDate(auctionStartDate);
-        room.setStatus(RoomStatus.PENDING);
-        room.setCreatedAt(new java.util.Date());
-        room.setUpdatedAt(new java.util.Date());
-        return roomRepository.save(room);
-    }
-
-    @Transactional
-    public void activateRoom(Long itemId) {
-        Room room = roomRepository.findByItemId(itemId).orElseThrow(() -> new RuntimeException("Room not found"));
-        room.setStatus(RoomStatus.ACTIVE);
-        Date now = new Date();
-        room.setEndDate(new Date(now.getTime() + 10 * 60 * 1000));
-        room.setUpdatedAt(now);
-        roomRepository.save(room);
     }
 }

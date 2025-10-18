@@ -6,30 +6,29 @@ import com.last.call.roomservice.service.RoomService;
 import com.last.call.shared.dto.ItemRoomCreationDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RoomListener {
+public class KafkaListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(RoomListener.class);
+    private static final Logger logger = LoggerFactory.getLogger(KafkaListener.class);
 
     private final RoomRepository roomRepository;
     private final RoomService roomService;
     private final ObjectMapper objectMapper;
 
-    public RoomListener(RoomRepository roomRepository, RoomService roomService, ObjectMapper objectMapper) {
+    public KafkaListener(RoomRepository roomRepository, RoomService roomService, ObjectMapper objectMapper) {
         this.roomRepository = roomRepository;
         this.roomService = roomService;
         this.objectMapper = objectMapper;
     }
 
-    @KafkaListener(topics = "room-creation-with-item")
+    @org.springframework.kafka.annotation.KafkaListener(topics = "room-creation-with-item")
     public void handleRoomCreationWithItem(String message) {
         try {
             ItemRoomCreationDto itemData = objectMapper.readValue(message, ItemRoomCreationDto.class);
             System.out.println("📥 Creating room with data for item ID: " + itemData.getItemId());
-            
+
             if (roomRepository.findByItemId(itemData.getItemId()).isPresent()) {
                 logger.warn("Room already exists for item ID: {}", itemData.getItemId());
                 return;
@@ -44,7 +43,7 @@ public class RoomListener {
         }
     }
 
-    @KafkaListener(topics = "room-activation")
+    @org.springframework.kafka.annotation.KafkaListener(topics = "room-activation")
     public void handleRoomActivation(Long itemId) {
         try {
             System.out.println("🏠 Activating room for item ID: " + itemId);
@@ -52,6 +51,17 @@ public class RoomListener {
             System.out.println("✅ Room activated for item ID: " + itemId);
         } catch (Exception e) {
             logger.error("Error activating room for item ID {}: {}", itemId, e.getMessage());
+        }
+    }
+
+    @org.springframework.kafka.annotation.KafkaListener(topics = "room-closure")
+    public void handleRoomClosure(Long roomId) {
+        try {
+            System.out.println("🏠 Closing room for room ID: " + roomId);
+            roomService.closeRoom(roomId);
+            System.out.println("✅ Room closed for room ID: " + roomId);
+        } catch (Exception e) {
+            logger.error("Error closing room for room ID {}: {}", roomId, e.getMessage());
         }
     }
 }

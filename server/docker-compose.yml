@@ -68,6 +68,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      scheduler-service:
+        condition: service_started
     ports:
       - "8081:8081"
     environment:
@@ -91,6 +93,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      scheduler-service:
+        condition: service_started
     ports:
       - "8082:8082"
     environment:
@@ -114,6 +118,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      scheduler-service:
+        condition: service_started
     ports:
       - "8083:8083"
     environment:

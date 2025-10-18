@@ -55,4 +55,20 @@ public class SchedulerService {
         scheduler.scheduleJob(job, trigger);
     }
 
+    public void scheduleRoomCloseJob(Long roomId, Date auctionEndDate) throws SchedulerException {
+        logger.info("Scheduling room close job for item ID: {} at {}", roomId, auctionEndDate);
+
+        JobDetail job = JobBuilder.newJob(RoomActivationJob.class)
+                .withIdentity("roomClose_" + roomId, "itemJobs")
+                .usingJobData("roomId", roomId)
+                .build();
+
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity("roomCloseTrigger_" + roomId, "roomTriggers")
+                .startAt(auctionEndDate)
+                .build();
+
+        scheduler.scheduleJob(job, trigger);
+    }
+
 }
