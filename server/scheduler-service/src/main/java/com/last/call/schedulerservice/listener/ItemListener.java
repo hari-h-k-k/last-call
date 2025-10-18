@@ -17,6 +17,7 @@ public class ItemListener {
     public void handleScheduleItemJobs(ItemRoomCreationDto itemRoomCreationDto) throws SchedulerException {
         System.out.println("📥 Received schedule-item-jobs message for item ID: " + itemRoomCreationDto.getItemId());
         schedulerService.scheduleRoomCreationJob(itemRoomCreationDto);
+        schedulerService.scheduleRoomActivationJob(itemRoomCreationDto.getItemId(), itemRoomCreationDto.getAuctionStartDate());
         System.out.println("✅ Scheduled jobs for item ID: " + itemRoomCreationDto.getItemId());
     }
 }

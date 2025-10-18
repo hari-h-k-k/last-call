@@ -85,4 +85,14 @@ public class RoomService {
         room.setUpdatedAt(new java.util.Date());
         return roomRepository.save(room);
     }
+
+    @Transactional
+    public void activateRoom(Long itemId) {
+        Room room = roomRepository.findByItemId(itemId).orElseThrow(() -> new RuntimeException("Room not found"));
+        room.setStatus(RoomStatus.ACTIVE);
+        Date now = new Date();
+        room.setEndDate(new Date(now.getTime() + 10 * 60 * 1000));
+        room.setUpdatedAt(now);
+        roomRepository.save(room);
+    }
 }

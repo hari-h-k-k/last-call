@@ -1,5 +1,6 @@
 package com.last.call.schedulerservice.service;
 
+import com.last.call.schedulerservice.job.RoomActivationJob;
 import com.last.call.schedulerservice.job.RoomCreationJob;
 import com.last.call.shared.dto.ItemRoomCreationDto;
 import org.quartz.*;
@@ -7,6 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 @Service
 public class SchedulerService {
@@ -31,6 +34,22 @@ public class SchedulerService {
         Trigger trigger = TriggerBuilder.newTrigger()
                 .withIdentity("roomCreationTrigger_" + itemRoomCreationDto.getItemId(), "itemTriggers")
                 .startAt(itemRoomCreationDto.getRegistrationClosingDate())
+                .build();
+
+        scheduler.scheduleJob(job, trigger);
+    }
+
+    public void scheduleRoomActivationJob(Long itemId, Date auctionStartDate) throws SchedulerException {
+        logger.info("Scheduling room activation job for item ID: {} at {}", itemId, auctionStartDate);
+
+        JobDetail job = JobBuilder.newJob(RoomActivationJob.class)
+                .withIdentity("roomActivation_" + itemId, "itemJobs")
+                .usingJobData("itemId", itemId)
+                .build();
+
+        Trigger trigger = TriggerBuilder.newTrigger()
+                .withIdentity("roomActivationTrigger_" + itemId, "itemTriggers")
+                .startAt(auctionStartDate)
                 .build();
 
         scheduler.scheduleJob(job, trigger);

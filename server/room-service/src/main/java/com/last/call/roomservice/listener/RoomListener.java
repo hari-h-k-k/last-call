@@ -43,4 +43,15 @@ public class RoomListener {
             logger.error("Error creating room with data: {}", e.getMessage());
         }
     }
+
+    @KafkaListener(topics = "room-activation")
+    public void handleRoomActivation(Long itemId) {
+        try {
+            System.out.println("🏠 Activating room for item ID: " + itemId);
+            roomService.activateRoom(itemId);
+            System.out.println("✅ Room activated for item ID: " + itemId);
+        } catch (Exception e) {
+            logger.error("Error activating room for item ID {}: {}", itemId, e.getMessage());
+        }
+    }
 }
