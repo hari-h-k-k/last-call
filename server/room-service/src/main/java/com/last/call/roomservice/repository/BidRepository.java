@@ -1,6 +1,7 @@
 package com.last.call.roomservice.repository;
 
 import com.last.call.roomservice.entity.Bid;
+import com.last.call.roomservice.entity.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,4 +23,8 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
     
     @Query("SELECT MAX(b.amount) FROM Bid b WHERE b.room.id = :roomId")
     Double findHighestBidByRoom(@Param("roomId") Long roomId);
+
+//    Given a roomId and userId, find the highest bid placed by the user in that room
+    @Query("SELECT MAX(b.amount) FROM Bid b WHERE b.room.id = :roomId AND b.userId = :userId")
+    Double findHighestBidByRoomAndUserId(@Param("roomId") Long roomId, @Param("userId") Long userId);
 }

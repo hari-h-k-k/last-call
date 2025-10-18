@@ -52,9 +52,9 @@ public class RoomController {
     }
 
     @PostMapping("/{roomId}/bid")
-    public ResponseEntity<ApiResponse<Bid>> placeBid(@PathVariable Long roomId, @RequestParam Double bidAmount, @RequestHeader("X-User-Id") String userId) {
-        logger.info("Placing bid in room {} by user {}", roomId, userId);
-        Bid bid = roomService.placeBid(roomId, Long.valueOf(userId), bidAmount);
+    public ResponseEntity<ApiResponse<Bid>> placeBid(@PathVariable Long roomId, @RequestParam Double bidAmount, @RequestParam String name, @RequestHeader("X-User-Id") String userId) {
+        logger.info("Placing bid in room {} by user {}", roomId, name);
+        Bid bid = roomService.placeBid(roomId, Long.valueOf(userId), name, bidAmount);
         return ResponseBuilder.success(bid, "Bid placed successfully");
     }
 

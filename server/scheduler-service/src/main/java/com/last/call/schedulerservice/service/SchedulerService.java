@@ -1,6 +1,7 @@
 package com.last.call.schedulerservice.service;
 
 import com.last.call.schedulerservice.job.RoomActivationJob;
+import com.last.call.schedulerservice.job.RoomCloseJob;
 import com.last.call.schedulerservice.job.RoomCreationJob;
 import com.last.call.shared.dto.ItemRoomCreationDto;
 import org.quartz.*;
@@ -58,8 +59,13 @@ public class SchedulerService {
     public void scheduleRoomCloseJob(Long roomId, Date auctionEndDate) throws SchedulerException {
         logger.info("Scheduling room close job for item ID: {} at {}", roomId, auctionEndDate);
 
-        JobDetail job = JobBuilder.newJob(RoomActivationJob.class)
-                .withIdentity("roomClose_" + roomId, "itemJobs")
+        JobKey jobKey = JobKey.jobKey("roomClose_" + roomId, "itemJobs");
+        if (scheduler.checkExists(jobKey)) {
+            scheduler.deleteJob(jobKey);
+        }
+
+        JobDetail job = JobBuilder.newJob(RoomCloseJob.class)
+                .withIdentity(jobKey)
                 .usingJobData("roomId", roomId)
                 .build();
 

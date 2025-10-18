@@ -11,6 +11,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -20,12 +22,14 @@ import java.util.Optional;
 public class RoomService {
     
     private final RoomRepository roomRepository;
+    private final BidRepository bidRepository;
     private final BidService bidservice;
     private final SimpMessagingTemplate messagingTemplate;
     private final KafkaClient kafkaClient;
     
-    public RoomService(RoomRepository roomRepository, BidService bidservice, SimpMessagingTemplate messagingTemplate, KafkaClient kafkaClient) {
+    public RoomService(RoomRepository roomRepository, BidRepository bidRepository, BidService bidservice, SimpMessagingTemplate messagingTemplate, KafkaClient kafkaClient) {
         this.roomRepository = roomRepository;
+        this.bidRepository = bidRepository;
         this.bidservice = bidservice;
         this.messagingTemplate = messagingTemplate;
         this.kafkaClient = kafkaClient;
@@ -51,11 +55,12 @@ public class RoomService {
         Room room = roomRepository.findByItemId(itemId).orElseThrow(() -> new RuntimeException("Room not found"));
         room.setStatus(RoomStatus.ACTIVE);
         Date now = new Date();
-        room.setEndDate(new Date(now.getTime() + 10 * 60 * 1000));
+        room.setEndDate(new Date(now.getTime() + 1 * 60 * 1000));
         room.setUpdatedAt(now);
         roomRepository.save(room);
 
-        kafkaClient.scheduleRoomClose(itemId, room.getEndDate());
+        kafkaClient.scheduleRoomClose(room.getId(), room.getEndDate());
+        System.out.println("Room activated: " + room.getId());
     }
 
     @Transactional
@@ -78,28 +83,51 @@ public class RoomService {
     }
 
     @Transactional
-    public Bid placeBid(Long roomId, Long userId, Double bidAmount) {
+    public Bid placeBid(Long roomId, Long userId, String name, Double bidAmount) {
         Room room = roomRepository.findById(roomId).orElseThrow(() -> new RuntimeException("Room not found"));
 
-        if (bidAmount <= room.getCurrentPrice()) {
-            throw new RuntimeException("Bid must be higher than current price");
+        if (room.getStatus() != RoomStatus.ACTIVE) {
+            throw new RuntimeException("Room is not active");
+        }
+
+        Double userHighestBid = bidRepository.findHighestBidByRoomAndUserId(roomId, userId);
+
+        if (userHighestBid != null && bidAmount <= userHighestBid) {
+            throw new RuntimeException("New bid must be higher than current bid");
         }
 
         Date date = new Date();
-        room.setWinnerId(userId);
-        room.setCurrentPrice(bidAmount);
-        room.setUpdatedAt(date);
-        roomRepository.save(room);
-
-        Bid bid = new Bid(userId, bidAmount, room, date);
+        Bid bid = new Bid(userId, name, bidAmount, room, date);
         bid = bidservice.saveBid(bid);
+
+        if(bidAmount > room.getCurrentPrice()) {
+            room.setWinnerId(userId);
+            room.setCurrentPrice(bidAmount);
+
+            Instant now = Instant.now();
+            Instant currentEnd = room.getEndDate().toInstant();
+            long remainingSeconds = Duration.between(now, currentEnd).getSeconds();
+
+            if (remainingSeconds < 5 * 60) { // less than 5 minutes
+                Instant newEnd = now.plus(Duration.ofMinutes(5));
+                room.setEndDate(Date.from(newEnd));
+
+                try {
+                    kafkaClient.scheduleRoomClose(room.getId(), room.getEndDate());
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to reschedule room close job", e);
+                }
+            }
+
+            room.setUpdatedAt(date);
+            roomRepository.save(room);
+        }
 
         // Send WebSocket update
         BidUpdateMessage message = new BidUpdateMessage();
         message.setCurrentPrice(bidAmount);
         message.setBid(bid);
         message.setRoomId(roomId);
-        message.setLeaderboard(bidservice.getLeaderboard(roomId));
         message.setRoomStatus(room.getStatus());
         message.setWinnerId(userId);
         message.setMyBid(bidAmount);
