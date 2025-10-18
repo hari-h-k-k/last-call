@@ -127,6 +127,21 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
     restart: unless-stopped
 
+  scheduler-service:
+    build:
+      context: ./scheduler-service
+      dockerfile: Dockerfile
+    container_name: scheduler-service
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8084:8084"
+    environment:
+      PORT: 8084
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+    restart: unless-stopped
+
   gateway-service:
     build:
       context: ./gateway-service
@@ -139,6 +154,8 @@ services:
         condition: service_started
       room-service:
         condition: service_started
+      scheduler-service:
+        condition: service_started
     ports:
       - "8080:8080"
     environment:
@@ -146,6 +163,7 @@ services:
       USER_SERVICE_URL: http://user-service:8081
       ITEM_SERVICE_URL: http://item-service:8082
       ROOM_SERVICE_URL: http://room-service:8083
+      SCHEDULER_SERVICE_URL: http://scheduler-service:8084
       JWT_SECRET: oA7iXP6Uz5uWF06YDExnoIyekDGnBqCK
     restart: unless-stopped
 

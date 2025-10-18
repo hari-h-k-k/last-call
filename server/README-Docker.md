@@ -12,7 +12,7 @@ mvn clean package -DskipTests -f room-service/pom.xml
 
 2. Start all services:
 ```bash
-docker-compose -f docker-compose-kafka.yml up -d
+docker-compose -f docker-compose.yml up -d
 ```
 
 ## Services

@@ -22,7 +22,9 @@ public class DataSeeder {
                                    BidRepository bidRepository,
                                    RoomUserRepository roomUserRepository) {
         return args -> {
-            if (roomRepository.count() > 0) return;
+            roomRepository.deleteAll();
+            bidRepository.deleteAll();
+            roomUserRepository.deleteAll();
 
             System.out.println("✅ Room service data seeded! (2 active, 2 pending rooms)");
         };
