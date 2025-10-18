@@ -41,12 +41,7 @@
             <groupId>org.quartz-scheduler</groupId>
             <artifactId>quartz</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.last.call</groupId>
-            <artifactId>shared-dtos</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
+
     </dependencies>
 
     <!-- Declare all microservices here -->
@@ -56,6 +51,7 @@
         <module>gateway-service</module>
         <module>item-service</module>
         <module>room-service</module>
+        <module>scheduler-service</module>
     </modules>
 
     <dependencyManagement>
