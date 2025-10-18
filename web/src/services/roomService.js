@@ -17,7 +17,7 @@ export const roomService = {
   },
 
   placeBid: async (roomId, bidAmount) => {
-    const response = await apiClient.post(`/room/${roomId}/bid`, { bidAmount });
+    const response = await apiClient.post(`/room/${roomId}/bid?bidAmount=${bidAmount}`);
     return response.data;
   },
 

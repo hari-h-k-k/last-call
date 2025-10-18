@@ -42,13 +42,13 @@ public class ItemService {
         return new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, userId));
     }
 
-    public Item saveItem(Item item, Date auctionStartDate) {
-        itemValidationService.validateItemDates(item, auctionStartDate);
+    public Item saveItem(Item item) {
+        itemValidationService.validateItemDates(item, item.getAuctionStartDate());
         itemValidationService.validateStartingPrice(item.getStartingPrice());
         Item savedItem = itemRepository.save(item);
         
         try {
-            schedulerServiceClient.scheduleItemJobs(savedItem, auctionStartDate);
+            schedulerServiceClient.scheduleItemJobs(savedItem);
         } catch (Exception e) {
             // Log error but don't fail the save operation
             System.err.println("Failed to schedule jobs for item " + savedItem.getId() + ": " + e.getMessage());

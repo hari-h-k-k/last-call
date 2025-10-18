@@ -30,7 +30,7 @@ public class RoomController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Room>> getRoomById(@PathVariable Long roomId) {
+    public ResponseEntity<ApiResponse<Room>> getRoomById(@PathVariable("id") Long roomId) {
         Room room = roomService.getRoomById(roomId);
         return ResponseBuilder.success(room, "Room retrieved successfully");
     }
@@ -52,24 +52,23 @@ public class RoomController {
     }
 
     @PostMapping("/{roomId}/bid")
-    public ResponseEntity<ApiResponse<Bid>> placeBid(@RequestParam Long roomId, @RequestParam Double bidAmount, @RequestHeader("X-User-Id") String userId) {
+    public ResponseEntity<ApiResponse<Bid>> placeBid(@PathVariable Long roomId, @RequestParam Double bidAmount, @RequestHeader("X-User-Id") String userId) {
         logger.info("Placing bid in room {} by user {}", roomId, userId);
         Bid bid = roomService.placeBid(roomId, Long.valueOf(userId), bidAmount);
         return ResponseBuilder.success(bid, "Bid placed successfully");
     }
 
     @GetMapping("/{roomId}/bid-history")
-    public ResponseEntity<ApiResponse<List<Bid>>> getBidHistory(@RequestParam Long roomId) {
+    public ResponseEntity<ApiResponse<List<Bid>>> getBidHistory(@PathVariable Long roomId) {
         logger.info("Fetching bid history for room {}", roomId);
         List<Bid> bidHistory = bidService.getBidHistory(roomId);
         return ResponseBuilder.success(bidHistory, "Bid history retrieved successfully");
     }
 
     @GetMapping("/{roomId}/leaderboard")
-    public ResponseEntity<ApiResponse<List<LeaderboardEntry>>> getLeaderboard(@RequestParam Long roomId) {
+    public ResponseEntity<ApiResponse<List<LeaderboardEntry>>> getLeaderboard(@PathVariable Long roomId) {
         logger.info("Fetching leaderboard for room {}", roomId);
-        Room room = roomService.getRoomById(roomId);
-        List<LeaderboardEntry> leaderboard = bidService.getLeaderboard(room.getId());
+        List<LeaderboardEntry> leaderboard = bidService.getLeaderboard(roomId);
         return ResponseBuilder.success(leaderboard, "Leaderboard retrieved successfully");
     }
 }

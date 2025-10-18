@@ -30,10 +30,11 @@ public class ItemController {
             Long.parseLong(userId),
             request.getStartingPrice(),
             request.getCategory(),
-            request.getRegistrationClosingDate()
+            request.getRegistrationClosingDate(),
+            request.getAuctionStartDate()
         );
         
-        Item savedItem = itemService.saveItem(item, request.getAuctionStartDate());
+        Item savedItem = itemService.saveItem(item);
         return ResponseBuilder.success(savedItem, "Item created successfully");
     }
 

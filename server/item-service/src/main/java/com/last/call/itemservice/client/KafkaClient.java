@@ -14,8 +14,8 @@ public class KafkaClient {
     @Autowired
     private KafkaTemplate<String, Object> kafkaTemplate;
 
-    public void scheduleItemJobs(Item item, Date auctionStartDate) {
-        ItemRoomCreationDto itemRoomCreationDto = new ItemRoomCreationDto(item.getId(), item.getStartingPrice(), item.getRegistrationClosingDate(), auctionStartDate);
+    public void scheduleItemJobs(Item item) {
+        ItemRoomCreationDto itemRoomCreationDto = new ItemRoomCreationDto(item.getId(), item.getStartingPrice(), item.getRegistrationClosingDate(), item.getAuctionStartDate());
         kafkaTemplate.send("schedule-item-jobs", item.getId().toString(), itemRoomCreationDto);
         System.out.println("✅ Scheduled jobs for item ID: " + item.getId());
     }
