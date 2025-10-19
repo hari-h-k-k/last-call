@@ -34,9 +34,24 @@ public class DataSeeder {
             peter.setDateCreated(now);
             peter.setVerified(true);
 
+            User bruce = new User("Bruce Wayne", "bruce", "bruce@wayne.com", encoder.encode("batman"));
+            bruce.setDateCreated(now);
+            bruce.setVerified(true);
+
+            User clark = new User("Clark Kent", "clark", "clark@kent.com", encoder.encode("superman"));
+            clark.setDateCreated(now);
+            clark.setVerified(true);
+
+            User diana = new User("Diana Prince", "diana", "diana@prince.com", encoder.encode("wonder"));
+            diana.setDateCreated(now);
+            diana.setVerified(true);
+
             userRepository.save(tony);
             userRepository.save(uncle);
             userRepository.save(peter);
+            userRepository.save(bruce);
+            userRepository.save(clark);
+            userRepository.save(diana);
 
             System.out.println("✅ User service data seeded!");
         };

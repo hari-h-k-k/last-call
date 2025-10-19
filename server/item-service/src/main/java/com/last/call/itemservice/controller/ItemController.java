@@ -113,9 +113,9 @@ public class ItemController {
             @PathVariable String input,
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
 
-        System.out.println("In here");
+        Long userIdLong = userId != null ? Long.valueOf(userId) : null;
 
-        List<ItemWithSubscriptionDto> items = itemService.searchItems(input, Long.valueOf(userId));
+        List<ItemWithSubscriptionDto> items = itemService.searchItems(input, userIdLong);
         return ResponseBuilder.success(items, "Search completed successfully");
     }
 
@@ -123,7 +123,9 @@ public class ItemController {
     public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> getLastCallToRegister(
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
 
-        List<ItemWithSubscriptionDto> items = itemService.getLastCallToRegister(Long.valueOf(userId));
+        Long userIdLong = userId != null ? Long.valueOf(userId) : null;
+
+        List<ItemWithSubscriptionDto> items = itemService.getLastCallToRegister(userIdLong);
         return ResponseBuilder.success(items, "Last call to register items retrieved successfully");
     }
 

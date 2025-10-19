@@ -57,6 +57,9 @@ public class ItemSubscriberService {
     }
 
     public boolean isUserRegistered(Item item, Long userId) {
+        if (userId == null) {
+            return false;
+        }
         return itemSubscriberRepository.existsByItemIdAndUserId(item.getId(), userId);
     }
 
