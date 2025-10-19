@@ -32,6 +32,7 @@ export default function RoomPage() {
   const { id } = useParams();
   const searchParams = useSearchParams();
   const isSpectating = searchParams.get('spectate') === 'true';
+  const itemId = searchParams.get('itemId');
   const { isAuthenticated } = useAuth();
 
   const [item, setItem] = useState(null);
@@ -45,6 +46,7 @@ export default function RoomPage() {
   const [timeLeft, setTimeLeft] = useState(0);
   const [myBid, setMyBid] = useState(null);
   const [winnerId, setWinnerId] = useState(null);
+  const [winnerName, setWinnerName] = useState(null);
   const [roomStatus, setRoomStatus] = useState('ACTIVE');
 
   const formatPrice = (price) => `$${(price || 0).toFixed(2)}`;
@@ -52,16 +54,41 @@ export default function RoomPage() {
   useEffect(() => {
     const fetchRoomData = async () => {
       try {
-        const [itemResponse, bidHistoryResponse, leaderboardResponse] = await Promise.all([
-          itemService.getItemById(id),
+        const [itemResponse, roomResponse, bidHistoryResponse, leaderboardResponse] = await Promise.all([
+          itemId ? itemService.getItemById(itemId) : Promise.resolve({ subject: { item: null } }),
+          roomService.getRoomData(id),
           roomService.getBidHistory(id),
           roomService.getLeaderboard(id)
         ]);
 
-        setItem(itemResponse.subject.item);
-        setBidHistory(bidHistoryResponse.subject || []);
+        if (itemResponse.subject.item) {
+          setItem(itemResponse.subject.item);
+        }
+        
+        if (roomResponse.subject) {
+          const room = roomResponse.subject;
+          setCurrentBid(room.currentPrice || 0);
+          setRoomStatus(room.status || 'ACTIVE');
+          setWinnerId(room.winnerId);
+          
+          if (room.winnerId && room.bids) {
+            const winnerBid = room.bids.find(bid => bid.userId === room.winnerId);
+            setWinnerName(winnerBid?.name);
+          }
+          
+          if (room.endDate) {
+            const end = new Date(room.endDate).getTime();
+            const now = Date.now();
+            const diff = Math.max(Math.floor((end - now) / 1000), 0);
+            setTimeLeft(diff);
+          }
+          
+          if (room.bids) {
+            setBidHistory(room.bids.reverse());
+          }
+        }
+        
         setLeaderboard(leaderboardResponse.subject || []);
-        setCurrentBid(bidHistoryResponse.subject?.[0]?.bidAmount || itemResponse.subject.item.startingPrice);
       } catch (error) {
         console.error('Failed to fetch room data:', error);
       } finally {
@@ -71,10 +98,18 @@ export default function RoomPage() {
 
     if (id) {
       fetchRoomData();
-      const interval = setInterval(fetchRoomData, 5000);
-      return () => clearInterval(interval);
     }
-  }, [id]);
+  }, [id, itemId]);
+
+  // Countdown timer effect
+  useEffect(() => {
+    if (timeLeft > 0 && roomStatus === 'ACTIVE') {
+      const timer = setInterval(() => {
+        setTimeLeft(prev => Math.max(prev - 1, 0));
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [timeLeft, roomStatus]);
 
   // Setup WebSocket Connection
   useEffect(() => {
@@ -94,8 +129,9 @@ export default function RoomPage() {
         console.log("New bid:", data);
 
         // Update state with new payload
-        if (data.currentPrice) setCurrentBid(data.currentPrice);
-        if (data.bid) setBidHistory((prev) => [data.bid, ...prev]);
+        if (data.currentPrice !== undefined) setCurrentBid(data.currentPrice);
+        if (data.bidHistory) setBidHistory(data.bidHistory);
+        else if (data.bid) setBidHistory((prev) => [data.bid, ...prev]);
         if (data.leaderboard) setLeaderboard(data.leaderboard);
         if (data.newEndDate) {
           const end = new Date(data.newEndDate).getTime();
@@ -105,6 +141,7 @@ export default function RoomPage() {
         }
         if (data.myBid) setMyBid(data.myBid);
         if (data.winnerId) setWinnerId(data.winnerId);
+        if (data.winnerName) setWinnerName(data.winnerName);
         if (data.roomStatus) setRoomStatus(data.roomStatus);
       });
     };
@@ -138,7 +175,7 @@ export default function RoomPage() {
     datasets: [
       {
         label: "Bid Amount",
-        data: reversedHistory.map((b) => b.bidAmount || b.amount),
+        data: reversedHistory.map((b) => b.amount || b.bidAmount),
         borderColor: "#3B82F6",
         backgroundColor: "rgba(59, 130, 246, 0.2)",
         tension: 0.4,
@@ -185,19 +222,39 @@ export default function RoomPage() {
           <h1 className="text-3xl font-bold">
             🏆 {item?.title || "Live Bidding Room"}
           </h1>
-          <div className="bg-gray-800 px-4 py-2 rounded-lg shadow-md">
+          <div className={`px-4 py-2 rounded-lg shadow-md transition-colors ${
+            timeLeft <= 30 && timeLeft > 0 ? 'bg-red-600 animate-pulse' : 'bg-gray-800'
+          }`}>
             ⏳ Time Left:{" "}
-            <span className="font-bold text-yellow-400">{formatTime(timeLeft)}</span>
+            <span className={`font-bold ${
+              timeLeft <= 30 && timeLeft > 0 ? 'text-white' : 'text-yellow-400'
+            }`}>{formatTime(timeLeft)}</span>
           </div>
         </div>
 
+        {/* Winner Notification */}
+        {(() => {
+          const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+          const isWinner = winnerId && currentUser?.userId === winnerId;
+          const isComplete = roomStatus === "COMPLETE" || timeLeft === 0;
+          return isWinner && isComplete && (
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-lg shadow-lg text-center mb-6 relative z-10">
+              <h2 className="text-3xl font-bold">🎉 CONGRATULATIONS! 🎉</h2>
+              <p className="text-xl mt-2">You won the auction!</p>
+              <p className="mt-2">
+                Winning bid: <span className="font-bold text-yellow-300">${currentBid}</span>
+              </p>
+            </div>
+          );
+        })()}
+
         {/* Auction Closed Banner */}
-        {roomStatus === "CLOSED" && (
+        {(roomStatus === "COMPLETE" || timeLeft === 0) && (
           <div className="bg-red-600 text-white p-6 rounded-lg shadow-lg text-center mb-6">
             <h2 className="text-2xl font-bold">🚨 Auction Closed</h2>
             <p className="mt-2">
-              Item sold to <span className="font-bold">{winnerId}</span> for{" "}
-              <span className="font-bold text-yellow-300">₹{currentBid}</span>
+              Item sold to <span className="font-bold">{winnerName}</span> for{" "}
+              <span className="font-bold text-yellow-300">${currentBid}</span>
             </p>
           </div>
         )}
@@ -208,14 +265,14 @@ export default function RoomPage() {
             <h2 className="text-2xl font-semibold mb-4">💰 Place Your Bids</h2>
             <p className="text-gray-300 mb-4">
               Current Highest Bid:{" "}
-              <span className="font-bold text-green-400">₹{currentBid}</span>
+              <span className="font-bold text-green-400">${currentBid}</span>
               {winnerId && myBid?.username === winnerId && (
                 <span className="ml-2 text-sm text-yellow-400">(You are winning 🎉)</span>
               )}
             </p>
 
             {/* Show bidding components only if not closed */}
-            {roomStatus !== "CLOSED" ? (
+            {roomStatus !== "COMPLETE" && timeLeft > 0 ? (
               !isSpectating && isAuthenticated ? (
                 <>
                   <div className="flex gap-3 mb-3">
@@ -242,7 +299,7 @@ export default function RoomPage() {
                         onClick={() => handleQuickBid(increment)}
                         className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg shadow-md border border-gray-600 transition-all"
                       >
-                        +₹{increment}
+                        +${increment}
                       </button>
                     ))}
                   </div>
@@ -268,7 +325,7 @@ export default function RoomPage() {
                         myBid && myBid.id === bid.id ? "text-yellow-400 font-semibold" : ""
                       }`}
                     >
-                      <span className="font-semibold">{bid.username || bid.bidderName}</span> bid ₹{bid.bidAmount || bid.amount}
+                      <span className="font-semibold">{bid.name}</span> bid ${bid.amount}
                     </p>
                   ))
                 ) : (
@@ -293,9 +350,9 @@ export default function RoomPage() {
                     }`}
                   >
                     <span className="font-medium">
-                      {idx + 1}. {entry.username || entry.bidderName}
+                      {idx + 1}. {entry.name}
                     </span>
-                    <span className="font-bold text-green-400">₹{entry.amount || entry.bidAmount}</span>
+                    <span className="font-bold text-green-400">${entry.amount || entry.bidAmount}</span>
                   </div>
                 ))
               ) : (

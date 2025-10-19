@@ -269,7 +269,7 @@ export default function ItemDetails() {
             <p className="text-xl mb-2">
               Current Highest Bid:{" "}
               <span className="text-green-400 font-bold text-2xl">
-                ₹{item.highestBid ?? "N/A"}
+                ${item.highestBid ?? "N/A"}
               </span>
             </p>
             <p className="text-gray-400">Starting Price: ₹{item.startingPrice}</p>

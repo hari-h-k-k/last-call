@@ -35,6 +35,12 @@ public class RoomController {
         return ResponseBuilder.success(room, "Room retrieved successfully");
     }
 
+    @GetMapping("/item/{itemId}")
+    public ResponseEntity<ApiResponse<Room>> getRoomByItemId(@PathVariable("itemId") Long itemId) {
+        Room room = roomService.getRoomByItemId(itemId);
+        return ResponseBuilder.success(room, "Room id retrieved successfully");
+    }
+
     @GetMapping("/live-auctions")
     public ResponseEntity<ApiResponse<List<Room>>> getLiveAuctions() {
         logger.info("Fetching live auctions");
@@ -52,9 +58,9 @@ public class RoomController {
     }
 
     @PostMapping("/{roomId}/bid")
-    public ResponseEntity<ApiResponse<Bid>> placeBid(@PathVariable Long roomId, @RequestParam Double bidAmount, @RequestHeader("X-User-Id") String userId) {
-        logger.info("Placing bid in room {} by user {}", roomId, userId);
-        Bid bid = roomService.placeBid(roomId, Long.valueOf(userId), bidAmount);
+    public ResponseEntity<ApiResponse<Bid>> placeBid(@PathVariable Long roomId, @RequestParam Double bidAmount, @RequestParam String name, @RequestHeader("X-User-Id") String userId) {
+        logger.info("Placing bid in room {} by user {}", roomId, name);
+        Bid bid = roomService.placeBid(roomId, Long.valueOf(userId), name, bidAmount);
         return ResponseBuilder.success(bid, "Bid placed successfully");
     }
 
