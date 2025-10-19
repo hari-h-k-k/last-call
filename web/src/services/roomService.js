@@ -11,14 +11,19 @@ export const roomService = {
     return response.data;
   },
 
+  getRoomByItemId: async (itemId) => {
+    const response = await apiClient.get(`/room/item/${itemId}`);
+    return response.data;
+  },
+
   getRoomData: async (roomId) => {
     const response = await apiClient.get(`/room/${roomId}`);
     return response.data;
   },
 
   placeBid: async (roomId, bidAmount) => {
-    const name = localStorage.getItem('name');
-    const response = await apiClient.post(`/room/${roomId}/bid?bidAmount=${bidAmount}&name=${name}`);
+    const user = JSON.parse(localStorage.getItem('user'));
+    const response = await apiClient.post(`/room/${roomId}/bid?bidAmount=${bidAmount}&name=${user.name}`);
     return response.data;
   },
 

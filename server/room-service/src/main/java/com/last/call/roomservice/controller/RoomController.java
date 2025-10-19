@@ -35,6 +35,12 @@ public class RoomController {
         return ResponseBuilder.success(room, "Room retrieved successfully");
     }
 
+    @GetMapping("/item/{itemId}")
+    public ResponseEntity<ApiResponse<Room>> getRoomByItemId(@PathVariable("itemId") Long itemId) {
+        Room room = roomService.getRoomByItemId(itemId);
+        return ResponseBuilder.success(room, "Room id retrieved successfully");
+    }
+
     @GetMapping("/live-auctions")
     public ResponseEntity<ApiResponse<List<Room>>> getLiveAuctions() {
         logger.info("Fetching live auctions");

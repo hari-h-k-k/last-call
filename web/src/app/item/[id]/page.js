@@ -8,6 +8,7 @@ import Navbar from '../../../components/layout/Navbar';
 import LoginModal from '../../../components/modals/LoginModal';
 import SignupModal from '../../../components/modals/SignupModal';
 import ConfirmModal from '../../../components/modals/ConfirmModal';
+import {roomService} from "@/services/roomService";
 
 export default function ItemDetailsPage() {
   const { id } = useParams();
@@ -138,12 +139,30 @@ export default function ItemDetailsPage() {
     }
   };
 
-  const handleSpectate = () => {
-    window.location.href = `/room/${id}?spectate=true`;
+  const handleSpectate = async () => {
+    try {
+      const response = await roomService.getRoomByItemId(id);
+      console.log(response)
+      const roomId = response.subject.id;
+      window.location.href = `/room/${roomId}?spectate=true&itemId=${id}`;
+    } catch (error) {
+      console.error('Failed to fetch room:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleViewAuction = () => {
-    window.location.href = `/room/${id}`;
+  const handleViewAuction = async () => {
+    try {
+      const response = await roomService.getRoomByItemId(id);
+      console.log(response)
+      const roomId = response.subject.id;
+      window.location.href = `/room/${roomId}?itemId=${id}`;
+    } catch (error) {
+      console.error('Failed to fetch room:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

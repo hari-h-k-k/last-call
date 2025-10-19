@@ -39,6 +39,10 @@ public class RoomService {
         return roomRepository.findById(id).orElse(null);
     }
 
+    public Room getRoomByItemId(Long itemId) {
+        return roomRepository.findByItemId(itemId).orElse(null);
+    }
+
     public Room createRoom(Long itemId, Double startingPrice, Date auctionStartDate) {
         Room room = new Room();
         room.setItemId(itemId);
@@ -55,7 +59,7 @@ public class RoomService {
         Room room = roomRepository.findByItemId(itemId).orElseThrow(() -> new RuntimeException("Room not found"));
         room.setStatus(RoomStatus.ACTIVE);
         Date now = new Date();
-        room.setEndDate(new Date(now.getTime() + 10 * 60 * 1000));
+        room.setEndDate(new Date(now.getTime() + 2 * 60 * 1000));
         room.setUpdatedAt(now);
         roomRepository.save(room);
 
@@ -100,16 +104,18 @@ public class RoomService {
         Bid bid = new Bid(userId, name, bidAmount, room, date);
         bid = bidservice.saveBid(bid);
 
+        Instant currentEnd = room.getEndDate().toInstant();
+        Instant newEnd = currentEnd;
+
         if(bidAmount > room.getCurrentPrice()) {
             room.setWinnerId(userId);
             room.setCurrentPrice(bidAmount);
 
             Instant now = Instant.now();
-            Instant currentEnd = room.getEndDate().toInstant();
             long remainingSeconds = Duration.between(now, currentEnd).getSeconds();
 
             if (remainingSeconds < 5 * 60) { // less than 5 minutes
-                Instant newEnd = now.plus(Duration.ofMinutes(5));
+                newEnd = now.plus(Duration.ofMinutes(5));
                 room.setEndDate(Date.from(newEnd));
 
                 try {
@@ -133,6 +139,7 @@ public class RoomService {
         message.setRoomStatus(room.getStatus());
         message.setWinnerId(userId);
         message.setMyBid(bidAmount);
+        message.setNewEndDate(Date.from(newEnd));
 
         messagingTemplate.convertAndSend("/topic/currentBid/" + roomId, message);
 
