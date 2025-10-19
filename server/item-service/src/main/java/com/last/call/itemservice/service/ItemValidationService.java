@@ -53,14 +53,14 @@ public class ItemValidationService {
         }
     }
 
-    public void validateRegistrationEligibility(Item item, String userId) {
+    public void validateRegistrationEligibility(Item item, Long userId) {
         Date now = new Date();
 
 //        if (item.getRegistrationClosingDate().before(now)) {
 //            throw new IllegalArgumentException("Deadline exceeded to express interest on this item");
 //        }
 
-        if (item.getSellerId().equals(Long.parseLong(userId))) {
+        if (item.getSellerId().equals(userId)) {
             throw new IllegalArgumentException("User cannot express interest on the item they listed");
         }
     }

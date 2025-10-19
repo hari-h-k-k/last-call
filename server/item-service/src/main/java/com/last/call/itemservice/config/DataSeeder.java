@@ -34,8 +34,8 @@ public class DataSeeder {
 
             itemService.saveItem(art);
 
-            itemSubscriberService.register(art, "2");
-            itemSubscriberService.register(art, "3");
+            itemSubscriberService.register(art, 2L);
+            itemSubscriberService.register(art, 3L);
 
             System.out.println("✅ Data seeding completed successfully!");
         };

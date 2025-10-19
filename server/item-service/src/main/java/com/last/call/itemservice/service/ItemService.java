@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ItemService {
@@ -37,7 +36,7 @@ public class ItemService {
         return itemRepository.findAll();
     }
 
-    public ItemWithSubscriptionDto getItemWithSubscription(Long itemId, String userId) {
+    public ItemWithSubscriptionDto getItemWithSubscription(Long itemId, Long userId) {
         Item item = getItemById(itemId);
         return new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, userId));
     }
@@ -65,20 +64,7 @@ public class ItemService {
         Item existingItem = itemRepository.findById(updatedItem.getId())
                 .orElseThrow(() -> new RuntimeException("Item not found with ID: " + updatedItem.getId()));
 
-        boolean scheduleNeedsUpdate = false;
-
-        // Check if scheduling-related fields changed
-        if (!updatedItem.getRegistrationClosingDate().equals(existingItem.getRegistrationClosingDate())) {
-            scheduleNeedsUpdate = true;
-        }
-
-        if (!updatedItem.getAuctionStartDate().equals(existingItem.getAuctionStartDate())) {
-            scheduleNeedsUpdate = true;
-        }
-
-        if (updatedItem.getStartingPrice()!=existingItem.getStartingPrice()) {
-            scheduleNeedsUpdate = true;
-        }
+        boolean scheduleNeedsUpdate = isScheduleNeedsUpdate(updatedItem, existingItem);
 
         // Save the updated item
         Item savedItem = itemRepository.save(existingItem);
@@ -96,19 +82,32 @@ public class ItemService {
 
     }
 
-    public void register(Long itemId, String userId) {
+    private static boolean isScheduleNeedsUpdate(Item updatedItem, Item existingItem) {
+        boolean scheduleNeedsUpdate = !updatedItem.getRegistrationClosingDate().equals(existingItem.getRegistrationClosingDate());
+
+        if (!updatedItem.getAuctionStartDate().equals(existingItem.getAuctionStartDate())) {
+            scheduleNeedsUpdate = true;
+        }
+
+        if (updatedItem.getStartingPrice()!= existingItem.getStartingPrice()) {
+            scheduleNeedsUpdate = true;
+        }
+        return scheduleNeedsUpdate;
+    }
+
+    public void register(Long itemId, Long userId) {
         Item item = getItemById(itemId);
 
         itemSubscriberService.register(item, userId);
     }
 
-    public void unregister(Long itemId, String userId) {
+    public void unregister(Long itemId, Long userId) {
         Item item = getItemById(itemId);
 
         itemSubscriberService.unregister(item, userId);
     }
 
-    public List<ItemWithSubscriptionDto> searchItems(String input, String userId) {
+    public List<ItemWithSubscriptionDto> searchItems(String input, Long userId) {
         if (input == null || input.trim().isEmpty()) {
             List<Item> results = itemRepository.findAll();
             return results.stream()
@@ -122,8 +121,11 @@ public class ItemService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
-    public List<Item> getItemsBySellerId(Long sellerId) {
-        return itemRepository.findBySellerId(sellerId);
+    public List<ItemWithSubscriptionDto> getItemsBySellerId(Long sellerId) {
+        List<Item> items=  itemRepository.findBySellerId(sellerId);
+        return items.stream()
+                .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, sellerId)))
+                .collect(java.util.stream.Collectors.toList());
     }
 
     public List<CategoryWithCountDto> getCategoriesWithCount() {
@@ -133,7 +135,7 @@ public class ItemService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
-    public List<ItemWithSubscriptionDto> getLastCallToRegister(String userId) {
+    public List<ItemWithSubscriptionDto> getLastCallToRegister(Long userId) {
         Date now = new Date();
         Date fortyEightHoursFromNow = new Date(now.getTime() + 48 * 60 * 60 * 1000);
         

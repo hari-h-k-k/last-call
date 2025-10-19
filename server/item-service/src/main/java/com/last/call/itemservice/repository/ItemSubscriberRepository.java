@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface ItemSubscriberRepository extends JpaRepository<ItemSubscriber, Long> {
     
     @Query("SELECT COUNT(s) > 0 FROM ItemSubscriber s WHERE s.item.id = :itemId AND s.userId = :userId")
-    boolean existsByItemIdAndUserId(@Param("itemId") Long itemId, @Param("userId") String userId);
+    boolean existsByItemIdAndUserId(@Param("itemId") Long itemId, @Param("userId") Long userId);
 }

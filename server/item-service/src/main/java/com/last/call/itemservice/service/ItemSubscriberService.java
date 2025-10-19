@@ -26,7 +26,7 @@ public class ItemSubscriberService {
     private ItemValidationService itemValidationService;
 
     @Transactional
-    public void register(Item item, String userId) {
+    public void register(Item item, Long userId) {
         itemValidationService.validateRegistrationEligibility(item, userId);
 
         boolean alreadyRegistered = item.getSubscribers() != null &&
@@ -42,7 +42,7 @@ public class ItemSubscriberService {
     }
 
     @Transactional
-    public void unregister(Item item, String userId) {
+    public void unregister(Item item, Long userId) {
         if (item.getSubscribers().isEmpty()) {
             throw new IllegalArgumentException("User is not registered to this item");
         }
@@ -56,11 +56,11 @@ public class ItemSubscriberService {
         itemRepository.save(item);
     }
 
-    public boolean isUserRegistered(Item item, String userId) {
+    public boolean isUserRegistered(Item item, Long userId) {
         return itemSubscriberRepository.existsByItemIdAndUserId(item.getId(), userId);
     }
 
-    public List<ItemWithSubscriptionDto> getRegisteredItems(String userId) {
+    public List<ItemWithSubscriptionDto> getRegisteredItems(Long userId) {
         List<Item> allItems = itemRepository.findAll();
         return allItems.stream()
                 .filter(item -> isUserRegistered(item, userId))

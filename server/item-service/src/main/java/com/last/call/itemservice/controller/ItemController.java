@@ -65,8 +65,8 @@ public class ItemController {
 
         System.out.println("in my-items");
 
-        List<ItemWithSubscriptionDto> items = itemService.searchItems(input, userId);
-        return ResponseBuilder.success(items, "Search completed successfully");
+        List<ItemWithSubscriptionDto> items = itemService.getItemsBySellerId(Long.valueOf(userId));
+        return ResponseBuilder.success((ItemWithSubscriptionDto) items, "Items returned successfully");
     }
 
     @GetMapping({"/{itemId}"})
@@ -80,7 +80,7 @@ public class ItemController {
             return ResponseBuilder.success(itemWithSubscriptionDto, "Item retrieved successfully");
         }
         
-        ItemWithSubscriptionDto itemWithSubscriptionDto = itemService.getItemWithSubscription(Long.parseLong(itemId), userId);
+        ItemWithSubscriptionDto itemWithSubscriptionDto = itemService.getItemWithSubscription(Long.parseLong(itemId), Long.valueOf(userId));
         return ResponseBuilder.success(itemWithSubscriptionDto, "Item retrieved successfully");
     }
 
@@ -89,7 +89,7 @@ public class ItemController {
             @PathVariable String itemId,
             @RequestHeader(value = "X-User-Id") String userId) {
 
-        itemService.register(Long.parseLong(itemId), userId);
+        itemService.register(Long.parseLong(itemId), Long.valueOf(userId));
         return ResponseBuilder.success(null, "Successfully registered for auction");
     }
 
@@ -98,7 +98,7 @@ public class ItemController {
             @PathVariable String itemId,
             @RequestHeader(value = "X-User-Id") String userId) {
 
-        itemService.unregister(Long.parseLong(itemId), userId);
+        itemService.unregister(Long.parseLong(itemId), Long.valueOf(userId));
         return ResponseBuilder.success(null, "Successfully unregistered from auction");
     }
 
@@ -115,7 +115,7 @@ public class ItemController {
 
         System.out.println("In here");
 
-        List<ItemWithSubscriptionDto> items = itemService.searchItems(input, userId);
+        List<ItemWithSubscriptionDto> items = itemService.searchItems(input, Long.valueOf(userId));
         return ResponseBuilder.success(items, "Search completed successfully");
     }
 
@@ -123,7 +123,7 @@ public class ItemController {
     public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> getLastCallToRegister(
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
 
-        List<ItemWithSubscriptionDto> items = itemService.getLastCallToRegister(userId);
+        List<ItemWithSubscriptionDto> items = itemService.getLastCallToRegister(Long.valueOf(userId));
         return ResponseBuilder.success(items, "Last call to register items retrieved successfully");
     }
 

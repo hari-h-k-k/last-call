@@ -14,7 +14,7 @@ public class ItemSubscriber {
     @NotNull
     @Column(nullable = false, name = "user_id")
     @JoinColumn(name = "user_id", foreignKey = @ForeignKey(name = "fk_item_subscriber_user"))
-    private String userId;
+    private Long userId;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
@@ -24,7 +24,7 @@ public class ItemSubscriber {
 
     public ItemSubscriber() {}
 
-    public ItemSubscriber(String userId, Item item) {
+    public ItemSubscriber(Long userId, Item item) {
         this.userId = userId;
         this.item = item;
     }
@@ -32,8 +32,8 @@ public class ItemSubscriber {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getUserId() { return userId; }
-    public void setUserId(String userId) { this.userId = userId; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
 
     public Item getItem() { return item; }
     public void setItem(Item item) { this.item = item; }
