@@ -60,13 +60,13 @@ public class ItemController {
     }
 
     @GetMapping({"/my-items"})
-    public ResponseEntity<ApiResponse<ItemWithSubscriptionDto>> getMyItems(
+    public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> getMyItems(
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
 
         System.out.println("in my-items");
 
         List<ItemWithSubscriptionDto> items = itemService.getItemsBySellerId(Long.valueOf(userId));
-        return ResponseBuilder.success((ItemWithSubscriptionDto) items, "Items returned successfully");
+        return ResponseBuilder.success(items, "Items returned successfully");
     }
 
     @GetMapping({"/{itemId}"})

@@ -5,11 +5,15 @@ import { useRouter } from 'next/navigation';
 import { authService } from '@/services/authService';
 import { userService } from '@/services/userService';
 import Navbar from '@/components/layout/Navbar';
+import { itemService } from '@/services/itemService';
+import ItemCard from '../../components/ui/ItemCard';
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('listings');
   const [profileImage, setProfileImage] = useState(null);
+  const [myItems, setMyItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
@@ -26,8 +30,25 @@ export default function ProfilePage() {
     router.push('/');
   };
 
+  useEffect(() => {
+      const fetchMyItems = async () => {
+        try {
+          const myItemsResponse = await itemService.getMyItems();
+          setMyItems(myItemsResponse.subject || []);
+          console.log(myItemsResponse);
+        } catch (error) {
+          console.error('Failed to fetch data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchMyItems();
+
+
+    }, [activeTab]);
+
   const stats = [
-    { label: 'Total Listings', value: '12', icon: '📋', color: 'text-blue-400' },
+    { label: 'Total Listings', value: myItems.length.toString(), icon: '📋', color: 'text-blue-400' },
     { label: 'Active Bids', value: '5', icon: '🔨', color: 'text-green-400' },
     { label: 'Items Won', value: '8', icon: '🏆', color: 'text-yellow-400' },
     { label: 'Success Rate', value: '85%', icon: '📈', color: 'text-purple-400' }
@@ -36,9 +57,9 @@ export default function ProfilePage() {
   if (!user) return <div>Loading...</div>;
 
   const tabs = [
-    { id: 'listings', label: 'My Listings', icon: '📋' },
-    { id: 'biddings', label: 'Past Biddings', icon: '🔨' },
-    { id: 'favorites', label: 'Favorites', icon: '❤️' }
+    { id: 'listings', label: 'My Listings', icon: '📋' }
+//    { id: 'biddings', label: 'Past Biddings', icon: '🔨' },
+//    { id: 'favorites', label: 'Favorites', icon: '❤️' }
   ];
 
   const renderTabContent = () => {
@@ -46,14 +67,9 @@ export default function ProfilePage() {
       case 'listings':
         return (
           <div className="grid grid-cols-4 gap-8">
-            {[1, 2, 3, 4, 5, 6].map((item) => (
-              <div key={item} className="bg-slate-600 border border-slate-500 shadow-lg rounded-xl p-6 hover:shadow-xl hover:border-slate-400 transition-all">
-                <div className="w-full h-40 bg-slate-500 border border-slate-400 rounded-lg mb-4"></div>
-                <h4 className="text-white font-medium text-lg mb-2">Vintage Watch #{item}</h4>
-                <p className="text-slate-300 mb-3">Current bid: $250</p>
-                <span className="text-green-400 font-medium bg-green-900 px-2 py-1 rounded text-sm">Active</span>
-              </div>
-            ))}
+            {myItems.map((item) => (
+                            <ItemCard key={item.item.id} item={item.item} registered={item.registered} />
+                          ))}
           </div>
         );
       case 'biddings':
@@ -91,9 +107,9 @@ export default function ProfilePage() {
     <>
       <Navbar show={true} />
       <div className="min-h-screen bg-slate-800 pt-16">
-        <div className="h-[calc(100vh-4rem)] flex flex-col px-8 py-6 bg-slate-900">
+        <div className="flex flex-col px-8 py-6 bg-slate-900">
           {/* Top Half - Profile & Stats */}
-          <div className="flex-1 grid grid-cols-2 gap-8 mb-8">
+          <div className="grid grid-cols-2 gap-8 mb-8">
             {/* Left - Profile Card */}
             <div className="bg-slate-700 border border-slate-600 shadow-xl rounded-xl p-12 flex flex-col justify-center">
               <div className="text-center">
@@ -132,7 +148,7 @@ export default function ProfilePage() {
           </div>
 
           {/* Bottom Half - Tabbed Content */}
-          <div className="flex-1 bg-slate-700 border border-slate-600 shadow-xl rounded-xl overflow-hidden">
+          <div className="bg-slate-700 border border-slate-600 shadow-xl rounded-xl overflow-hidden mb-8">
             {/* Tab Navigation */}
             <div className="border-b-2 border-slate-600 bg-slate-750">
               <nav className="flex">
@@ -154,7 +170,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Tab Content */}
-            <div className="p-8 h-full overflow-y-auto bg-slate-750">
+            <div className="p-8 bg-slate-750">
               {renderTabContent()}
             </div>
           </div>

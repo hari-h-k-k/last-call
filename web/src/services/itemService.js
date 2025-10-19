@@ -22,6 +22,11 @@ export const itemService = {
     return response.data;
   },
 
+  getMyItems: async (query) => {
+      const response = await apiClient.get(`/item/my-items`);
+      return response.data;
+    },
+
   getCategories: async () => {
     const response = await apiClient.get('/item/categories');
     return response.data;
@@ -37,7 +42,7 @@ export const itemService = {
     return response.data;
   },
 
-  
+
   subscribeToItem: async (itemId) => {
     const response = await apiClient.put(`/item/item-subscribe?itemId=${itemId}`);
     return response.data;
