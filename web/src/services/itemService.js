@@ -37,6 +37,7 @@ export const itemService = {
     return response.data;
   },
 
+  
   subscribeToItem: async (itemId) => {
     const response = await apiClient.put(`/item/item-subscribe?itemId=${itemId}`);
     return response.data;

@@ -8,54 +8,17 @@ import Navbar from '@/components/layout/Navbar';
 
 export default function ProfilePage() {
   const [user, setUser] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({ name: '', username: '', email: '' });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [activeTab, setActiveTab] = useState('listings');
   const [profileImage, setProfileImage] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
-    const loadUserProfile = async () => {
-      const userData = authService.getUser();
-      if (!userData) {
-        router.push('/login');
-        return;
-      }
-      
-      try {
-        // Fetch complete user profile from API
-        const response = await userService.getUserProfile();
-        if (response.success) {
-          const fullUserData = response.subject;
-          setUser(fullUserData);
-          setFormData({ 
-            name: fullUserData.name || '', 
-            username: fullUserData.username || '', 
-            email: fullUserData.email || '' 
-          });
-        } else {
-          // Fallback to localStorage data
-          setUser(userData);
-          setFormData({ 
-            name: userData.name || '', 
-            username: userData.username || '', 
-            email: userData.email || '' 
-          });
-        }
-      } catch (err) {
-        // Fallback to localStorage data on error
-        setUser(userData);
-        setFormData({ 
-          name: userData.name || '', 
-          username: userData.username || '', 
-          email: userData.email || '' 
-        });
-      }
-    };
-    
-    loadUserProfile();
+    const userData = authService.getUser();
+    if (!userData) {
+      router.push('/login');
+      return;
+    }
+    setUser(userData);
   }, [router]);
 
   const handleLogout = () => {
@@ -63,194 +26,140 @@ export default function ProfilePage() {
     router.push('/');
   };
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => setProfileImage(e.target.result);
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSave = async () => {
-    setLoading(true);
-    setError('');
-    setSuccess('');
-    
-    try {
-      const response = await userService.updateProfile(formData);
-      
-      if (response.success) {
-        setUser(response.subject);
-        setSuccess('Profile updated successfully!');
-        setIsEditing(false);
-      } else {
-        if (response.message === 'Username already exists') {
-          setError('This username is already taken. Please choose a different one.');
-        } else if (response.message === 'Email already exists') {
-          setError('This email is already registered. Please use a different email.');
-        } else {
-          setError(response.message || 'Update failed');
-        }
-      }
-    } catch (err) {
-      // Fallback to localStorage update if API fails
-      const updatedUser = { ...user, ...formData };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      setUser(updatedUser);
-      setSuccess('Profile updated locally!');
-      setIsEditing(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const stats = [
+    { label: 'Total Listings', value: '12', icon: '📋', color: 'text-blue-400' },
+    { label: 'Active Bids', value: '5', icon: '🔨', color: 'text-green-400' },
+    { label: 'Items Won', value: '8', icon: '🏆', color: 'text-yellow-400' },
+    { label: 'Success Rate', value: '85%', icon: '📈', color: 'text-purple-400' }
+  ];
 
   if (!user) return <div>Loading...</div>;
+
+  const tabs = [
+    { id: 'listings', label: 'My Listings', icon: '📋' },
+    { id: 'biddings', label: 'Past Biddings', icon: '🔨' },
+    { id: 'favorites', label: 'Favorites', icon: '❤️' }
+  ];
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'listings':
+        return (
+          <div className="grid grid-cols-4 gap-8">
+            {[1, 2, 3, 4, 5, 6].map((item) => (
+              <div key={item} className="bg-slate-600 border border-slate-500 shadow-lg rounded-xl p-6 hover:shadow-xl hover:border-slate-400 transition-all">
+                <div className="w-full h-40 bg-slate-500 border border-slate-400 rounded-lg mb-4"></div>
+                <h4 className="text-white font-medium text-lg mb-2">Vintage Watch #{item}</h4>
+                <p className="text-slate-300 mb-3">Current bid: $250</p>
+                <span className="text-green-400 font-medium bg-green-900 px-2 py-1 rounded text-sm">Active</span>
+              </div>
+            ))}
+          </div>
+        );
+      case 'biddings':
+        return (
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((item) => (
+              <div key={item} className="bg-slate-600 border border-slate-500 shadow-lg rounded-xl p-6 flex justify-between items-center hover:shadow-xl hover:border-slate-400 transition-all">
+                <div>
+                  <h4 className="text-white font-medium text-lg mb-1">Antique Vase #{item}</h4>
+                  <p className="text-slate-300">Your bid: $180 • Final price: $220</p>
+                </div>
+                <span className="text-red-400 font-medium bg-red-900 px-3 py-1 rounded">Lost</span>
+              </div>
+            ))}
+          </div>
+        );
+      case 'favorites':
+        return (
+          <div className="grid grid-cols-4 gap-8">
+            {[1, 2, 3, 4].map((item) => (
+              <div key={item} className="bg-slate-600 border border-slate-500 shadow-lg rounded-xl p-6 hover:shadow-xl hover:border-slate-400 transition-all">
+                <div className="w-full h-40 bg-slate-500 border border-slate-400 rounded-lg mb-4"></div>
+                <h4 className="text-white font-medium text-lg mb-2">Art Piece #{item}</h4>
+                <p className="text-slate-300">Starting bid: $100</p>
+              </div>
+            ))}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     <>
       <Navbar show={true} />
-      <div className="min-h-screen bg-slate-800 pt-24 pb-16">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="bg-slate-700 rounded-lg shadow-md p-8">
-          <div className="text-center mb-8">
-            <div className="relative inline-block">
-              <div className="w-24 h-24 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
-                {profileImage ? (
-                  <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-2xl text-amber-600">👤</span>
-                )}
+      <div className="min-h-screen bg-slate-800 pt-16">
+        <div className="h-[calc(100vh-4rem)] flex flex-col px-8 py-6 bg-slate-900">
+          {/* Top Half - Profile & Stats */}
+          <div className="flex-1 grid grid-cols-2 gap-8 mb-8">
+            {/* Left - Profile Card */}
+            <div className="bg-slate-700 border border-slate-600 shadow-xl rounded-xl p-12 flex flex-col justify-center">
+              <div className="text-center">
+                <div className="w-32 h-32 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6 border-4 border-amber-200">
+                  {profileImage ? (
+                    <img src={profileImage} alt="Profile" className="w-full h-full object-cover rounded-full" />
+                  ) : (
+                    <span className="text-4xl text-amber-600">👤</span>
+                  )}
+                </div>
+                <h2 className="text-4xl font-bold text-white mb-4">{user?.name || 'John Doe'}</h2>
+                <p className="text-slate-300 text-lg mb-4">{user?.email || 'john@example.com'}</p>
+                <p className="text-slate-400 mb-8">Auction Enthusiast & Collector</p>
+                <button 
+                  onClick={handleLogout}
+                  className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition-all shadow-lg"
+                >
+                  Logout
+                </button>
               </div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-              />
             </div>
-            <h1 className="text-3xl font-bold text-amber-400">{user?.name ? user.name.split(' ')[0] : 'Profile'}</h1>
+
+            {/* Right - Statistics Panel */}
+            <div className="bg-slate-700 border border-slate-600 shadow-xl rounded-xl p-12">
+              <h3 className="text-3xl font-bold text-white mb-8 border-b border-slate-600 pb-4">Statistics</h3>
+              <div className="grid grid-cols-2 gap-6">
+                {stats.map((stat, index) => (
+                  <div key={index} className="bg-slate-600 border border-slate-500 shadow-lg rounded-xl p-8 text-center hover:bg-slate-550 transition-all">
+                    <div className="text-4xl mb-4">{stat.icon}</div>
+                    <div className={`text-3xl font-bold ${stat.color} mb-2`}>{stat.value}</div>
+                    <div className="text-slate-300">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">
-                Full Name
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  placeholder="Enter your full name"
-                />
-              ) : (
-                <p className="text-slate-300">{user.name || 'Not provided'}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">
-                Username
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={formData.username}
-                  onChange={(e) => setFormData({...formData, username: e.target.value})}
-                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  required
-                />
-              ) : (
-                <p className="text-slate-300">{user.username}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">
-                Email
-              </label>
-              {isEditing ? (
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full px-3 py-2 bg-slate-600 border border-slate-500 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  required
-                />
-              ) : (
-                <p className="text-slate-300">{user.email || 'Not provided'}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">
-                Member Since
-              </label>
-              <p className="text-slate-300">
-                {user.dateCreated ? new Date(user.dateCreated).toLocaleDateString() : 'Unknown'}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-1">
-                Account Status
-              </label>
-              <p className="text-slate-300">
-                {user.verified ? '✅ Verified' : '⏳ Pending Verification'}
-              </p>
-            </div>
-
-            <div className="flex space-x-4 pt-6">
-              {isEditing ? (
-                <>
+          {/* Bottom Half - Tabbed Content */}
+          <div className="flex-1 bg-slate-700 border border-slate-600 shadow-xl rounded-xl overflow-hidden">
+            {/* Tab Navigation */}
+            <div className="border-b-2 border-slate-600 bg-slate-750">
+              <nav className="flex">
+                {tabs.map((tab) => (
                   <button
-                    onClick={handleSave}
-                    disabled={loading}
-                    className="bg-amber-500 hover:bg-amber-600 text-slate-900 px-6 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex-1 px-8 py-6 text-lg font-medium transition-all border-r border-slate-600 last:border-r-0 ${
+                      activeTab === tab.id
+                        ? 'text-amber-400 border-b-4 border-amber-400 bg-slate-600 shadow-lg'
+                        : 'text-slate-300 hover:text-amber-300 hover:bg-slate-650'
+                    }`}
                   >
-                    {loading ? 'Saving...' : 'Save Changes'}
+                    <span className="mr-3 text-xl">{tab.icon}</span>
+                    {tab.label}
                   </button>
-                  <button
-                    onClick={() => setIsEditing(false)}
-                    className="bg-slate-600 hover:bg-slate-700 text-white px-6 py-2 rounded-lg font-medium transition-all"
-                  >
-                    Cancel
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="bg-amber-500 hover:bg-amber-600 text-slate-900 px-6 py-2 rounded-lg font-medium transition-all"
-                >
-                  Edit Profile
-                </button>
-              )}
-              
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-medium transition-all"
-              >
-                Logout
-              </button>
+                ))}
+              </nav>
             </div>
 
-            {error && (
-              <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                {error}
-              </div>
-            )}
-            
-            {success && (
-              <div className="mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded">
-                {success}
-              </div>
-            )}
+            {/* Tab Content */}
+            <div className="p-8 h-full overflow-y-auto bg-slate-750">
+              {renderTabContent()}
+            </div>
           </div>
         </div>
       </div>
-    </div>
     </>
   );
 }

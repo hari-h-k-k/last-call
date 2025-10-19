@@ -38,7 +38,7 @@ public class ItemController {
         return ResponseBuilder.success(savedItem, "Item created successfully");
     }
 
-    @PutMapping("/update-item/{itemId")
+    @PutMapping("/update-item/{itemId}")
     public ResponseEntity<ApiResponse<Item>> updateItem(
             @PathVariable Long itemId,
             @RequestBody CreateItemRequestDto request,
@@ -59,7 +59,15 @@ public class ItemController {
 
     }
 
+    @GetMapping({"/my-items"})
+    public ResponseEntity<ApiResponse<ItemWithSubscriptionDto>> getMyItems(
+            @RequestHeader(value = "X-User-Id", required = false) String userId) {
 
+        System.out.println("in my-items");
+
+        List<ItemWithSubscriptionDto> items = itemService.searchItems(input, userId);
+        return ResponseBuilder.success(items, "Search completed successfully");
+    }
 
     @GetMapping({"/{itemId}"})
     public ResponseEntity<ApiResponse<ItemWithSubscriptionDto>> getItem(
