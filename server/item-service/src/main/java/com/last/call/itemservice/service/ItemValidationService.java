@@ -8,18 +8,18 @@ import java.util.Date;
 @Service
 public class ItemValidationService {
 
-    public void validateItemDates(Item item, Date auctionStartDate) {
+    public void validateItemDates(Item item) {
         Date now = new Date();
         
-//        if (item.getRegistrationClosingDate().before(now)) {
-//            throw new IllegalArgumentException("Registration closing date cannot be in the past");
-//        }
+        if (item.getRegistrationClosingDate().before(now)) {
+            throw new IllegalArgumentException("Registration closing date cannot be in the past");
+        }
         
-//        if (item.getAuctionStartDate().before(now)) {
-//            throw new IllegalArgumentException("Auction start date cannot be in the past");
-//        }
+        if (item.getAuctionStartDate().before(now)) {
+            throw new IllegalArgumentException("Auction start date cannot be in the past");
+        }
         
-        if (item.getRegistrationClosingDate().after(auctionStartDate)) {
+        if (item.getRegistrationClosingDate().after(item.getAuctionStartDate())) {
             throw new IllegalArgumentException("Registration closing date cannot be after auction start date");
         }
     }

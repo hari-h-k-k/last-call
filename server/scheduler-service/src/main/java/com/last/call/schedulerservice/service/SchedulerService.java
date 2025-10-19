@@ -1,6 +1,7 @@
 package com.last.call.schedulerservice.service;
 
 import com.last.call.schedulerservice.job.RoomActivationJob;
+import com.last.call.schedulerservice.job.RoomCloseJob;
 import com.last.call.schedulerservice.job.RoomCreationJob;
 import com.last.call.shared.dto.ItemRoomCreationDto;
 import org.quartz.*;
@@ -20,12 +21,17 @@ public class SchedulerService {
     public SchedulerService(Scheduler scheduler) {
         this.scheduler = scheduler;
     }
-    
+
     public void scheduleRoomCreationJob(ItemRoomCreationDto itemRoomCreationDto) throws SchedulerException {
         logger.info("Scheduling room creation job for item ID: {} at {}", itemRoomCreationDto.getItemId(), itemRoomCreationDto.getRegistrationClosingDate());
 
+        JobKey jobKey = JobKey.jobKey("roomCreation_" + itemRoomCreationDto.getItemId(), "itemJobs");
+        if (scheduler.checkExists(jobKey)) {
+            scheduler.deleteJob(jobKey);
+        }
+
         JobDetail job = JobBuilder.newJob(RoomCreationJob.class)
-                .withIdentity("roomCreation_" + itemRoomCreationDto.getItemId(), "itemJobs")
+                .withIdentity(jobKey)
                 .usingJobData("itemId", itemRoomCreationDto.getItemId())
                 .usingJobData("startingPrice", itemRoomCreationDto.getStartingPrice())
                 .usingJobData("auctionStartDate", itemRoomCreationDto.getAuctionStartDate().getTime())
@@ -42,8 +48,13 @@ public class SchedulerService {
     public void scheduleRoomActivationJob(Long itemId, Date auctionStartDate) throws SchedulerException {
         logger.info("Scheduling room activation job for item ID: {} at {}", itemId, auctionStartDate);
 
+        JobKey jobKey = JobKey.jobKey("roomActivation_" + itemId, "itemJobs");
+        if (scheduler.checkExists(jobKey)) {
+            scheduler.deleteJob(jobKey);
+        }
+
         JobDetail job = JobBuilder.newJob(RoomActivationJob.class)
-                .withIdentity("roomActivation_" + itemId, "itemJobs")
+                .withIdentity(jobKey)
                 .usingJobData("itemId", itemId)
                 .build();
 
@@ -58,8 +69,13 @@ public class SchedulerService {
     public void scheduleRoomCloseJob(Long roomId, Date auctionEndDate) throws SchedulerException {
         logger.info("Scheduling room close job for item ID: {} at {}", roomId, auctionEndDate);
 
-        JobDetail job = JobBuilder.newJob(RoomActivationJob.class)
-                .withIdentity("roomClose_" + roomId, "itemJobs")
+        JobKey jobKey = JobKey.jobKey("roomClose_" + roomId, "roomJobs");
+        if (scheduler.checkExists(jobKey)) {
+            scheduler.deleteJob(jobKey);
+        }
+
+        JobDetail job = JobBuilder.newJob(RoomCloseJob.class)
+                .withIdentity(jobKey)
                 .usingJobData("roomId", roomId)
                 .build();
 

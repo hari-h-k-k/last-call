@@ -38,6 +38,29 @@ public class ItemController {
         return ResponseBuilder.success(savedItem, "Item created successfully");
     }
 
+    @PutMapping("/update-item/{itemId")
+    public ResponseEntity<ApiResponse<Item>> updateItem(
+            @PathVariable Long itemId,
+            @RequestBody CreateItemRequestDto request,
+            @RequestHeader(value="X-User-Id") String userId){
+
+        Item existingItem= itemService.getItemById(itemId);
+
+        existingItem.setTitle(request.getTitle());
+        existingItem.setDescription(request.getDescription());
+        existingItem.setStartingPrice(request.getStartingPrice());
+        existingItem.setCategory(request.getCategory());
+        existingItem.setRegistrationClosingDate(request.getRegistrationClosingDate());
+        existingItem.setAuctionStartDate(request.getAuctionStartDate());
+
+        Item updatedItem=itemService.saveItem(existingItem);
+
+        return ResponseBuilder.success(updatedItem, "Item updated successfully" );
+
+    }
+
+
+
     @GetMapping({"/{itemId}"})
     public ResponseEntity<ApiResponse<ItemWithSubscriptionDto>> getItem(
             @PathVariable String itemId,

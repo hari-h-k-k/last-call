@@ -43,7 +43,7 @@ public class ItemService {
     }
 
     public Item saveItem(Item item) {
-        itemValidationService.validateItemDates(item, item.getAuctionStartDate());
+        itemValidationService.validateItemDates(item);
         itemValidationService.validateStartingPrice(item.getStartingPrice());
         Item savedItem = itemRepository.save(item);
         
@@ -55,6 +55,45 @@ public class ItemService {
         }
         
         return savedItem;
+    }
+
+    public Item updateItem(Item updatedItem) {
+        itemValidationService.validateItemDates(updatedItem);
+        itemValidationService.validateStartingPrice(updatedItem.getStartingPrice());
+
+        // Check if item exists
+        Item existingItem = itemRepository.findById(updatedItem.getId())
+                .orElseThrow(() -> new RuntimeException("Item not found with ID: " + updatedItem.getId()));
+
+        boolean scheduleNeedsUpdate = false;
+
+        // Check if scheduling-related fields changed
+        if (!updatedItem.getRegistrationClosingDate().equals(existingItem.getRegistrationClosingDate())) {
+            scheduleNeedsUpdate = true;
+        }
+
+        if (!updatedItem.getAuctionStartDate().equals(existingItem.getAuctionStartDate())) {
+            scheduleNeedsUpdate = true;
+        }
+
+        if (updatedItem.getStartingPrice()!=existingItem.getStartingPrice()) {
+            scheduleNeedsUpdate = true;
+        }
+
+        // Save the updated item
+        Item savedItem = itemRepository.save(existingItem);
+
+        // Re-schedule only if the relevant dates changed
+        if (scheduleNeedsUpdate) {
+            try {
+                schedulerServiceClient.scheduleItemJobs(savedItem);
+            } catch (Exception e) {
+                System.err.println("Failed to re-schedule jobs for item " + savedItem.getId() + ": " + e.getMessage());
+            }
+        }
+
+        return savedItem;
+
     }
 
     public void register(Long itemId, String userId) {
@@ -71,7 +110,10 @@ public class ItemService {
 
     public List<ItemWithSubscriptionDto> searchItems(String input, String userId) {
         if (input == null || input.trim().isEmpty()) {
-            return null;
+            List<Item> results = itemRepository.findAll();
+            return results.stream()
+                    .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, userId)))
+                    .collect(java.util.stream.Collectors.toList());
         }
 
         List<Item> results = itemRepository.searchItems(input.trim());
