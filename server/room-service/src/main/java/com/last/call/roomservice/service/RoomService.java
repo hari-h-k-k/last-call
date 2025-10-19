@@ -55,7 +55,7 @@ public class RoomService {
         Room room = roomRepository.findByItemId(itemId).orElseThrow(() -> new RuntimeException("Room not found"));
         room.setStatus(RoomStatus.ACTIVE);
         Date now = new Date();
-        room.setEndDate(new Date(now.getTime() + 1 * 60 * 1000));
+        room.setEndDate(new Date(now.getTime() + 10 * 60 * 1000));
         room.setUpdatedAt(now);
         roomRepository.save(room);
 
@@ -128,6 +128,8 @@ public class RoomService {
         message.setCurrentPrice(bidAmount);
         message.setBid(bid);
         message.setRoomId(roomId);
+        message.setLeaderboard(bidservice.getLeaderboard(roomId));
+        message.setBidHistory(bidservice.getBidHistory(roomId));
         message.setRoomStatus(room.getStatus());
         message.setWinnerId(userId);
         message.setMyBid(bidAmount);

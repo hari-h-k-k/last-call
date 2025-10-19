@@ -29,10 +29,6 @@ public class BidService {
         return bidRepository.save(bid);
     }
 
-    public void updateUserBid(Long userId, Double bidAmount, Long roomId) {
-
-    }
-
     public List<Bid> getBidHistory(Long roomId) {
         return bidRepository.findByRoomIdOrderByCreatedAtDesc(roomId);
     }
@@ -40,7 +36,7 @@ public class BidService {
     public List<LeaderboardEntry> getLeaderboard(Long roomId) {
         List<Bid> topBids = bidRepository.findTopBidsByRoom(roomId);
         return topBids.stream()
-                .map(bid -> new LeaderboardEntry("User " + bid.getUserId(), bid.getAmount(), bid.getUserId()))
+                .map(bid -> new LeaderboardEntry("User " + bid.getUserId(), bid.getAmount(), bid.getUserId(), bid.getName()))
                 .collect(Collectors.toList());
     }
 }

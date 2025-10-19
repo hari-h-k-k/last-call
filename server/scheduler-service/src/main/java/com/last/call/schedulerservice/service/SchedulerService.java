@@ -25,8 +25,13 @@ public class SchedulerService {
     public void scheduleRoomCreationJob(ItemRoomCreationDto itemRoomCreationDto) throws SchedulerException {
         logger.info("Scheduling room creation job for item ID: {} at {}", itemRoomCreationDto.getItemId(), itemRoomCreationDto.getRegistrationClosingDate());
 
+        JobKey jobKey = JobKey.jobKey("roomCreation_" + itemRoomCreationDto.getItemId(), "itemJobs");
+        if (scheduler.checkExists(jobKey)) {
+            scheduler.deleteJob(jobKey);
+        }
+
         JobDetail job = JobBuilder.newJob(RoomCreationJob.class)
-                .withIdentity("roomCreation_" + itemRoomCreationDto.getItemId(), "itemJobs")
+                .withIdentity(jobKey)
                 .usingJobData("itemId", itemRoomCreationDto.getItemId())
                 .usingJobData("startingPrice", itemRoomCreationDto.getStartingPrice())
                 .usingJobData("auctionStartDate", itemRoomCreationDto.getAuctionStartDate().getTime())
@@ -43,8 +48,13 @@ public class SchedulerService {
     public void scheduleRoomActivationJob(Long itemId, Date auctionStartDate) throws SchedulerException {
         logger.info("Scheduling room activation job for item ID: {} at {}", itemId, auctionStartDate);
 
+        JobKey jobKey = JobKey.jobKey("roomActivation_" + itemId, "itemJobs");
+        if (scheduler.checkExists(jobKey)) {
+            scheduler.deleteJob(jobKey);
+        }
+
         JobDetail job = JobBuilder.newJob(RoomActivationJob.class)
-                .withIdentity("roomActivation_" + itemId, "itemJobs")
+                .withIdentity(jobKey)
                 .usingJobData("itemId", itemId)
                 .build();
 
@@ -59,7 +69,7 @@ public class SchedulerService {
     public void scheduleRoomCloseJob(Long roomId, Date auctionEndDate) throws SchedulerException {
         logger.info("Scheduling room close job for item ID: {} at {}", roomId, auctionEndDate);
 
-        JobKey jobKey = JobKey.jobKey("roomClose_" + roomId, "itemJobs");
+        JobKey jobKey = JobKey.jobKey("roomClose_" + roomId, "roomJobs");
         if (scheduler.checkExists(jobKey)) {
             scheduler.deleteJob(jobKey);
         }

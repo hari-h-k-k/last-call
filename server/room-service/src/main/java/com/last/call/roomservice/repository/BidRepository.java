@@ -18,13 +18,12 @@ public interface BidRepository extends JpaRepository<Bid, Long> {
     
     List<Bid> findByUserId(Long userId);
     
-    @Query("SELECT b FROM Bid b WHERE b.room.id = :roomId ORDER BY b.amount DESC")
+    @Query("SELECT b FROM Bid b WHERE b.room.id = :roomId AND b.amount = (SELECT MAX(b2.amount) FROM Bid b2 WHERE b2.room.id = :roomId AND b2.userId = b.userId) ORDER BY b.amount DESC LIMIT 5")
     List<Bid> findTopBidsByRoom(@Param("roomId") Long roomId);
     
     @Query("SELECT MAX(b.amount) FROM Bid b WHERE b.room.id = :roomId")
     Double findHighestBidByRoom(@Param("roomId") Long roomId);
 
-//    Given a roomId and userId, find the highest bid placed by the user in that room
     @Query("SELECT MAX(b.amount) FROM Bid b WHERE b.room.id = :roomId AND b.userId = :userId")
     Double findHighestBidByRoomAndUserId(@Param("roomId") Long roomId, @Param("userId") Long userId);
 }
