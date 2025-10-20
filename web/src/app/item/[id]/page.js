@@ -8,7 +8,9 @@ import Navbar from '../../../components/layout/Navbar';
 import LoginModal from '../../../components/modals/LoginModal';
 import SignupModal from '../../../components/modals/SignupModal';
 import ConfirmModal from '../../../components/modals/ConfirmModal';
+import EditItemModal from '../../../components/modals/EditItemModal';
 import {roomService} from "@/services/roomService";
+import { toast } from 'react-toastify';
 
 export default function ItemDetailsPage() {
   const { id } = useParams();
@@ -18,6 +20,7 @@ export default function ItemDetailsPage() {
   const [isRegistering, setIsRegistering] = useState(false);
   const [showUnregisterModal, setShowUnregisterModal] = useState(false);
   const [showExitModal, setShowExitModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [isWatchlisting, setIsWatchlisting] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -56,6 +59,17 @@ export default function ItemDetailsPage() {
       fetchItem();
     }
   }, [id]);
+
+  const handleItemUpdate = async () => {
+    try {
+      const response = await itemService.getItemById(id);
+      setItem(response.subject.item);
+      toast.success('Item updated successfully!');
+    } catch (error) {
+      console.error('Failed to refresh item:', error);
+      toast.error('Failed to refresh item data');
+    }
+  };
 
   useEffect(() => {
     const timeUpdateInterval = setInterval(() => {
@@ -257,7 +271,10 @@ export default function ItemDetailsPage() {
                   return (
                     <>
                       {!auctionStarted && (
-                        <button className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 py-3 rounded-lg font-bold text-lg transition-colors">
+                        <button 
+                          onClick={() => setShowEditModal(true)}
+                          className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 py-3 rounded-lg font-bold text-lg transition-colors"
+                        >
                           Edit Item
                         </button>
                       )}
@@ -361,6 +378,13 @@ export default function ItemDetailsPage() {
         message="Are you sure you want to exit this auction? This action cannot be undone and you will not be able to participate."
         confirmText="Exit Auction"
         confirmButtonClass="bg-red-500 hover:bg-red-600"
+      />
+
+      <EditItemModal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        item={item}
+        onUpdate={handleItemUpdate}
       />
     </div>
   );

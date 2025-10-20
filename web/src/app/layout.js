@@ -1,4 +1,5 @@
 import './globals.css';
+import ToastProvider from '../components/ToastProvider';
 
 export const metadata = {
   title: 'Last Call - Bidding Platform',
@@ -8,7 +9,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <ToastProvider />
+      </body>
     </html>
   );
 }

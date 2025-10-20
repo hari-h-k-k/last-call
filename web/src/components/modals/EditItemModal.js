@@ -1,18 +1,12 @@
 'use client';
-import {useState, useEffect} from 'react';
+import { useState, useEffect } from 'react';
 import Modal from '../ui/Modal';
-import LoginModal from './LoginModal';
-import SignupModal from './SignupModal';
-import {useAuth} from '../../hooks/useAuth';
-import {itemService} from '../../services/itemService';
+import { itemService } from '../../services/itemService';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from 'react-toastify';
 
-export default function CreateItemModal({isOpen, onClose}) {
-  const {isAuthenticated} = useAuth();
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [showSignupModal, setShowSignupModal] = useState(false);
+export default function EditItemModal({ isOpen, onClose, item, onUpdate }) {
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
@@ -26,27 +20,32 @@ export default function CreateItemModal({isOpen, onClose}) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-      const fetchData = async () => {
-        try {
-          const categoriesResponse = await itemService.getCategories();
-          setCategories(categoriesResponse.subject || []);
-        } catch (error) {
-          console.error('Failed to fetch data:', error);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-      fetchData();
-    }, []);
+    const fetchCategories = async () => {
+      try {
+        const response = await itemService.getCategories();
+        setCategories(response.subject || []);
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      }
+    };
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    if (item) {
+      setFormData({
+        title: item.title,
+        description: item.description,
+        startingPrice: item.startingPrice.toString(),
+        category: item.category,
+        registrationClosingDate: new Date(item.registrationClosingDate),
+        auctionStartDate: new Date(item.auctionStartDate)
+      });
+    }
+  }, [item]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!isAuthenticated) {
-      setShowLoginModal(true);
-      return;
-    }
-
     setIsLoading(true);
     setError('');
 
@@ -60,59 +59,28 @@ export default function CreateItemModal({isOpen, onClose}) {
         auctionStartDate: formData.auctionStartDate
       };
 
-      await itemService.createItem(itemData);
-      toast.success('Item created successfully');
+      await itemService.updateItem(item.id, itemData);
+      onUpdate();
       handleClose();
     } catch (error) {
-      const message = error.response?.data?.message || error.message || 'Failed to create item';
+      const message = error.response?.data?.message || error.message || 'Failed to update item';
       setError(message);
-      toast.error('Failed to create item');
+      toast.error('Failed to update item');
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleClose = () => {
-    setFormData({
-      title: '',
-      description: '',
-      startingPrice: '',
-      category: '',
-      registrationClosingDate: null,
-      auctionStartDate: null
-    });
     setError('');
     onClose();
   };
 
-  if (!isAuthenticated && (showLoginModal || showSignupModal)) {
-    return (
-      <>
-        <LoginModal
-          isOpen={showLoginModal}
-          onClose={() => setShowLoginModal(false)}
-          onSwitchToSignup={() => {
-            setShowLoginModal(false);
-            setShowSignupModal(true);
-          }}
-        />
-        <SignupModal
-          isOpen={showSignupModal}
-          onClose={() => setShowSignupModal(false)}
-          onSwitchToLogin={() => {
-            setShowSignupModal(false);
-            setShowLoginModal(true);
-          }}
-        />
-      </>
-    );
-  }
-
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size="xl">
       <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-white mb-2">Create Auction</h2>
-        <p className="text-slate-400">List your item for auction</p>
+        <h2 className="text-2xl font-bold text-white mb-2">Edit Item</h2>
+        <p className="text-slate-400">Update your auction item details</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -128,7 +96,7 @@ export default function CreateItemModal({isOpen, onClose}) {
             placeholder="Item Title"
             value={formData.title}
             onChange={(e) => setFormData({...formData, title: e.target.value})}
-            className="w-full bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-700 focus:border-green-500 focus:outline-none"
+            className="w-full bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-700 focus:border-amber-500 focus:outline-none"
             required
           />
         </div>
@@ -138,7 +106,7 @@ export default function CreateItemModal({isOpen, onClose}) {
             placeholder="Description"
             value={formData.description}
             onChange={(e) => setFormData({...formData, description: e.target.value})}
-            className="w-full bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-700 focus:border-green-500 focus:outline-none h-24 resize-none"
+            className="w-full bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-700 focus:border-amber-500 focus:outline-none h-24 resize-none"
             required
           />
         </div>
@@ -151,7 +119,7 @@ export default function CreateItemModal({isOpen, onClose}) {
             placeholder="Starting Price ($)"
             value={formData.startingPrice}
             onChange={(e) => setFormData({...formData, startingPrice: e.target.value})}
-            className="w-full bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-700 focus:border-green-500 focus:outline-none"
+            className="w-full bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-700 focus:border-amber-500 focus:outline-none"
             required
           />
         </div>
@@ -160,7 +128,7 @@ export default function CreateItemModal({isOpen, onClose}) {
           <select
             value={formData.category}
             onChange={(e) => setFormData({...formData, category: e.target.value})}
-            className="w-full bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-700 focus:border-green-500 focus:outline-none"
+            className="w-full bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-700 focus:border-amber-500 focus:outline-none"
             required
           >
             <option value="">Select Category</option>
@@ -169,7 +137,6 @@ export default function CreateItemModal({isOpen, onClose}) {
                 {category[0].toUpperCase() + category.slice(1).toLowerCase()}
               </option>
             ))}
-
           </select>
         </div>
 
@@ -182,7 +149,7 @@ export default function CreateItemModal({isOpen, onClose}) {
               showTimeSelect
               dateFormat="MMM d, yyyy h:mm aa"
               placeholderText="Select date & time"
-              className="w-full bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-700 focus:border-green-500 focus:outline-none text-sm"
+              className="w-full bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-700 focus:border-amber-500 focus:outline-none text-sm"
               wrapperClassName="w-full"
               required
             />
@@ -195,7 +162,7 @@ export default function CreateItemModal({isOpen, onClose}) {
               showTimeSelect
               dateFormat="MMM d, yyyy h:mm aa"
               placeholderText="Select date & time"
-              className="w-full bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-700 focus:border-green-500 focus:outline-none text-sm"
+              className="w-full bg-slate-800 text-white px-4 py-3 rounded-lg border border-slate-700 focus:border-amber-500 focus:outline-none text-sm"
               wrapperClassName="w-full"
               required
             />
@@ -205,9 +172,9 @@ export default function CreateItemModal({isOpen, onClose}) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-green-500 hover:bg-green-600 disabled:bg-green-500/50 text-white py-3 rounded-lg font-semibold transition-colors"
+          className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-amber-500/50 text-slate-900 py-3 rounded-lg font-semibold transition-colors"
         >
-          {isLoading ? 'Creating...' : 'Create Auction'}
+          {isLoading ? 'Updating...' : 'Update Item'}
         </button>
       </form>
     </Modal>
