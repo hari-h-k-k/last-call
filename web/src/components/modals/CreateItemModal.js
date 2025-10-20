@@ -1,5 +1,5 @@
 'use client';
-import {useState} from 'react';
+import {useState, useEffect} from 'react';
 import Modal from '../ui/Modal';
 import LoginModal from './LoginModal';
 import SignupModal from './SignupModal';
@@ -7,16 +7,14 @@ import {useAuth} from '../../hooks/useAuth';
 import {itemService} from '../../services/itemService';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-
-const CATEGORIES = [
-  'ART', 'CAR', 'MOTORCYCLE', 'COLLECTIBLES', 'HOUSE', 'APARTMENT',
-  'PLOT', 'ELECTRONICS', 'JEWELRY', 'ANTIQUES', 'BOOKS', 'SPORTS', 'FASHION', 'OTHER'
-];
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function CreateItemModal({isOpen, onClose}) {
   const {isAuthenticated} = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSignupModal, setShowSignupModal] = useState(false);
+  const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -27,6 +25,20 @@ export default function CreateItemModal({isOpen, onClose}) {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const categoriesResponse = await itemService.getCategories();
+          setCategories(categoriesResponse.subject || []);
+        } catch (error) {
+          console.error('Failed to fetch data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+      fetchData();
+    }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,9 +62,12 @@ export default function CreateItemModal({isOpen, onClose}) {
       };
 
       await itemService.createItem(itemData);
+      toast.success('Item created successfully');
       handleClose();
     } catch (error) {
-      setError(error.response?.data?.message || error.message || 'Failed to create item');
+      const message = error.response?.data?.message || error.message || 'Failed to create item';
+      setError(message);
+      toast.error(`${message}`);
     } finally {
       setIsLoading(false);
     }
@@ -150,11 +165,12 @@ export default function CreateItemModal({isOpen, onClose}) {
             required
           >
             <option value="">Select Category</option>
-            {CATEGORIES.map(category => (
+            {categories.map(({ category }) => (
               <option key={category} value={category}>
-                {category.charAt(0) + category.slice(1).toLowerCase()}
+                {category[0].toUpperCase() + category.slice(1).toLowerCase()}
               </option>
             ))}
+
           </select>
         </div>
 

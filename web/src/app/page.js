@@ -5,6 +5,7 @@ import Navbar from '@/components/layout/Navbar';
 import EnhancedHeroSection from '@/components/home/EnhancedHeroSection';
 import HomeContent from '@/components/home/HomeContent';
 import { useScrollNavbar } from '@/hooks/useScrollNavbar';
+import { ToastContainer } from 'react-toastify';
 
 export default function HomePage() {
   const [showNavbar, setShowNavbar] = useState(false);
@@ -20,6 +21,7 @@ export default function HomePage() {
       <EnhancedHeroSection />
       <Navbar show={showNavbar} />
       <HomeContent />
+      <ToastContainer position="top-right" autoClose={3000} />
     </>
   );
 }

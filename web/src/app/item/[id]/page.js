@@ -249,6 +249,15 @@ export default function ItemDetailsPage() {
             </div>
 
             <div className="space-y-3">
+              {(() => {
+                const currentUser = authService.getUser();
+                const isSeller = currentUser && item.sellerId === currentUser.userId;
+                return isSeller && (
+                  <button className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 py-3 rounded-lg font-bold text-lg transition-colors">
+                    Edit Item
+                  </button>
+                );
+              })()}
               {registered && !auctionStarted && (
                 <>
                   <button className="w-full bg-green-500 text-white py-3 rounded-lg font-bold text-lg">

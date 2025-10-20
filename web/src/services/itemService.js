@@ -82,5 +82,10 @@ export const itemService = {
   exitAuction: async (itemId) => {
     const response = await apiClient.delete(`/item/${itemId}/unregister`);
     return response.data;
+  },
+
+  updateItem: async (itemId, itemData) => {
+    const response = await apiClient.put(`/item/update-item/${itemId}`, itemData);
+    return response.data;
   }
 };
