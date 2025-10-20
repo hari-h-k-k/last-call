@@ -252,75 +252,92 @@ export default function ItemDetailsPage() {
               {(() => {
                 const currentUser = authService.getUser();
                 const isSeller = currentUser && item.sellerId === currentUser.userId;
-                return isSeller && (
-                  <button className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 py-3 rounded-lg font-bold text-lg transition-colors">
-                    Edit Item
-                  </button>
+                
+                if (isSeller) {
+                  return (
+                    <>
+                      {!auctionStarted && (
+                        <button className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 py-3 rounded-lg font-bold text-lg transition-colors">
+                          Edit Item
+                        </button>
+                      )}
+                      {auctionStarted && (
+                        <button
+                          onClick={handleSpectate}
+                          className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-bold text-lg transition-colors"
+                        >
+                          Spectate Auction
+                        </button>
+                      )}
+                    </>
+                  );
+                }
+                
+                return (
+                  <>
+                    {registered && !auctionStarted && (
+                      <>
+                        <button className="w-full bg-green-500 text-white py-3 rounded-lg font-bold text-lg">
+                          Waiting for Auction
+                        </button>
+                        <button
+                          onClick={() => setShowUnregisterModal(true)}
+                          disabled={isRegistering}
+                          className="w-full border border-red-500 hover:border-red-400 text-red-400 py-3 rounded-lg font-medium text-lg transition-colors disabled:opacity-50"
+                        >
+                          Unregister
+                        </button>
+                      </>
+                    )}
+                    {registered && auctionStarted && (
+                      <>
+                        <button
+                          onClick={handleViewAuction}
+                          className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold text-lg transition-colors"
+                        >
+                          Join Auction
+                        </button>
+                        <button
+                          onClick={() => setShowExitModal(true)}
+                          disabled={isRegistering}
+                          className="w-full border border-red-500 hover:border-red-400 text-red-400 py-3 rounded-lg font-medium text-lg transition-colors disabled:opacity-50"
+                        >
+                          Exit Auction
+                        </button>
+                      </>
+                    )}
+                    {!registered && !registrationClosed && (
+                      <button
+                        onClick={handleRegister}
+                        disabled={isRegistering}
+                        className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 py-3 rounded-lg font-bold text-lg transition-colors disabled:opacity-50"
+                      >
+                        {isRegistering ? 'Registering...' : 'Register for Auction'}
+                      </button>
+                    )}
+                    {!registered && registrationClosed && !auctionStarted && (
+                      <button className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-lg font-bold text-lg transition-colors">
+                        Waiting for Auction
+                      </button>
+                    )}
+                    {!registered && auctionStarted && (
+                      <button
+                        onClick={handleSpectate}
+                        className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-bold text-lg transition-colors"
+                      >
+                        Spectate Auction
+                      </button>
+                    )}
+                    <button
+                      onClick={handleWatchlist}
+                      disabled={isWatchlisting}
+                      className="w-full border border-slate-600 hover:border-slate-500 text-slate-300 py-3 rounded-lg font-medium text-lg transition-colors disabled:opacity-50"
+                    >
+                      {isWatchlisting ? 'Adding...' : 'Add to Watchlist'}
+                    </button>
+                  </>
                 );
               })()}
-              {registered && !auctionStarted && (
-                <>
-                  <button className="w-full bg-green-500 text-white py-3 rounded-lg font-bold text-lg">
-                    Waiting for Auction
-                  </button>
-                  <button
-                    onClick={() => setShowUnregisterModal(true)}
-                    disabled={isRegistering}
-                    className="w-full border border-red-500 hover:border-red-400 text-red-400 py-3 rounded-lg font-medium text-lg transition-colors disabled:opacity-50"
-                  >
-                    Unregister
-                  </button>
-                </>
-              )}
-              {registered && auctionStarted && (
-                <>
-                  <button
-                    onClick={handleViewAuction}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-lg font-bold text-lg transition-colors"
-                  >
-                    Join Auction
-                  </button>
-                  <button
-                    onClick={() => setShowExitModal(true)}
-                    disabled={isRegistering}
-                    className="w-full border border-red-500 hover:border-red-400 text-red-400 py-3 rounded-lg font-medium text-lg transition-colors disabled:opacity-50"
-                  >
-                    Exit Auction
-                  </button>
-                </>
-              )}
-
-              {!registered && !registrationClosed && (
-                <>
-                  <button
-                    onClick={handleRegister}
-                    disabled={isRegistering}
-                    className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 py-3 rounded-lg font-bold text-lg transition-colors disabled:opacity-50"
-                  >
-                    {isRegistering ? 'Registering...' : 'Register for Auction'}
-                  </button>
-                </>
-              )}
-              {!registered && registrationClosed && !auctionStarted && (
-                <button className="w-full bg-slate-600 hover:bg-slate-700 text-white py-3 rounded-lg font-bold text-lg transition-colors">
-                  Waiting for Auction
-                </button>
-              )}
-              {!registered && auctionStarted && (
-                <button
-                  onClick={handleSpectate}
-                  className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-bold text-lg transition-colors"
-                >
-                  Spectate Auction
-                </button>
-              )}
-              <button
-                onClick={handleWatchlist}
-                disabled={isWatchlisting}
-                className="w-full border border-slate-600 hover:border-slate-500 text-slate-300 py-3 rounded-lg font-medium text-lg transition-colors disabled:opacity-50"
-              >
-                {isWatchlisting ? 'Adding...' : 'Add to Watchlist'}
-              </button>
             </div>
           </div>
         </div>
