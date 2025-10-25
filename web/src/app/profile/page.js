@@ -25,6 +25,29 @@ export default function ProfilePage() {
     setUser(userData);
   }, [router]);
 
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      const userData = authService.getUser();
+      if (!userData) {
+        router.push('/login');
+        return;
+      }
+
+      try {
+        const response = await userService.getUserProfile();
+        if (response.success) {
+          const fullUserData = response.subject;
+          setUser(fullUserData);
+        }
+      } catch (err) {
+        console.error('Failed to fetch user profile:', err);
+        router.push('/login');
+      }
+    };
+
+    loadUserProfile();
+  }, [router]);
+
   const handleLogout = () => {
     authService.logout();
     router.push('/');
