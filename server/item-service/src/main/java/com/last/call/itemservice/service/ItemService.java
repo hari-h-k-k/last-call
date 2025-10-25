@@ -2,6 +2,7 @@ package com.last.call.itemservice.service;
 
 import com.last.call.itemservice.client.KafkaClient;
 import com.last.call.itemservice.dto.CategoryWithCountDto;
+import com.last.call.itemservice.dto.ItemSearchRequestDto;
 import com.last.call.itemservice.dto.ItemWithSubscriptionDto;
 import com.last.call.itemservice.entity.Item;
 import com.last.call.itemservice.enums.ItemCategory;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemService {
@@ -107,20 +109,6 @@ public class ItemService {
         itemSubscriberService.unregister(item, userId);
     }
 
-    public List<ItemWithSubscriptionDto> searchItems(String input, Long userId) {
-        if (input == null || input.trim().isEmpty()) {
-            List<Item> results = itemRepository.findAll();
-            return results.stream()
-                    .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, userId)))
-                    .collect(java.util.stream.Collectors.toList());
-        }
-
-        List<Item> results = itemRepository.searchItems(input.trim());
-        return results.stream()
-                .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, userId)))
-                .collect(java.util.stream.Collectors.toList());
-    }
-
     public List<ItemWithSubscriptionDto> getItemsBySellerId(Long sellerId) {
         List<Item> items=  itemRepository.findBySellerId(sellerId);
         return items.stream()
@@ -147,5 +135,35 @@ public class ItemService {
 
     public void deleteAll() {
         itemRepository.deleteAll();
+    }
+
+    public List<ItemWithSubscriptionDto> searchItemsWithFilters(ItemSearchRequestDto request, Long userId) {
+        ItemCategory categoryEnum = (request.getCategory() != null && !request.getCategory().equalsIgnoreCase("ALL")) ? ItemCategory.valueOf(request.getCategory().toUpperCase()) : null;
+        Double minPrice = (request.getPriceMin() != null && !request.getPriceMin().trim().isEmpty()) ? Double.parseDouble(request.getPriceMin()) : null;
+        Double maxPrice = (request.getPriceMax() != null && !request.getPriceMax().trim().isEmpty()) ? Double.parseDouble(request.getPriceMax()) : null;
+        String auctionStatus = request.getAuctionStatus().equals("all") ? null : request.getAuctionStatus();
+        String registered = request.getRegistered().equals("all") ? null : request.getRegistered();
+        List<Item> items;
+
+        System.out.println(categoryEnum);
+        System.out.println(minPrice);
+        System.out.println(maxPrice);
+        System.out.println(auctionStatus);
+        System.out.println(request.getSortBy());
+
+        if (request.getQuery() != null && !request.getQuery().trim().isEmpty()) {
+            items = itemRepository.searchItemsWithFilters(request.getQuery().trim(), categoryEnum, minPrice, maxPrice, auctionStatus, request.getSortBy(), new Date());
+        } else {
+            items = itemRepository.findItemsWithFilters(categoryEnum, minPrice, maxPrice, auctionStatus, request.getSortBy(), new Date());
+        }
+
+        System.out.println(items);
+        
+        return items.stream()
+                .filter(item -> registered == null ||
+                    ("registered".equals(registered) && itemSubscriberService.isUserRegistered(item, userId)) ||
+                    ("not-registered".equals(registered) && !itemSubscriberService.isUserRegistered(item, userId)))
+                .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, userId)))
+                .collect(Collectors.toList());
     }
 }

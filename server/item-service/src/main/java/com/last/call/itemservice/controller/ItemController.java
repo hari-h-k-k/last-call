@@ -3,6 +3,7 @@ package com.last.call.itemservice.controller;
 import com.last.call.itemservice.dto.ApiResponse;
 import com.last.call.itemservice.dto.CategoryWithCountDto;
 import com.last.call.itemservice.dto.CreateItemRequestDto;
+import com.last.call.itemservice.dto.ItemSearchRequestDto;
 import com.last.call.itemservice.dto.ItemWithSubscriptionDto;
 import com.last.call.itemservice.entity.Item;
 import com.last.call.itemservice.service.ItemService;
@@ -108,17 +109,6 @@ public class ItemController {
         return ResponseBuilder.success(categories, "Categories retrieved successfully");
     }
 
-    @GetMapping("/search-items/{input}")
-    public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> searchItems(
-            @PathVariable String input,
-            @RequestHeader(value = "X-User-Id", required = false) String userId) {
-
-        Long userIdLong = userId != null ? Long.valueOf(userId) : null;
-
-        List<ItemWithSubscriptionDto> items = itemService.searchItems(input, userIdLong);
-        return ResponseBuilder.success(items, "Search completed successfully");
-    }
-
     @GetMapping("/last-call-to-register")
     public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> getLastCallToRegister(
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
@@ -127,6 +117,16 @@ public class ItemController {
 
         List<ItemWithSubscriptionDto> items = itemService.getLastCallToRegister(userIdLong);
         return ResponseBuilder.success(items, "Last call to register items retrieved successfully");
+    }
+
+    @PostMapping("/search-with-filters")
+    public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> searchItemsWithFilters(
+            @RequestBody ItemSearchRequestDto request,
+            @RequestHeader(value = "X-User-Id", required = false) String userId) {
+
+        Long userIdLong = userId != null ? Long.valueOf(userId) : null;
+        List<ItemWithSubscriptionDto> items = itemService.searchItemsWithFilters(request, userIdLong);
+        return ResponseBuilder.success(items, "Search completed successfully");
     }
 
 }

@@ -34,8 +34,18 @@ export default function BrowsePage() {
       try {
         const categoriesResponse = await itemService.getCategories();
         setCategories(categoriesResponse.subject || []);
-        
-        const itemsResponse = await itemService.getLastCallToRegister();
+
+        const searchRequest = {
+          query: searchQuery?.length >= 3 ? searchQuery : null,
+          category: selectedCategory,
+          registered: filters.registered,
+          priceMin: filters.priceMin,
+          priceMax: filters.priceMax,
+          sortBy: filters.sortBy,
+          auctionStatus: filters.auctionStatus
+        };
+        const itemsResponse = await itemService.searchItemsWithFilters(searchRequest);
+        console.log(itemsResponse);
         setItems(itemsResponse.subject || []);
       } catch (error) {
         console.error('Failed to fetch data:', error);
@@ -44,20 +54,7 @@ export default function BrowsePage() {
       }
     };
     fetchData();
-  }, []);
-
-  const handleSearch = async (query) => {
-    if (!query || query.trim().length < 3) return;
-    try {
-      setIsLoading(true);
-      const response = await itemService.searchItems(query);
-      setItems(response.subject || []);
-    } catch (error) {
-      console.error('Search failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [filters, selectedCategory, searchQuery]);
 
   const filteredItems = items.filter(item => {
     // Category filter
@@ -106,17 +103,29 @@ export default function BrowsePage() {
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
-                if (e.target.value.length >= 3) {
-                  console.log("Searching for:", e.target.value);
-                  handleSearch(e.target.value);
-                } else if (e.target.value.length === 0) {
+                if (e.target.value.length === 0) {
                   // Reset to default items when search is cleared
                   const fetchData = async () => {
                     try {
-                      const itemsResponse = await itemService.getLastCallToRegister();
+                      const categoriesResponse = await itemService.getCategories();
+                      setCategories(categoriesResponse.subject || []);
+
+                      const searchRequest = {
+                        query: null,
+                        category: selectedCategory,
+                        registered: filters.registered,
+                        priceMin: filters.priceMin,
+                        priceMax: filters.priceMax,
+                        sortBy: filters.sortBy,
+                        auctionStatus: filters.auctionStatus
+                      };
+                      const itemsResponse = await itemService.searchItemsWithFilters(searchRequest);
+                      console.log(itemsResponse);
                       setItems(itemsResponse.subject || []);
                     } catch (error) {
                       console.error('Failed to fetch data:', error);
+                    } finally {
+                      setIsLoading(false);
                     }
                   };
                   fetchData();

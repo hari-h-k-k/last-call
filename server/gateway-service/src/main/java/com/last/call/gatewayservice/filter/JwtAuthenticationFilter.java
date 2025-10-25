@@ -21,7 +21,7 @@ public class JwtAuthenticationFilter implements WebFilter {
         "/user/register", "/user/login", "/item/categories", "/room/live-auctions", "/room/auction-of-the-day"
     );
     private static final Set<String> PERMITTED_PATHS = Set.of(
-            "/item/search-items", "/item/last-call-to-register"
+            "/item/last-call-to-register", "/item/search", "/item/search-with-filters"
     );
 
     private final JwtUtil jwtUtil;

@@ -1,24 +1,9 @@
 import apiClient from '../lib/axios';
 
 export const itemService = {
-  // createItem: async (itemData) => {
-  //   const token = localStorage.getItem('token');
-  //   const response = await axios.post(`${API_BASE_URL}/item/create-item`, itemData, {
-  //     headers: {
-  //       'Authorization': `Bearer ${token}`,
-  //       'Content-Type': 'application/json'
-  //     }
-  //   });
-  //   return response.data;
-  // },
 
   createItem: async (itemData) => {
     const response = await apiClient.post('/item/create-item', itemData);
-    return response.data;
-  },
-
-  searchItems: async (query) => {
-    const response = await apiClient.get(`/item/search-items/${encodeURIComponent(query)}`);
     return response.data;
   },
 
@@ -42,17 +27,6 @@ export const itemService = {
     return response.data;
   },
 
-
-  subscribeToItem: async (itemId) => {
-    const response = await apiClient.put(`/item/item-subscribe?itemId=${itemId}`);
-    return response.data;
-  },
-
-  unsubscribeFromItem: async (itemId) => {
-    const response = await apiClient.put(`/item/item-unsubscribe?itemId=${itemId}`);
-    return response.data;
-  },
-
   registerForAuction: async (itemId) => {
     const response = await apiClient.post(`/item/${itemId}/register`);
     return response.data;
@@ -63,16 +37,14 @@ export const itemService = {
     return response.data;
   },
 
-  // exitAuction: async (itemId) => {
-  //   const token = localStorage.getItem('token');
-  //   const response = await axios.post(`${API_BASE_URL}/item/${itemId}/exit`, {}, {
-  //     headers: {
-  //       'Authorization': `Bearer ${token}`,
-  //       'Content-Type': 'application/json'
-  //     }
-  //   });
-  //   return response.data;
-  // },
+  searchItemsWithFilters: async (searchRequest) => {
+    const response = await apiClient.post('/item/search-with-filters', searchRequest);
+    return response.data;
+  },
+
+  getItemsWithFilters: async (filters) => {
+    return itemService.searchItemsWithFilters(filters);
+  },
 
   addToWatchlist: async (itemId) => {
     const response = await apiClient.put(`/item/item-subscribe?itemId=${itemId}`);
