@@ -1,0 +1,335 @@
+'use client';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
+import _ from 'lodash';
+import { itemService } from '../../services/itemService';
+import ItemCard from '../../components/ui/ItemCard';
+import Navbar from '../../components/layout/Navbar';
+import DualRangeSlider from '../../components/ui/DualRangeSlider';
+
+export default function BrowsePage() {
+  const searchParams = useSearchParams();
+  const [categories, setCategories] = useState([]);
+  const [items, setItems] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    registered: 'all',
+    priceMin: '',
+    priceMax: '',
+    sortBy: 'date',
+    auctionStatus: 'all'
+  });
+  const [resetKey, setResetKey] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
+
+  const hasMounted = useRef(false);
+
+  // Debounced search setter
+  const debouncedSetSearchQuery = useCallback(
+    _.debounce((value) => {
+      setSearchQuery(value);
+    }, 300),
+    []
+  );
+
+  // Shared fetchData method
+  const fetchData = async () => {
+    setIsLoading(true);
+    try {
+      const categoriesResponse = await itemService.getCategories();
+      setCategories(categoriesResponse.subject || []);
+
+      const searchRequest = {
+        query: searchQuery?.length >= 3 ? searchQuery : null,
+        category: selectedCategory,
+        registered: filters.registered,
+        priceMin: filters.priceMin,
+        priceMax: filters.priceMax,
+        sortBy: filters.sortBy,
+        auctionStatus: filters.auctionStatus,
+        skip: (currentPage - 1) * itemsPerPage,
+        limit: itemsPerPage
+      };
+
+      console.log('Search request:', searchRequest);
+      const itemsResponse = await itemService.searchItemsWithFilters(searchRequest);
+      console.log('itemsResponse', itemsResponse);
+      const items = itemsResponse.subject.items || [];
+      const total = itemsResponse.subject.totalCount || 0;
+      setItems(items);
+      setTotalItems(total);
+      setTotalPages(total > 0 ? Math.ceil(total / itemsPerPage) : 1);
+      console.log('Pagination debug:', { total, itemsPerPage, totalPages: Math.ceil(total / itemsPerPage), currentPage });
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // On mount: read category param
+  useEffect(() => {
+    const categoryParam = searchParams.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam.toUpperCase());
+    }
+  }, [searchParams]);
+
+  // Effect: Filters / Category changes (always fetch)
+  useEffect(() => {
+    if (!hasMounted.current) {
+      hasMounted.current = true;
+      fetchData();
+      return;
+    }
+    setCurrentPage(1);
+    fetchData();
+  }, [filters, selectedCategory, itemsPerPage]);
+
+  // Effect: Page changes
+  useEffect(() => {
+    if (!hasMounted.current) return;
+    fetchData();
+  }, [currentPage]);
+
+  // Effect: Search query changes (only fetch if >=3 chars or cleared)
+  useEffect(() => {
+    if (!hasMounted.current) return;
+    if (searchQuery === '' || searchQuery.length >= 3) {
+      setCurrentPage(1);
+      fetchData();
+    }
+  }, [searchQuery]);
+
+  return (
+    <div className="min-h-screen bg-slate-900">
+      <Navbar />
+
+      <div className="max-w-7xl mx-auto px-4 py-8 pt-24">
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold text-white mb-4">Browse Items</h1>
+          <p className="text-xl text-slate-300">Discover amazing auction items</p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-8">
+          <div className="max-w-2xl mx-auto">
+            <input
+              type="text"
+              defaultValue={searchQuery}
+              onChange={(e) => debouncedSetSearchQuery(e.target.value)}
+              placeholder="Search for items... (min 3 characters)"
+              className="w-full px-6 py-3 bg-slate-800 text-white rounded-lg border border-slate-700 focus:outline-none focus:border-amber-500"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-8">
+          {/* Filters Sidebar */}
+          <div className="w-72 bg-slate-800/50 rounded-xl p-6 h-fit sticky top-24">
+            <h2 className="text-2xl font-bold text-white mb-6">Filters</h2>
+
+            {/* Categories */}
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-white mb-2">Category</h3>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full bg-slate-700 text-white rounded-md p-2 text-sm border border-slate-600 focus:border-amber-500 focus:outline-none"
+              >
+                <option value="ALL">All Categories</option>
+                {categories.map((categoryObj, index) => (
+                  <option key={`category-${index}`} value={categoryObj.category}>
+                    {categoryObj.category}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Registration Status */}
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-white mb-2">Registration</h3>
+              <select
+                value={filters.registered}
+                onChange={(e) => setFilters({...filters, registered: e.target.value})}
+                className="w-full bg-slate-700 text-white rounded-md p-2 text-sm border border-slate-600 focus:border-amber-500 focus:outline-none"
+              >
+                <option value="all">All Items</option>
+                <option value="registered">Registered Only</option>
+                <option value="not-registered">Not Registered</option>
+              </select>
+            </div>
+
+            {/* Price Range */}
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-white mb-2">Price Range</h3>
+              <div className="px-2 py-4">
+                <div className="mb-6">
+                  <DualRangeSlider
+                    key={resetKey}
+                    min={0}
+                    max={10000000}
+                    step={1000}
+                    minValue={filters.priceMin ? parseInt(filters.priceMin) : undefined}
+                    maxValue={filters.priceMax ? parseInt(filters.priceMax) : undefined}
+                    onChange={useCallback(({ min, max }) => {
+                      setFilters(prev => ({...prev, priceMin: min.toString(), priceMax: max.toString()}));
+                    }, [])}
+                  />
+                </div>
+                <div className="flex justify-between text-xs text-slate-400">
+                  <span>${(parseInt(filters.priceMin) || 0).toLocaleString()}</span>
+                  <span>{(parseInt(filters.priceMax) || 10000000) >= 10000000 ? 'Max' : `$${(parseInt(filters.priceMax)).toLocaleString()}`}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Auction Status */}
+            <div className="mb-4">
+              <h3 className="text-sm font-semibold text-white mb-2">Auction Status</h3>
+              <select
+                value={filters.auctionStatus}
+                onChange={(e) => setFilters({...filters, auctionStatus: e.target.value})}
+                className="w-full bg-slate-700 text-white rounded-md p-2 text-sm border border-slate-600 focus:border-amber-500 focus:outline-none"
+              >
+                <option value="all">All Auctions</option>
+                <option value="registration-open">Registration Open</option>
+                <option value="registration-closed">Registration Closed</option>
+                <option value="auction-started">Auction Started</option>
+              </select>
+            </div>
+
+            {/* Sort By */}
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-white mb-2">Sort By</h3>
+              <select
+                value={filters.sortBy}
+                onChange={(e) => setFilters({...filters, sortBy: e.target.value})}
+                className="w-full bg-slate-700 text-white rounded-md p-2 text-sm border border-slate-600 focus:border-amber-500 focus:outline-none"
+              >
+                <option value="date">Date</option>
+                <option value="price-low">Price: Low to High</option>
+                <option value="price-high">Price: High to Low</option>
+              </select>
+            </div>
+
+            {/* Reset Filters */}
+            <button
+              onClick={() => {
+                setSelectedCategory('ALL');
+                setFilters({
+                  registered: 'all',
+                  priceMin: '',
+                  priceMax: '',
+                  sortBy: 'date',
+                  auctionStatus: 'all'
+                });
+                setCurrentPage(1);
+                setResetKey(prev => prev + 1);
+              }}
+              className="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+            >
+              Reset All Filters
+            </button>
+          </div>
+
+          {/* Items Grid */}
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-white">
+                {selectedCategory === 'ALL' ? 'All Items' : selectedCategory}
+                <span className="text-slate-400 ml-2">({totalItems})</span>
+              </h2>
+            </div>
+
+            {isLoading ? (
+              <div className="text-center py-12">
+                <div className="text-amber-400 text-xl">Loading items...</div>
+              </div>
+            ) : items.length === 0 ? (
+              <div className="text-center py-12">
+                <div className="text-slate-400 text-xl">No items found</div>
+              </div>
+            ) : (
+              <>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {items.map((item) => (
+                    <ItemCard key={item.item.id} item={item.item} registered={item.registered} />
+                  ))}
+                </div>
+
+                {/* Items per page selector */}
+                <div className="flex justify-between items-center mt-8 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-slate-400 text-sm">Items per page:</span>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="bg-slate-700 text-white rounded-md px-2 py-1 text-sm border border-slate-600 focus:border-amber-500 focus:outline-none"
+                    >
+                      <option value={6}>6</option>
+                      <option value={12}>12</option>
+                      <option value={24}>24</option>
+                      <option value={48}>48</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center mt-8 space-x-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-2 bg-slate-700 text-white rounded-md hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+
+                    {[...Array(totalPages)].map((_, index) => {
+                      const page = index + 1;
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-3 py-2 rounded-md ${
+                            currentPage === page
+                              ? 'bg-amber-600 text-white'
+                              : 'bg-slate-700 text-white hover:bg-slate-600'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-2 bg-slate-700 text-white rounded-md hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+                
+                {/* Debug info */}
+                <div className="text-center mt-4 text-slate-400 text-sm">
+                  Page {currentPage} of {totalPages} | Total items: {totalItems}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

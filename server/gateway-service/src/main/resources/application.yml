@@ -1,0 +1,40 @@
+server:
+  port: ${PORT:8080}
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: DEBUG
+    
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user-service
+              uri: ${USER_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/user/**
+              filters:
+                - StripPrefix=1
+            - id: item-service
+              uri: ${ITEM_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/item/**
+              filters:
+                - StripPrefix=1
+            - id: room-service
+              uri: ${ROOM_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/room/**
+              filters:
+                - StripPrefix=1
+            - id: room-websocket
+              uri: ${ROOM_SERVICE_URL:ws://localhost:8083}
+              predicates:
+                - Path=/ws-auction/**
+
+
+jwt:
+  secret: ${JWT_SECRET:defaultJwtSecretForDevelopment123456789}

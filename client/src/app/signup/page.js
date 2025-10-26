@@ -1,37 +1,23 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSignup } from "@/hooks/useSignUp";
+import { useAuth } from "@/hooks/useAuth";
+import AuthForm from "@/components/AuthForm";
 
 export default function SignupPage() {
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
-  const { signup, loading, error } = useSignup();
+  const { signup, loading, error } = useAuth();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const { username, password, confirmPassword } = formData;
-
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-
+  const handleSignup = async ({ username, email, password, confirmPassword }) => {
     try {
-      await signup(username, password);
-      alert(`Account created for ${username}`);
-      router.replace("/login");
+      const response = await signup(username, email, password, confirmPassword);
+      console.log(response)
+      if (response.success) {
+        alert(response.message);
+        router.replace("/login");
+      } else {
+        alert(response.message);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -45,73 +31,9 @@ export default function SignupPage() {
           Create your account to start bidding
         </p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Username */}
-          <input
-            type="text"
-            name="username"
-            placeholder="Username"
-            value={formData.username}
-            onChange={handleChange}
-            required
-            className="w-full p-3 rounded-lg bg-gray-900 border border-blue-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600"
-          />
+        <AuthForm type="signup" onSubmit={handleSignup} loading={loading} />
 
-          {/* Password */}
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              name="password"
-              placeholder="Password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              className="w-full p-3 rounded-lg bg-gray-900 border border-blue-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-3 text-gray-400 hover:text-gray-200 text-sm"
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
-          </div>
-
-          {/* Confirm Password */}
-          <div className="relative">
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              required
-              className="w-full p-3 rounded-lg bg-gray-900 border border-blue-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-3 text-gray-400 hover:text-gray-200 text-sm"
-            >
-              {showConfirmPassword ? "Hide" : "Show"}
-            </button>
-          </div>
-
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-3 rounded-lg text-white font-semibold transition duration-300 ${
-              loading
-                ? "bg-gray-500 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
-          >
-            {loading ? "Signing Up..." : "Sign Up"}
-          </button>
-
-          {error && <p className="text-red-400 text-center">{error}</p>}
-        </form>
+        {error && <p className="text-red-400 text-center mt-2">{error}</p>}
 
         <div className="mt-4 text-center">
           <p className="text-gray-400">

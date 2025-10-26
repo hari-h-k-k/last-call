@@ -1,41 +1,85 @@
 "use client";
 import { useState } from "react";
 
-export default function AuthForm({ type, onSubmit }) {
-  const [formData, setFormData] = useState({ username: "", password: "" });
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+export default function AuthForm({ type, onSubmit, loading }) {
+  const [formData, setFormData] = useState({ 
+    username: "", 
+    email: "", 
+    password: "", 
+    confirmPassword: "" 
+  });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (type === "signup" && formData.password !== formData.confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
     onSubmit(formData);
   };
+
+  const inputClass = "w-full p-3 rounded-lg bg-gray-900 border border-blue-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-600";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <input
         type="text"
         name="username"
-        placeholder="Username"
-        onChange={handleChange}
+        placeholder={type === "login" ? "Username or Email" : "Username"}
+        value={formData.username}
+        onChange={(e) => setFormData({ ...formData, [e.target.name]: e.target.value })}
         required
-        className="w-full p-3 rounded-lg bg-[#111827] border border-[#2563EB] text-[#FFFFFF] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+        className={inputClass}
       />
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        onChange={handleChange}
-        required
-        className="w-full p-3 rounded-lg bg-[#111827] border border-[#2563EB] text-[#FFFFFF] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-      />
+      {type === "signup" && (
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, [e.target.name]: e.target.value })}
+          required
+          className={inputClass}
+        />
+      )}
+      <div className="relative">
+        <input
+          type={showPassword ? "text" : "password"}
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={(e) => setFormData({ ...formData, [e.target.name]: e.target.value })}
+          required
+          className={inputClass}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-3 top-3 text-gray-400 hover:text-gray-200 text-sm"
+        >
+          {showPassword ? "Hide" : "Show"}
+        </button>
+      </div>
+      {type === "signup" && (
+        <input
+          type="password"
+          name="confirmPassword"
+          placeholder="Confirm Password"
+          value={formData.confirmPassword}
+          onChange={(e) => setFormData({ ...formData, [e.target.name]: e.target.value })}
+          required
+          className={inputClass}
+        />
+      )}
       <button
         type="submit"
-        className="w-full py-3 rounded-lg bg-[#2563EB] hover:bg-[#1d4ed8] text-[#FFFFFF] font-semibold transition duration-300"
+        disabled={loading}
+        className={`w-full py-3 rounded-lg text-white font-semibold transition duration-300 ${
+          loading ? "bg-gray-500 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
+        }`}
       >
-        Login
+        {loading ? `${type === "login" ? "Logging in" : "Signing up"}...` : type === "login" ? "Login" : "Sign Up"}
       </button>
     </form>
   );

@@ -1,25 +1,26 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
-import { useLogin } from "@/hooks/useLogin";
+import { useAuth as useAuthContext } from "@/context/AuthContext";
+import { useAuth } from "@/hooks/useAuth";
 import AuthForm from "@/components/AuthForm";
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
-  const { login: authLogin } = useAuth();
-  const { login, loading, error } = useLogin();
+  const { login: authLogin } = useAuthContext();
+  const { login, loading, error } = useAuth();
 
   const handleLogin = async ({ username, password }) => {
     try {
-      const data = await login(username, password); // call service through hook
-      alert(data.message);
-
-      authLogin(data.info.id, data.info.username, data.info.token); // save session
-      router.replace(redirectTo); // redirect
+      const response = await login(username, password);
+      if (response.success) {
+        alert(response.message);
+        authLogin(response.data.userId, response.data.username, response.data.token);
+        router.replace(redirectTo);
+      }
     } catch (err) {
       console.error(err);
     }
@@ -33,14 +34,13 @@ function LoginContent() {
           Enter your credentials to access your account
         </p>
 
-        <AuthForm type="login" onSubmit={handleLogin} />
+        <AuthForm type="login" onSubmit={handleLogin} loading={loading} />
 
-        {loading && <p className="text-green-500 text-center mt-4">Logging in...</p>}
         {error && <p className="text-red-400 text-center mt-2">{error}</p>}
 
         <div className="mt-4 text-center">
           <p className="text-gray-400">
-            Don’t have an account?{" "}
+            Don't have an account?{" "}
             <span
               className="text-yellow-400 font-semibold cursor-pointer hover:underline"
               onClick={() => router.push("/signup")}
