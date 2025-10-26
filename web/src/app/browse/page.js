@@ -22,6 +22,10 @@ export default function BrowsePage() {
     auctionStatus: 'all'
   });
   const [resetKey, setResetKey] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
 
   const hasMounted = useRef(false);
 
@@ -47,12 +51,20 @@ export default function BrowsePage() {
         priceMin: filters.priceMin,
         priceMax: filters.priceMax,
         sortBy: filters.sortBy,
-        auctionStatus: filters.auctionStatus
+        auctionStatus: filters.auctionStatus,
+        skip: (currentPage - 1) * itemsPerPage,
+        limit: itemsPerPage
       };
 
+      console.log('Search request:', searchRequest);
       const itemsResponse = await itemService.searchItemsWithFilters(searchRequest);
       console.log('itemsResponse', itemsResponse);
-      setItems(itemsResponse.subject || []);
+      const items = itemsResponse.subject.items || [];
+      const total = itemsResponse.subject.totalCount || 0;
+      setItems(items);
+      setTotalItems(total);
+      setTotalPages(total > 0 ? Math.ceil(total / itemsPerPage) : 1);
+      console.log('Pagination debug:', { total, itemsPerPage, totalPages: Math.ceil(total / itemsPerPage), currentPage });
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -72,15 +84,24 @@ export default function BrowsePage() {
   useEffect(() => {
     if (!hasMounted.current) {
       hasMounted.current = true;
-      return; // Skip duplicate first render in Strict Mode
+      fetchData();
+      return;
     }
+    setCurrentPage(1);
     fetchData();
-  }, [filters, selectedCategory]);
+  }, [filters, selectedCategory, itemsPerPage]);
+
+  // Effect: Page changes
+  useEffect(() => {
+    if (!hasMounted.current) return;
+    fetchData();
+  }, [currentPage]);
 
   // Effect: Search query changes (only fetch if >=3 chars or cleared)
   useEffect(() => {
     if (!hasMounted.current) return;
     if (searchQuery === '' || searchQuery.length >= 3) {
+      setCurrentPage(1);
       fetchData();
     }
   }, [searchQuery]);
@@ -208,6 +229,7 @@ export default function BrowsePage() {
                   sortBy: 'date',
                   auctionStatus: 'all'
                 });
+                setCurrentPage(1);
                 setResetKey(prev => prev + 1);
               }}
               className="w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
@@ -221,7 +243,7 @@ export default function BrowsePage() {
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-white">
                 {selectedCategory === 'ALL' ? 'All Items' : selectedCategory}
-                <span className="text-slate-400 ml-2">({items.length})</span>
+                <span className="text-slate-400 ml-2">({totalItems})</span>
               </h2>
             </div>
 
@@ -234,11 +256,76 @@ export default function BrowsePage() {
                 <div className="text-slate-400 text-xl">No items found</div>
               </div>
             ) : (
-              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {items.map((item) => (
-                  <ItemCard key={item.item.id} item={item.item} registered={item.registered} />
-                ))}
-              </div>
+              <>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {items.map((item) => (
+                    <ItemCard key={item.item.id} item={item.item} registered={item.registered} />
+                  ))}
+                </div>
+
+                {/* Items per page selector */}
+                <div className="flex justify-between items-center mt-8 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-slate-400 text-sm">Items per page:</span>
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => {
+                        setItemsPerPage(Number(e.target.value));
+                        setCurrentPage(1);
+                      }}
+                      className="bg-slate-700 text-white rounded-md px-2 py-1 text-sm border border-slate-600 focus:border-amber-500 focus:outline-none"
+                    >
+                      <option value={6}>6</option>
+                      <option value={12}>12</option>
+                      <option value={24}>24</option>
+                      <option value={48}>48</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex justify-center items-center mt-8 space-x-2">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-2 bg-slate-700 text-white rounded-md hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Previous
+                    </button>
+
+                    {[...Array(totalPages)].map((_, index) => {
+                      const page = index + 1;
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`px-3 py-2 rounded-md ${
+                            currentPage === page
+                              ? 'bg-amber-600 text-white'
+                              : 'bg-slate-700 text-white hover:bg-slate-600'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-2 bg-slate-700 text-white rounded-md hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+                
+                {/* Debug info */}
+                <div className="text-center mt-4 text-slate-400 text-sm">
+                  Page {currentPage} of {totalPages} | Total items: {totalItems}
+                </div>
+              </>
             )}
           </div>
         </div>

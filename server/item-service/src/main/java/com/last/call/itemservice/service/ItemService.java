@@ -4,6 +4,7 @@ import com.last.call.itemservice.client.KafkaClient;
 import com.last.call.itemservice.dto.CategoryWithCountDto;
 import com.last.call.itemservice.dto.ItemSearchRequestDto;
 import com.last.call.itemservice.dto.ItemWithSubscriptionDto;
+import com.last.call.itemservice.dto.PaginatedSearchResponseDto;
 import com.last.call.itemservice.entity.Item;
 import com.last.call.itemservice.enums.ItemCategory;
 import com.last.call.itemservice.exception.ItemNotFoundException;
@@ -137,33 +138,71 @@ public class ItemService {
         itemRepository.deleteAll();
     }
 
-    public List<ItemWithSubscriptionDto> searchItemsWithFilters(ItemSearchRequestDto request, Long userId) {
-        ItemCategory categoryEnum = (request.getCategory() != null && !request.getCategory().equalsIgnoreCase("ALL")) ? ItemCategory.valueOf(request.getCategory().toUpperCase()) : null;
-        Double minPrice = (request.getPriceMin() != null && !request.getPriceMin().trim().isEmpty()) ? Double.parseDouble(request.getPriceMin()) : null;
-        Double maxPrice = (request.getPriceMax() != null && !request.getPriceMax().trim().isEmpty()) ? Double.parseDouble(request.getPriceMax()) : null;
-        String auctionStatus = request.getAuctionStatus().equals("all") ? null : request.getAuctionStatus();
-        String registered = request.getRegistered().equals("all") ? null : request.getRegistered();
+    public PaginatedSearchResponseDto searchItemsWithFilters(ItemSearchRequestDto request, Long userId) {
+        ItemCategory categoryEnum = (request.getCategory() != null && !request.getCategory().equalsIgnoreCase("ALL"))
+                ? ItemCategory.valueOf(request.getCategory().toUpperCase())
+                : null;
+
+        Double minPrice = (request.getPriceMin() != null && !request.getPriceMin().trim().isEmpty())
+                ? Double.parseDouble(request.getPriceMin())
+                : null;
+
+        Double maxPrice = (request.getPriceMax() != null && !request.getPriceMax().trim().isEmpty())
+                ? Double.parseDouble(request.getPriceMax())
+                : null;
+
+        String auctionStatus = "all".equalsIgnoreCase(request.getAuctionStatus()) ? null : request.getAuctionStatus();
+        String registered = "all".equalsIgnoreCase(request.getRegistered()) ? null : request.getRegistered();
+
+        long skip = (request.getSkip() != null && !request.getSkip().trim().isEmpty())
+                ? Long.parseLong(request.getSkip())
+                : 0L;
+
+        long limit = (request.getLimit() != null && !request.getLimit().trim().isEmpty())
+                ? Long.parseLong(request.getLimit())
+                : Long.MAX_VALUE; // no limit if not provided
+
         List<Item> items;
 
-        System.out.println(categoryEnum);
-        System.out.println(minPrice);
-        System.out.println(maxPrice);
-        System.out.println(auctionStatus);
-        System.out.println(request.getSortBy());
-
         if (request.getQuery() != null && !request.getQuery().trim().isEmpty()) {
-            items = itemRepository.searchItemsWithFilters(request.getQuery().trim(), categoryEnum, minPrice, maxPrice, auctionStatus, request.getSortBy(), new Date());
+            items = itemRepository.searchItemsWithFilters(
+                    request.getQuery().trim(),
+                    categoryEnum,
+                    minPrice,
+                    maxPrice,
+                    auctionStatus,
+                    request.getSortBy(),
+                    new Date()
+            );
         } else {
-            items = itemRepository.findItemsWithFilters(categoryEnum, minPrice, maxPrice, auctionStatus, request.getSortBy(), new Date());
+            items = itemRepository.findItemsWithFilters(
+                    categoryEnum,
+                    minPrice,
+                    maxPrice,
+                    auctionStatus,
+                    request.getSortBy(),
+                    new Date()
+            );
         }
 
-        System.out.println(items);
-        
-        return items.stream()
+        List<ItemWithSubscriptionDto> filteredItems = items.stream()
+                // ✅ Apply filtering for registered users
                 .filter(item -> registered == null ||
-                    ("registered".equals(registered) && itemSubscriberService.isUserRegistered(item, userId)) ||
-                    ("not-registered".equals(registered) && !itemSubscriberService.isUserRegistered(item, userId)))
+                        ("registered".equalsIgnoreCase(registered) && itemSubscriberService.isUserRegistered(item, userId)) ||
+                        ("not-registered".equalsIgnoreCase(registered) && !itemSubscriberService.isUserRegistered(item, userId)))
+                // ✅ Convert to DTO
                 .map(item -> new ItemWithSubscriptionDto(item, itemSubscriberService.isUserRegistered(item, userId)))
+                .toList();
+
+        long totalCount = filteredItems.size();
+
+        List<ItemWithSubscriptionDto> paginatedItems = filteredItems.stream()
+                // ✅ Apply skip and limit for pagination
+                .skip(skip)
+                .limit(limit)
                 .collect(Collectors.toList());
+
+        return new PaginatedSearchResponseDto(paginatedItems, totalCount);
     }
+
 }

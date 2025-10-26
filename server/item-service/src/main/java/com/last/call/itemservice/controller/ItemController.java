@@ -5,6 +5,7 @@ import com.last.call.itemservice.dto.CategoryWithCountDto;
 import com.last.call.itemservice.dto.CreateItemRequestDto;
 import com.last.call.itemservice.dto.ItemSearchRequestDto;
 import com.last.call.itemservice.dto.ItemWithSubscriptionDto;
+import com.last.call.itemservice.dto.PaginatedSearchResponseDto;
 import com.last.call.itemservice.entity.Item;
 import com.last.call.itemservice.service.ItemService;
 import com.last.call.itemservice.util.ResponseBuilder;
@@ -120,13 +121,13 @@ public class ItemController {
     }
 
     @PostMapping("/search-with-filters")
-    public ResponseEntity<ApiResponse<List<ItemWithSubscriptionDto>>> searchItemsWithFilters(
+    public ResponseEntity<ApiResponse<PaginatedSearchResponseDto>> searchItemsWithFilters(
             @RequestBody ItemSearchRequestDto request,
             @RequestHeader(value = "X-User-Id", required = false) String userId) {
 
         Long userIdLong = userId != null ? Long.valueOf(userId) : null;
-        List<ItemWithSubscriptionDto> items = itemService.searchItemsWithFilters(request, userIdLong);
-        return ResponseBuilder.success(items, "Search completed successfully");
+        PaginatedSearchResponseDto result = itemService.searchItemsWithFilters(request, userIdLong);
+        return ResponseBuilder.success(result, "Search completed successfully");
     }
 
 }

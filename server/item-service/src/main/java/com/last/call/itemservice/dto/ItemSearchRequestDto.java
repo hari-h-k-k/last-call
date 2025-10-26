@@ -10,10 +10,12 @@ public class ItemSearchRequestDto {
     private String priceMax;
     private String sortBy;
     private String auctionStatus;
+    private String skip;
+    private String limit;
 
     public ItemSearchRequestDto() {}
 
-    public ItemSearchRequestDto(String query, String category, String registered, String priceMin, String priceMax, String sortBy, String auctionStatus) {
+    public ItemSearchRequestDto(String query, String category, String registered, String priceMin, String priceMax, String sortBy, String auctionStatus, String skip, String limit) {
         this.query = query;
         this.category = category;
         this.registered = registered;
@@ -21,6 +23,8 @@ public class ItemSearchRequestDto {
         this.priceMax = priceMax;
         this.sortBy = sortBy;
         this.auctionStatus = auctionStatus;
+        this.skip = skip;
+        this.limit=limit;
     }
 
     @JsonProperty("query")
@@ -51,6 +55,16 @@ public class ItemSearchRequestDto {
     public String getAuctionStatus() { return auctionStatus; }
     public void setAuctionStatus(String auctionStatus) { this.auctionStatus = auctionStatus; }
 
+    @JsonProperty("skip")
+    public String getSkip() {
+        return skip;
+    }
+
+    @JsonProperty("limit")
+    public String getLimit() {
+        return limit;
+    }
+
     @Override
     public String toString() {
         return "ItemSearchRequestDto{" +
@@ -61,6 +75,8 @@ public class ItemSearchRequestDto {
                 ", priceMax='" + priceMax + '\'' +
                 ", sortBy='" + sortBy + '\'' +
                 ", auctionStatus='" + auctionStatus + '\'' +
+                ", skip='" + skip + '\'' +
+                ", limit='" + limit + '\'' +
                 '}';
     }
 }
