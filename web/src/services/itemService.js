@@ -59,5 +59,10 @@ export const itemService = {
   updateItem: async (itemId, itemData) => {
     const response = await apiClient.put(`/item/update-item/${itemId}`, itemData);
     return response.data;
+  },
+
+  deleteItem: async (itemId) => {
+    const response = await apiClient.delete(`/item/delete-item/${itemId}`);
+    return response.data;
   }
 };

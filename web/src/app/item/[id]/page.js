@@ -265,8 +265,7 @@ export default function ItemDetailsPage() {
             <div className="space-y-3">
               {(() => {
                 const currentUser = authService.getUser();
-                const isSeller = currentUser && item.sellerId === currentUser.userId;
-                
+                const isSeller = currentUser && item.sellerId === currentUser.id;
                 if (isSeller) {
                   return (
                     <>

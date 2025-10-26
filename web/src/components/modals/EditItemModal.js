@@ -6,7 +6,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { toast } from 'react-toastify';
 
-export default function EditItemModal({ isOpen, onClose, item, onUpdate }) {
+export default function EditItemModal({ isOpen, onClose, item, onUpdate, onDelete }) {
   const [categories, setCategories] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
@@ -74,6 +74,18 @@ export default function EditItemModal({ isOpen, onClose, item, onUpdate }) {
   const handleClose = () => {
     setError('');
     onClose();
+  };
+
+  const handleDelete = async () => {
+    try {
+      await itemService.deleteItem(item.id);
+      toast.success('Item deleted successfully!');
+      onClose();
+      window.location.href = '/browse';
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      toast.error('Failed to delete item');
+    }
   };
 
   return (
@@ -169,13 +181,23 @@ export default function EditItemModal({ isOpen, onClose, item, onUpdate }) {
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-amber-500/50 text-slate-900 py-3 rounded-lg font-semibold transition-colors"
-        >
-          {isLoading ? 'Updating...' : 'Update Item'}
-        </button>
+        <div className="flex gap-3">
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="flex-1 bg-amber-500 hover:bg-amber-600 disabled:bg-amber-500/50 text-slate-900 py-3 rounded-lg font-semibold transition-colors"
+          >
+            {isLoading ? 'Updating...' : 'Update Item'}
+          </button>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isLoading}
+            className="px-6 bg-red-500 hover:bg-red-600 disabled:bg-red-500/50 text-white py-3 rounded-lg font-semibold transition-colors"
+          >
+            Delete
+          </button>
+        </div>
       </form>
     </Modal>
   );

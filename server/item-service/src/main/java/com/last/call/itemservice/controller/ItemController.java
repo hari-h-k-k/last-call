@@ -130,4 +130,10 @@ public class ItemController {
         return ResponseBuilder.success(result, "Search completed successfully");
     }
 
+    @DeleteMapping("/delete-item/{itemId}")
+    public ResponseEntity<ApiResponse<Void>> deleteItem(@PathVariable Long itemId) {
+        itemService.deleteById(itemId);
+        return ResponseBuilder.success(null, "Item deleted successfully");
+    }
+
 }

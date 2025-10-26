@@ -138,6 +138,13 @@ public class ItemService {
         itemRepository.deleteAll();
     }
 
+    public void deleteById(Long id) {
+        if (!itemRepository.existsById(id)) {
+            throw new ItemNotFoundException("Item not found with id: " + id);
+        }
+        itemRepository.deleteById(id);
+    }
+
     public PaginatedSearchResponseDto searchItemsWithFilters(ItemSearchRequestDto request, Long userId) {
         ItemCategory categoryEnum = (request.getCategory() != null && !request.getCategory().equalsIgnoreCase("ALL"))
                 ? ItemCategory.valueOf(request.getCategory().toUpperCase())
